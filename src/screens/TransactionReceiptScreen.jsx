@@ -1,20 +1,19 @@
 import React from 'react';
-import { CheckCircle2, XCircle, Share2, Download, Copy } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Share2, Download, Copy } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
-
 
 export default function TransactionReceiptScreen({
   transaction,
   status = 'success',
   onDone,
   onShare,
-  darkMode = false, // default added
+  darkMode = false,
   onDownload
 }) {
   const { formatAmount } = useCurrency();
-  const isSuccess = status === 'success';
+  if (!transaction) return <p className={`p-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>No transaction selected</p>;
 
-  // Dynamic classes based on darkMode
+  const isSuccess = status === 'success';
   const bgPage = darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900';
   const bgCard = darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900';
   const textPrimary = darkMode ? 'text-white' : 'text-gray-900';
@@ -22,14 +21,34 @@ export default function TransactionReceiptScreen({
   const topBarColor = isSuccess 
     ? darkMode ? 'bg-[#00FF9D]' : 'bg-[#00875A]' 
     : darkMode ? 'bg-red-600' : 'bg-red-500';
-  const iconBg = isSuccess 
-    ? darkMode ? 'bg-gray-700 text-[#00FF9D]' : 'bg-emerald-50 text-[#00875A]' 
-    : darkMode ? 'bg-red-700 text-red-400' : 'bg-red-50 text-red-500';
   const buttonBg = isSuccess 
     ? darkMode ? 'bg-[#00FF9D] text-gray-900' : 'bg-[#00875A] text-white' 
     : darkMode ? 'bg-gray-700 text-white' : 'bg-gray-900 text-white';
   const actionBg = darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-600';
   const borderColor = darkMode ? 'border-gray-600' : 'border-gray-200';
+
+  // Determine type, icon, and circle color
+  let typeLabel = '';
+  let typeIcon = null;
+  let circleBg = '';
+  let circleColor = '';
+
+  if (transaction.type === 'save') {
+    typeLabel = 'Deposit';
+    typeIcon = <ArrowDownLeft size={24} />;
+    circleBg = darkMode ? 'bg-gray-700' : 'bg-emerald-50';
+    circleColor = darkMode ? 'text-[#00FF9D]' : 'text-[#00875A]';
+  } else if (transaction.type === 'topup') {
+    typeLabel = 'Top Up';
+    typeIcon = <ArrowDownLeft size={24} />;
+    circleBg = darkMode ? 'bg-gray-700' : 'bg-emerald-50';
+    circleColor = darkMode ? 'text-[#00FF9D]' : 'text-[#00875A]';
+  } else {
+    typeLabel = 'Withdrawal';
+    typeIcon = <ArrowUpRight size={24} />;
+    circleBg = darkMode ? 'bg-red-700' : 'bg-red-50';
+    circleColor = darkMode ? 'text-red-400' : 'text-red-500';
+  }
 
   return (
     <div className={`h-full p-6 flex flex-col justify-center animate-in zoom-in-95 duration-300 ${bgPage}`}>
@@ -40,13 +59,11 @@ export default function TransactionReceiptScreen({
 
         {/* Status */}
         <div className="flex flex-col items-center mb-10 mt-4">
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-inner ${iconBg}`}>
-            {isSuccess ? <CheckCircle2 size={48} strokeWidth={2.5} /> : <XCircle size={48} strokeWidth={2.5} />}
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-inner ${circleBg} ${circleColor}`}>
+            {typeIcon}
           </div>
 
-          <h2 className={`text-xl font-black ${textPrimary}`}>
-            {isSuccess ? 'Payment Successful' : 'Transaction Failed'}
-          </h2>
+          <h2 className={`text-xl font-black ${textPrimary}`}>{typeLabel}</h2>
 
           <p className={`text-4xl font-black mt-3 tracking-tight ${textPrimary}`}>
             {formatAmount(transaction.amount)}
@@ -56,13 +73,16 @@ export default function TransactionReceiptScreen({
         {/* Transaction Details */}
         <div className={`space-y-5 pt-6 border-t border-dashed ${borderColor}`}>
           {[
+            { label: 'Type', value: typeLabel },
             { label: 'Recipient / Source', value: transaction.title || 'Nest Balance' },
             { label: 'Transaction ID', value: transaction.reference, icon: Copy },
             { label: 'Date', value: new Date(transaction.date).toLocaleString() },
             {
               label: 'Payment Status',
               value: isSuccess ? 'Completed' : 'Failed',
-              highlight: isSuccess ? (darkMode ? 'text-[#00FF9D]' : 'text-[#00875A]') : (darkMode ? 'text-red-400' : 'text-red-500'),
+              highlight: isSuccess 
+                ? (darkMode ? 'text-[#00FF9D]' : 'text-[#00875A]') 
+                : (darkMode ? 'text-red-400' : 'text-red-500'),
             },
           ].map((row, idx) => (
             <div key={idx} className="flex justify-between items-center text-sm">

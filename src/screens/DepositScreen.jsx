@@ -3,15 +3,16 @@ import { ChevronLeft, Banknote, Lock } from "lucide-react";
 import { useCurrency } from "../context/CurrencyContext";
 
 export default function DepositScreen({
-  onBack,
+  onBack,       // dynamic back function from App.jsx
   onConfirm,
   darkMode,
   openScreen,
+  mode = "start", // "start" for first-time savings, "topup" for adding to existing savings
 }) {
   const { formatAmount } = useCurrency();
 
   const [amount, setAmount] = useState("");
-  const [duration, setDuration] = useState(3);
+  const [duration, setDuration] = useState(3); // only for first-time savings
   const [sourceAccount, setSourceAccount] = useState("Access Bank - **** 1234");
 
   const numericAmount = Number(amount);
@@ -27,13 +28,13 @@ export default function DepositScreen({
     if (!isValidAmount) return;
 
     const startDate = new Date();
-    const withdrawalDate = calculateWithdrawalDate(duration);
+    const withdrawalDate = mode === "start" ? calculateWithdrawalDate(duration) : null;
 
     onConfirm({
       amount: numericAmount,
-      durationMonths: duration,
+      durationMonths: mode === "start" ? duration : undefined,
       startDate: startDate.toISOString(),
-      withdrawalDate: withdrawalDate.toISOString(),
+      withdrawalDate: withdrawalDate ? withdrawalDate.toISOString() : null,
       source: sourceAccount,
     });
   };
@@ -50,34 +51,49 @@ export default function DepositScreen({
   const textGray = darkMode ? "text-gray-300" : "text-gray-700";
   const durationInactive = darkMode ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-700";
 
+  // Decide default back behavior dynamically
+  const handleBack = () => {
+    if (mode === "topup") {
+      // If top-up, go back to SavingsScreen
+      onBack && onBack("savings");
+    } else {
+      // If first-time savings, go back to HomeScreen
+      onBack && onBack("home");
+    }
+  };
+
   return (
     <div className={`flex flex-col animate-in slide-in-from-right duration-300 h-full ${bgClass}`}>
 
       {/* Header */}
       <div className={`flex items-center gap-3 px-6 py-4 sticky top-0 z-10 border-b ${headerBgClass}`}>
         <button
-          onClick={onBack}
+          onClick={handleBack}
           className={`p-2 rounded-full transition-colors ${darkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"}`}
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-xl font-bold">Lock Your Savings</h1>
+        <h1 className="text-xl font-bold">
+          {mode === "start" ? "Lock Your Savings" : "Top Up Savings"}
+        </h1>
       </div>
 
       {/* Content */}
       <div className="p-6 flex-1">
 
         {/* Lock Info */}
-        <div className={`p-6 rounded-[2.5rem] mb-8 border ${darkMode ? "bg-gray-800 border-gray-700 text-gray-300" : "bg-emerald-50 border-emerald-100 text-emerald-700"}`}>
-          <div className="flex items-center gap-2 mb-2 font-bold">
-            <Lock size={18} />
-            Locked Savings
+        {mode === "start" && (
+          <div className={`p-6 rounded-[2.5rem] mb-8 border ${darkMode ? "bg-gray-800 border-gray-700 text-gray-300" : "bg-emerald-50 border-emerald-100 text-emerald-700"}`}>
+            <div className="flex items-center gap-2 mb-2 font-bold">
+              <Lock size={18} />
+              Locked Savings
+            </div>
+            <p className="text-sm">
+              Your money will be locked until the selected withdrawal date.
+              Early withdrawal is not allowed.
+            </p>
           </div>
-          <p className="text-sm">
-            Your money will be locked until the selected withdrawal date.
-            Early withdrawal is not allowed.
-          </p>
-        </div>
+        )}
 
         {/* Amount */}
         <div className="space-y-2 mb-6">
@@ -95,23 +111,25 @@ export default function DepositScreen({
           </div>
         </div>
 
-        {/* Duration */}
-        <div className="space-y-3 mb-6">
-          <label className={`text-sm font-bold ml-1 ${textGray}`}>Savings Duration</label>
-          <div className="grid grid-cols-3 gap-3">
-            {[3, 6, 12].map((m) => (
-              <button
-                key={m}
-                onClick={() => setDuration(m)}
-                className={`py-3 rounded-xl font-bold transition ${
-                  duration === m ? "bg-[#00875A] text-white" : durationInactive
-                }`}
-              >
-                {m} months
-              </button>
-            ))}
+        {/* Duration (only for first-time savings) */}
+        {mode === "start" && (
+          <div className="space-y-3 mb-6">
+            <label className={`text-sm font-bold ml-1 ${textGray}`}>Savings Duration</label>
+            <div className="grid grid-cols-3 gap-3">
+              {[3, 6, 12].map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setDuration(m)}
+                  className={`py-3 rounded-xl font-bold transition ${
+                    duration === m ? "bg-[#00875A] text-white" : durationInactive
+                  }`}
+                >
+                  {m} months
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Source Account */}
         <div className="space-y-2">
@@ -148,7 +166,7 @@ export default function DepositScreen({
             isValidAmount ? "bg-[#00875A] active:scale-95" : "bg-gray-400 cursor-not-allowed"
           }`}
         >
-          Lock Savings
+          {mode === "start" ? "Lock Savings" : "Top Up"}
         </button>
       </div>
     </div>

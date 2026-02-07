@@ -15,8 +15,7 @@ export default function HomeScreen({
   const formatAmount =
     currencyContext?.formatAmount || ((amt) => `₦${amt.toLocaleString()}`);
 
-  // Get latest savings transaction
-const hasSavings = savingsBalance > 0;
+  const hasSavings = savingsBalance > 0;
 
   return (
     <div
@@ -105,7 +104,7 @@ const hasSavings = savingsBalance > 0;
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-bold text-lg">Recent Activity</h2>
           <button
-            onClick={() => openScreen("TransactionsHistory")}
+            onClick={() => openScreen("TransactionHistory")} // fixed screen name
             className="text-gray-400"
           >
             ▶
@@ -114,12 +113,17 @@ const hasSavings = savingsBalance > 0;
 
         <div className="space-y-4 pb-64">
           {transactions.slice(0, 5).map((t) => {
-            const isSave = t.type === "save";
+            const isDeposit = t.type === "save" || t.type === "topup";
+
+            let title = "";
+            if (t.type === "save") title = "Savings Deposit";
+            else if (t.type === "topup") title = "Top Up";
+            else title = "Withdrawal";
 
             return (
               <div
                 key={t.id}
-                onClick={() => openScreen("TransactionReceipt", t)}
+                onClick={() => openScreen("TransactionReceipt", t)} // open receipt
                 className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition ${
                   darkMode
                     ? "bg-gray-800 border-gray-700 hover:bg-gray-700"
@@ -129,22 +133,16 @@ const hasSavings = savingsBalance > 0;
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      isSave
+                      isDeposit
                         ? "bg-emerald-100 text-emerald-600"
                         : "bg-red-100 text-red-600"
                     }`}
                   >
-                    {isSave ? (
-                      <ArrowDownLeft size={18} />
-                    ) : (
-                      <ArrowUpRight size={18} />
-                    )}
+                    {isDeposit ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
                   </div>
 
                   <div>
-                    <p className="font-semibold">
-                      {isSave ? "Savings Deposit" : "Withdrawal"}
-                    </p>
+                    <p className="font-semibold">{title}</p>
                     <p className="text-xs text-gray-400">
                       {new Date(t.date).toLocaleDateString()}
                     </p>
@@ -153,10 +151,10 @@ const hasSavings = savingsBalance > 0;
 
                 <span
                   className={`font-bold text-sm ${
-                    isSave ? "text-emerald-600" : "text-red-600"
+                    isDeposit ? "text-emerald-600" : "text-red-600"
                   }`}
                 >
-                  {isSave ? "+" : "-"}
+                  {isDeposit ? "+" : "-"}
                   {formatAmount(t.amount)}
                 </span>
               </div>
