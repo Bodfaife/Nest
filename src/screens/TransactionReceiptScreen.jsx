@@ -1,0 +1,108 @@
+import React from 'react';
+import { CheckCircle2, XCircle, Share2, Download, Copy } from 'lucide-react';
+import { useCurrency } from '../context/CurrencyContext';
+
+
+export default function TransactionReceiptScreen({
+  transaction,
+  status = 'success',
+  onDone,
+  onShare,
+  darkMode = false, // default added
+  onDownload
+}) {
+  const { formatAmount } = useCurrency();
+  const isSuccess = status === 'success';
+
+  // Dynamic classes based on darkMode
+  const bgPage = darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900';
+  const bgCard = darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900';
+  const textPrimary = darkMode ? 'text-white' : 'text-gray-900';
+  const textSecondary = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const topBarColor = isSuccess 
+    ? darkMode ? 'bg-[#00FF9D]' : 'bg-[#00875A]' 
+    : darkMode ? 'bg-red-600' : 'bg-red-500';
+  const iconBg = isSuccess 
+    ? darkMode ? 'bg-gray-700 text-[#00FF9D]' : 'bg-emerald-50 text-[#00875A]' 
+    : darkMode ? 'bg-red-700 text-red-400' : 'bg-red-50 text-red-500';
+  const buttonBg = isSuccess 
+    ? darkMode ? 'bg-[#00FF9D] text-gray-900' : 'bg-[#00875A] text-white' 
+    : darkMode ? 'bg-gray-700 text-white' : 'bg-gray-900 text-white';
+  const actionBg = darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-600';
+  const borderColor = darkMode ? 'border-gray-600' : 'border-gray-200';
+
+  return (
+    <div className={`h-full p-6 flex flex-col justify-center animate-in zoom-in-95 duration-300 ${bgPage}`}>
+      <div className={`rounded-[3rem] p-8 shadow-2xl relative overflow-hidden ${bgCard}`}>
+        
+        {/* Top highlight bar */}
+        <div className={`absolute top-0 left-0 w-full h-3 ${topBarColor}`} />
+
+        {/* Status */}
+        <div className="flex flex-col items-center mb-10 mt-4">
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-inner ${iconBg}`}>
+            {isSuccess ? <CheckCircle2 size={48} strokeWidth={2.5} /> : <XCircle size={48} strokeWidth={2.5} />}
+          </div>
+
+          <h2 className={`text-xl font-black ${textPrimary}`}>
+            {isSuccess ? 'Payment Successful' : 'Transaction Failed'}
+          </h2>
+
+          <p className={`text-4xl font-black mt-3 tracking-tight ${textPrimary}`}>
+            {formatAmount(transaction.amount)}
+          </p>
+        </div>
+
+        {/* Transaction Details */}
+        <div className={`space-y-5 pt-6 border-t border-dashed ${borderColor}`}>
+          {[
+            { label: 'Recipient / Source', value: transaction.title || 'Nest Balance' },
+            { label: 'Transaction ID', value: transaction.reference, icon: Copy },
+            { label: 'Date', value: new Date(transaction.date).toLocaleString() },
+            {
+              label: 'Payment Status',
+              value: isSuccess ? 'Completed' : 'Failed',
+              highlight: isSuccess ? (darkMode ? 'text-[#00FF9D]' : 'text-[#00875A]') : (darkMode ? 'text-red-400' : 'text-red-500'),
+            },
+          ].map((row, idx) => (
+            <div key={idx} className="flex justify-between items-center text-sm">
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${textSecondary}`}>
+                {row.label}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className={`font-black ${row.highlight || textPrimary}`}>{row.value}</span>
+                {row.icon && <row.icon size={12} className={`cursor-pointer ${darkMode ? 'text-gray-400' : 'text-gray-300'}`} />}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-4 mt-12">
+          <button onClick={() => onShare?.(transaction)} className="flex-1 flex flex-col items-center gap-2 group">
+            <div className={`w-12 h-12 ${actionBg} rounded-2xl flex items-center justify-center group-active:scale-95 transition-transform`}>
+              <Share2 size={20} />
+            </div>
+            <span className={`text-[10px] font-black uppercase tracking-widest ${textSecondary}`}>Share</span>
+          </button>
+
+          <button
+            disabled={!isSuccess}
+            onClick={() => onDownload?.(transaction)}
+            className={`flex-1 flex flex-col items-center gap-2 group ${!isSuccess && 'opacity-40 pointer-events-none'}`}
+          >
+            <div className={`w-12 h-12 ${actionBg} rounded-2xl flex items-center justify-center group-active:scale-95 transition-transform`}>
+              <Download size={20} />
+            </div>
+            <span className={`text-[10px] font-black uppercase tracking-widest ${textSecondary}`}>Save PDF</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Close */}
+      <button onClick={onDone} className={`mt-10 w-full py-4 rounded-2xl font-black active:scale-95 transition-all ${buttonBg}`}>
+        Close Receipt
+      </button>
+    </div>
+  );
+}
