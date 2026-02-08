@@ -26,7 +26,7 @@ export default function HomeScreen({
       {/* Header */}
       <div className="flex justify-between items-center mb-6 pt-6">
         <h1 className="text-2xl font-bold">
-          Hello, {user?.name || "User"} 👋
+          Hello, {user?.fullName ? user.fullName.split(' ')[0] : "User"} 👋
         </h1>
         <button onClick={toggleDarkMode}>
           {darkMode ? <Sun size={22} /> : <Moon size={22} />}

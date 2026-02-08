@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 
 import SplashScreen from "./screens/SplashScreen";
+import AddPaymentSourceScreen from "./screens/AddPaymentSourceScreen";
+import NestTransactionReceiptPDF from "./screens/NestTransactionReceiptPDF";
 import SignInScreen from "./screens/SignInScreen";
 import SignUpScreen from "./screens/SignUpScreen";
 import HomeScreen from "./screens/HomeScreen";
@@ -28,6 +30,10 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(false);
 
   const [user, setUser] = useState(null);
+  const [bankCards, setBankCards] = useState(() => {
+    const cards = localStorage.getItem("bankCards");
+    return cards ? JSON.parse(cards) : [];
+  });
   const [transactions, setTransactions] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
@@ -41,21 +47,25 @@ export default function App() {
 
   const [depositMode, setDepositMode] = useState("start"); // start | topup
 
-  const hasActiveSavings = Boolean(user?.savingsPlan?.isActive);
+  // Helper: does user have an active savings plan?
+  const hasActiveSavings = Boolean(user?.savingsPlan && user.savingsPlan.isActive);
 
   // Load from localStorage
   useEffect(() => {
     const u = localStorage.getItem("user");
     const t = localStorage.getItem("transactions");
+    const cards = localStorage.getItem("bankCards");
     if (u) setUser(JSON.parse(u));
     if (t) setTransactions(JSON.parse(t));
+    if (cards) setBankCards(JSON.parse(cards));
   }, []);
 
   // Save to localStorage
   useEffect(() => {
     if (user) localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("transactions", JSON.stringify(transactions));
-  }, [user, transactions]);
+    localStorage.setItem("bankCards", JSON.stringify(bankCards));
+  }, [user, transactions, bankCards]);
 
   // Auto-mature savings
   useEffect(() => {
@@ -77,6 +87,17 @@ export default function App() {
 
   // Navigation helpers
   const openScreen = (screen, data = null) => {
+    // Handle navigation for Deposit and Savings
+    if (screen === "Deposit") {
+      // If user has active savings, only allow topup
+      if (hasActiveSavings) {
+        setDepositMode("topup");
+      } else {
+        setDepositMode("start");
+      }
+      setCurrentScreen("Deposit");
+      return;
+    }
     if (screen === "TransactionReceipt") {
       setSelectedTransaction(data); // pass transaction to receipt
     } else {
@@ -111,14 +132,19 @@ export default function App() {
   // Process payment
   const processTransaction = (pendingPayment) => {
     const amount = Number(pendingPayment.amount);
+    let txType = pendingPayment.type;
 
-    const txType = pendingPayment.type === "topup" ? "save" : pendingPayment.type;
-
+    // Only allow one savings plan creation
     if (txType === "save") {
+      // If user already has savings, treat as topup
+      if (user?.savingsPlan && user.savingsPlan.isActive) {
+        txType = "topup";
+      }
       setBalance(prev => prev + amount);
       setSavingsBalance(prev => prev + amount);
 
       setUser(prev => {
+        // Only create savings plan if none exists
         if (prev?.savingsPlan?.isActive) return prev;
         return {
           ...prev,
@@ -129,6 +155,12 @@ export default function App() {
           },
         };
       });
+    }
+
+    if (txType === "topup") {
+      setBalance(prev => prev + amount);
+      setSavingsBalance(prev => prev + amount);
+      // Do not modify savingsPlan
     }
 
     if (txType === "withdraw") {
@@ -168,7 +200,18 @@ export default function App() {
 
         {currentScreen === "SignUp" && (
           <SignUpScreen
-            onSignUp={(u) => { setUser(u); goHome(); }}
+            onSignUp={(u) => {
+              // Save all user details and persist to localStorage
+              const userObj = {
+                fullName: u.fullName,
+                email: u.email,
+                password: u.password,
+                savingsPlan: null,
+              };
+              setUser(userObj);
+              localStorage.setItem("user", JSON.stringify(userObj));
+              goHome();
+            }}
             onNavigateToSignIn={() => setCurrentScreen("SignIn")}
           />
         )}
@@ -197,9 +240,8 @@ export default function App() {
                   isMatured: !user.savingsPlan.isActive,
                 }}
                 openScreen={(action) => {
-                  if (action === "TopUpSavings") {
-                    setDepositMode("topup");
-                    setCurrentScreen("Deposit");
+                  if (action === "Deposit") {
+                    openScreen("Deposit");
                   }
                   if (action === "WithdrawSavings") {
                     setCurrentScreen("Withdraw");
@@ -236,7 +278,14 @@ export default function App() {
               setPendingAction(() => () => setCurrentScreen("PaymentProcessing"));
               setCurrentScreen("ConfirmPayment");
             }}
-            openScreen={openScreen}
+            openScreen={(screen) => {
+              if (screen === "AddPaymentSource") {
+                setCurrentScreen("AddPaymentSource");
+              } else {
+                openScreen(screen);
+              }
+            }}
+            bankCards={bankCards}
           />
         )}
 
@@ -294,20 +343,46 @@ export default function App() {
           <TransactionReceiptScreen
             transaction={selectedTransaction}
             darkMode={darkMode}
-            onDone={() => setCurrentScreen("TransactionHistory")} // fixed prop
+            onDone={() => setCurrentScreen("TransactionHistory")}
+            onShare={(tx) => {
+              // Open receipt in new tab for sharing
+              const url = window.location.origin + "/receipt.html?data=" + encodeURIComponent(JSON.stringify(tx));
+              window.open(url, "_blank");
+            }}
+            onDownload={(tx) => {
+              // Open receipt in new tab for saving/printing
+              const url = window.location.origin + "/receipt.html?data=" + encodeURIComponent(JSON.stringify(tx));
+              window.open(url, "_blank");
+            }}
           />
         )}
 
-        {currentScreen === "TransactionHistory" && (
-          <TransactionsHistoryScreen
-            transactions={transactions}
-            darkMode={darkMode}
-            onBack={goHome}
-            openScreen={openScreen} // now will pass to receipt correctly
-          />
+        {currentScreen === "AddPaymentSource" && (
+          <>
+            <AddPaymentSourceScreen
+              user={user}
+              darkMode={darkMode}
+              onBack={goHome}
+              onSave={(card) => {
+                setBankCards((prev) => [...prev, card]);
+                setCurrentScreen("Deposit");
+              }}
+            />
+          </>
         )}
 
-      </div>
-    </CurrencyProvider>
-  );
-}
+                {currentScreen === "TransactionHistory" && (
+                  <TransactionsHistoryScreen
+                    transactions={transactions}
+                    darkMode={darkMode}
+                    onSelectTransaction={(tx) => {
+                      setSelectedTransaction(tx);
+                      setCurrentScreen("TransactionReceipt");
+                    }}
+                    onBack={goHome}
+                  />
+                )}
+              </div>
+            </CurrencyProvider>
+          );
+        }

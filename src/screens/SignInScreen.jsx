@@ -11,7 +11,7 @@ export default function SignInScreen({ onSignIn, onNavigateToSignUp, darkMode })
       <div className="flex-1 pt-12">
         {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-[#00875A] rounded-xl flex items-center justify-center text-white font-black text-xl">N</div>
+          <img src="/Nest logo.png" alt="Nest Logo" className="w-10 h-10 rounded-xl" />
           <span className="text-2xl font-black text-emerald-900 tracking-tight">Nest.</span>
         </div>
 

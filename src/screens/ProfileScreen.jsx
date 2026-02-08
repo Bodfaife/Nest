@@ -42,7 +42,7 @@ export default function ProfileScreen({ user, onLogout, openScreen, darkMode }) 
         </div>
 
         <h2 className="text-2xl font-black mt-4">
-          {user?.name || "User"}
+          {user?.fullName ? user.fullName.split(' ')[0] : "User"}
         </h2>
         <p className="text-sm font-bold uppercase tracking-widest mt-1 text-gray-400">
           {user?.membership || "Nest Premium"}
