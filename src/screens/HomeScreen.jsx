@@ -84,13 +84,17 @@ export default function HomeScreen({
               </button>
 
               <button
-                onClick={() => openScreen("Withdraw")}
+                onClick={() => user?.savingsPlan?.isActive ? null : openScreen("Withdraw")}
                 className={`flex-1 py-2.5 rounded-xl flex items-center justify-center gap-2 font-medium ${
-                  darkMode
-                    ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  user?.savingsPlan?.isActive
+                    ? darkMode
+                      ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : darkMode
+                      ? "bg-red-600/30 hover:bg-red-600/40"
+                      : "bg-red-500/20 hover:bg-red-500/30"
                 }`}
-                disabled
+                disabled={user?.savingsPlan?.isActive}
               >
                 <ArrowDownLeft size={16} />
                 Withdraw

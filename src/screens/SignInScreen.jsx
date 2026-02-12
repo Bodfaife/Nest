@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, Mail } from 'lucide-react';
 
-export default function SignInScreen({ onSignIn, onNavigateToSignUp, darkMode }) {
+export default function SignInScreen({ onSignIn, onNavigateToSignUp, onNavigateToForgotPassword, darkMode }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -52,7 +52,12 @@ export default function SignInScreen({ onSignIn, onNavigateToSignUp, darkMode })
                 onClick={() => setShowPassword(!showPassword)} 
               />
             </div>
-            <p className="text-right text-xs font-bold text-[#00875A] pt-1 cursor-pointer">Forgot Password?</p>
+            <p 
+              onClick={onNavigateToForgotPassword}
+              className="text-right text-xs font-bold text-[#00875A] pt-1 cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              Forgot Password?
+            </p>
           </div>
         </div>
       </div>

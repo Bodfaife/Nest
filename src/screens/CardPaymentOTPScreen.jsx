@@ -82,7 +82,7 @@ export default function CardPaymentOTPScreen({
   return (
     <div className={`min-h-screen flex flex-col ${bgClass} p-6`}>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-3 mb-8">
         {!isVerifying && (
           <button
             onClick={onBack}
@@ -93,11 +93,11 @@ export default function CardPaymentOTPScreen({
             <ChevronLeft size={24} />
           </button>
         )}
+        <h1 className="text-2xl font-black">Verify Your Card</h1>
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col justify-center">
-        <h1 className="text-3xl font-black mb-3">Verify Your Card</h1>
+      <div className="flex-1 pb-64 flex flex-col justify-center">
         <p className={`text-sm mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
           We've sent a 6-digit code to your registered phone number. {!isVerifying && 'Please enter it below.'}
         </p>
@@ -180,9 +180,23 @@ export default function CardPaymentOTPScreen({
                 </button>
               </p>
             </div>
+             {/* Verify Button */}
+      {!isVerifying && (
+        <button
+          onClick={handleVerifyOTP}
+          disabled={!isComplete || timeLeft <= 0}
+          className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all ${
+            isComplete && timeLeft > 0
+              ? 'bg-[#00875A] shadow-emerald-100 active:scale-[0.98]'
+              : 'bg-gray-400 cursor-not-allowed'
+          }`}
+        >
+          Verify & Pay
+        </button>
+      )}
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center space-y-6">
+          <div className="flex pb-64 flex-col items-center justify-center space-y-6">
             <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center animate-pulse">
               <svg className="w-8 h-8 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -198,20 +212,7 @@ export default function CardPaymentOTPScreen({
         )}
       </div>
 
-      {/* Verify Button */}
-      {!isVerifying && (
-        <button
-          onClick={handleVerifyOTP}
-          disabled={!isComplete || timeLeft <= 0}
-          className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all ${
-            isComplete && timeLeft > 0
-              ? 'bg-[#00875A] shadow-emerald-100 active:scale-[0.98]'
-              : 'bg-gray-400 cursor-not-allowed'
-          }`}
-        >
-          Verify & Pay
-        </button>
-      )}
+     
     </div>
   );
 }

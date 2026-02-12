@@ -141,6 +141,28 @@ const SavingsDetailScreen = ({ savings, transactions = [], onBack, darkMode = fa
             <p className={`text-2xl font-black ${textPrimary}`}>{savings.durationMonths || '—'}</p>
             <p className={`text-[10px] ${textSecondary} mt-1`}>months</p>
           </div>
+
+          {/* Frequency */}
+          <div className={`p-5 rounded-2xl ${statBg}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar size={16} className={statText} />
+              <p className={`text-xs font-bold uppercase tracking-widest ${textSecondary}`}>Frequency</p>
+            </div>
+            <p className={`text-lg font-black ${textPrimary} capitalize`}>{savings.frequency || 'Monthly'}</p>
+            <p className={`text-[10px] ${textSecondary} mt-1`}>Topup schedule</p>
+          </div>
+
+          {/* Target Amount */}
+          {savings.targetAmount && (
+            <div className={`p-5 rounded-2xl ${statBg}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <Wallet size={16} className={statText} />
+                <p className={`text-xs font-bold uppercase tracking-widest ${textSecondary}`}>Target</p>
+              </div>
+              <p className={`text-lg font-black ${textPrimary}`}>{formatAmount(savings.targetAmount)}</p>
+              <p className={`text-[10px] ${textSecondary} mt-1`}>Goal amount</p>
+            </div>
+          )}
         </div>
 
         {/* Recent Transactions */}

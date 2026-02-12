@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, CheckCircle } from 'lucide-react';
+import { Lock, CheckCircle, ChevronLeft } from 'lucide-react';
 
-const CardVerificationScreen = ({ card, onVerified, darkMode = false }) => {
+const CardVerificationScreen = ({ card, onVerified, darkMode = false, onBack }) => {
   const [verificationCode, setVerificationCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const [isVerifying, setIsVerifying] = useState(false);
@@ -59,11 +59,23 @@ const CardVerificationScreen = ({ card, onVerified, darkMode = false }) => {
 
   return (
     <div className={`min-h-screen flex flex-col p-6 ${bgClass}`}>
-      <div className="flex-1 flex flex-col justify-center">
-        <div className="mb-8">
-          <h1 className={`text-3xl font-black mb-2 ${textPrimary}`}>Verify Your Card</h1>
-          <p className={textSecondary}>We sent a verification code to your email address.</p>
-        </div>
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className={`p-2 rounded-full flex-shrink-0 ${
+              darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+            }`}
+          >
+            <ChevronLeft size={24} />
+          </button>
+        )}
+        <h1 className={`text-2xl font-black ${textPrimary}`}>Verify Your Card</h1>
+      </div>
+
+      <div className="flex-1 flex flex-col justify-start">
+        <p className={`text-sm mb-8 ${textSecondary}`}>We sent a verification code to your email address.</p>
 
         {/* Card Preview */}
         <div className={`w-full rounded-2xl p-6 mb-8 ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
@@ -95,18 +107,12 @@ const CardVerificationScreen = ({ card, onVerified, darkMode = false }) => {
         <button className={`mb-6 text-sm font-bold ${darkMode ? 'text-[#00FF9D]' : 'text-emerald-600'}`}>
           Didn't receive the code? Resend
         </button>
-      </div>
 
-      {/* Footer Buttons */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-center gap-2 text-gray-400 mb-4">
-          <Lock size={14} />
-          <p className="text-[10px] font-black uppercase tracking-widest">End-to-End Encrypted</p>
-        </div>
+        {/* Verify Card Button */}
         <button
           onClick={handleVerify}
           disabled={verificationCode.length !== 6 || isVerifying}
-          className={`w-full py-5 rounded-2xl font-black transition-all ${
+          className={`w-full py-4 rounded-2xl font-bold mb-8 transition-all ${
             verificationCode.length === 6
               ? `${buttonBg} active:scale-95`
               : darkMode
@@ -116,6 +122,12 @@ const CardVerificationScreen = ({ card, onVerified, darkMode = false }) => {
         >
           {isVerifying ? 'Verifying...' : 'Verify Card'}
         </button>
+
+        {/* End-to-End Encrypted */}
+        <div className="flex items-center justify-center gap-2 text-gray-400">
+          <Lock size={14} />
+          <p className="text-[10px] font-black uppercase tracking-widest">End-to-End Encrypted</p>
+        </div>
       </div>
     </div>
   );

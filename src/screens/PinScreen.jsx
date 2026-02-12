@@ -9,6 +9,7 @@ const TransactionPinScreen = ({
   onBack,
   onSuccess,
   darkMode,
+  onForgotPin,
   transactionType = "Transaction",
 }) => {
   const [pin, setPin] = useState('');
@@ -126,7 +127,10 @@ const TransactionPinScreen = ({
           </div>
         </div>
 
-        <button className="mb-8 text-[10px] font-black text-[#00875A] uppercase tracking-[0.2em] active:opacity-50">
+        <button 
+          onClick={onForgotPin}
+          className="mb-8 text-[10px] font-black text-[#00875A] uppercase tracking-[0.2em] active:opacity-50 hover:opacity-80 transition-opacity"
+        >
           Forgot Transaction PIN?
         </button>
       </div>
