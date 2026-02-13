@@ -52,27 +52,29 @@ export default function RecoveryPhraseVerificationScreen({
 
   return (
     <div className={`min-h-screen flex flex-col ${bgClass} p-6`}>
-      {/* Header */}
+      {/* Header with back button and title */}
       <div className="flex items-center gap-4 mb-8">
         {!isVerifying && (
           <button
             onClick={onBack}
-            className={`p-2 rounded-full ${
+            className={`p-2 rounded-full flex-shrink-0 ${
               darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
             }`}
           >
             <ChevronLeft size={24} />
           </button>
         )}
+        <div className="flex-1">
+          <h1 className="text-2xl font-black">Verify Your Identity</h1>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col justify-center">
+      <div className="flex-1 flex flex-col justify-start">
         {!isVerifying ? (
           <>
-            <h1 className="text-3xl font-black mb-3">Verify Your Identity</h1>
-            <p className={`text-sm mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Enter your 12 recovery phrases in the exact order and spelling as shown when you created your account.
+            <p className={`text-sm mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              Enter your recovery phrases below in the exact order and spelling as shown when you created your account.
             </p>
 
             {/* Info Box */}
@@ -91,29 +93,51 @@ export default function RecoveryPhraseVerificationScreen({
               </p>
             </div>
 
-            {/* Phrase Inputs */}
-            <div className="space-y-4 mb-8">
-              {recoveryPhrases.map((_, index) => (
-                <div key={index}>
-                  <label className={`block text-sm font-bold mb-2 ${labelClass}`}>
-                    Phrase {index + 1}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={`Enter word ${index + 1}`}
-                    value={enteredPhrases[index]}
-                    onChange={(e) => handlePhrasesChange(index, e.target.value)}
-                    disabled={isVerifying}
-                    className={`w-full p-3 rounded-xl outline-none focus:border-emerald-500 disabled:opacity-50 ${inputClass}`}
-                  />
-                </div>
-              ))}
+            {/* Verify Button - Positioned after info box */}
+            <button
+              onClick={handleVerify}
+              disabled={!allFilled}
+              className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all mb-8 ${
+                allFilled
+                  ? 'bg-[#00875A] shadow-emerald-100 active:scale-[0.98]'
+                  : 'bg-gray-400 cursor-not-allowed'
+              }`}
+            >
+              Verify Phrases
+            </button>
+
+            {/* Recovery Phrases Input Section */}
+            <div className="mb-8">
+              <label className={`block text-sm font-bold mb-4 ${labelClass}`}>
+                Enter Your Recovery Phrases
+              </label>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {recoveryPhrases.map((_, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <span className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      darkMode
+                        ? 'bg-emerald-900/40 text-emerald-300'
+                        : 'bg-emerald-100 text-emerald-700'
+                    }`}>
+                      {index + 1}
+                    </span>
+                    <input
+                      type="text"
+                      placeholder={`Word ${index + 1}`}
+                      value={enteredPhrases[index]}
+                      onChange={(e) => handlePhrasesChange(index, e.target.value)}
+                      disabled={isVerifying}
+                      className={`flex-1 p-3 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition-all ${inputClass}`}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Error Message */}
             {error && (
               <div
-                className={`flex items-center gap-2 p-4 rounded-xl mb-8 ${
+                className={`flex items-center gap-2 p-4 rounded-xl ${
                   darkMode
                     ? 'bg-red-900/30 border border-red-800'
                     : 'bg-red-50 border border-red-200'
@@ -138,21 +162,6 @@ export default function RecoveryPhraseVerificationScreen({
           </div>
         )}
       </div>
-
-      {/* Verify Button */}
-      {!isVerifying && (
-        <button
-          onClick={handleVerify}
-          disabled={!allFilled}
-          className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all ${
-            allFilled
-              ? 'bg-[#00875A] shadow-emerald-100 active:scale-[0.98]'
-              : 'bg-gray-400 cursor-not-allowed'
-          }`}
-        >
-          Verify Phrases
-        </button>
-      )}
     </div>
   );
 }

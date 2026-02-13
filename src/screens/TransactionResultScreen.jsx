@@ -8,6 +8,7 @@ const TransactionResultScreen = ({
   type,
   onDone,
   darkMode = false,
+  paymentDestination,
 }) => {
   const isSuccess = status === 'success';
   const { formatAmount } = useCurrency();
@@ -97,6 +98,12 @@ const TransactionResultScreen = ({
               <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Amount</span>
               <span className={`font-black ${cardText}`}>{formatAmount(amount)}</span>
             </div>
+            {type === 'withdraw' && paymentDestination && (
+              <div className="flex justify-between border-t border-gray-700 pt-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Destination</span>
+                <span className={`font-black text-right ${cardText}`}>{paymentDestination}</span>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -57,6 +57,8 @@ import CloseAccountScreen from "./screens/CloseAccountScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import ForgotTransactionPinScreen from "./screens/ForgotTransactionPinScreen";
 import RecoveryPhraseVerificationScreen from "./screens/RecoveryPhraseVerificationScreen";
+import CreateNewPasswordScreen from "./screens/CreateNewPasswordScreen";
+import PasswordResetSuccessScreen from "./screens/PasswordResetSuccessScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 
 // Receipt & Utilities
@@ -278,10 +280,13 @@ function App() {
     
     if (pendingPayment) {
       if (pendingPayment.type === "withdraw") {
+        setPendingAction(null);
         setCurrentScreen("PaymentProcessing");
       } else if (pendingPayment.paymentMethod === 'bank') {
+        setPendingAction(null);
         setShowBankTransferInstructions(true);
       } else if (pendingPayment.paymentMethod === 'card') {
+        setPendingAction(null);
         setShowCardPaymentOTP(true);
       }
     } else if (typeof pendingAction === "function") {
@@ -354,6 +359,7 @@ function App() {
       status: "success",
       paymentMethod: pendingPayment.source === "Bank Transfer" ? "bank" : "card",
       paymentSource: pendingPayment.source,
+      paymentDestination: pendingPayment.destination, // Add destination for withdrawals
       balanceAfter: newBalance,
     };
 
@@ -470,18 +476,45 @@ function App() {
         {currentScreen === "RecoveryPhraseVerification" && (
           <RecoveryPhraseVerificationScreen
             darkMode={darkMode}
-            phrases={user?.recoveryPhrase || []}
+            recoveryPhrases={user?.recoveryPhrase || []}
             onBack={() => setCurrentScreen("ForgotPassword")}
-            onVerify={() => setCurrentScreen("ResetPassword")}
+            onVerified={() => setCurrentScreen("CreateNewPassword")}
+          />
+        )}
+
+        {currentScreen === "CreateNewPassword" && (
+          <CreateNewPasswordScreen
+            darkMode={darkMode}
+            onBack={() => setCurrentScreen("RecoveryPhraseVerification")}
+            onPasswordCreated={(newPassword) => {
+              const updatedUser = { ...user, password: newPassword };
+              setUser(updatedUser);
+              localStorage.setItem("user", JSON.stringify(updatedUser));
+              setCurrentScreen("PasswordResetSuccess");
+            }}
+          />
+        )}
+
+        {currentScreen === "PasswordResetSuccess" && (
+          <PasswordResetSuccessScreen
+            darkMode={darkMode}
+            onContinueToLogin={() => {
+              setCurrentScreen("SignIn");
+              setUser(null);
+              localStorage.removeItem("user");
+            }}
           />
         )}
 
         {currentScreen === "ResetPassword" && (
           <ResetPasswordScreen
             darkMode={darkMode}
-            onResetPassword={(newPassword) => {
-              setUser(prev => ({ ...prev, password: newPassword }));
-              setCurrentScreen("SignIn");
+            onBack={() => setCurrentScreen("RecoveryPhraseVerification")}
+            onResetComplete={(newPassword) => {
+              const updatedUser = { ...user, password: newPassword };
+              setUser(updatedUser);
+              localStorage.setItem("user", JSON.stringify(updatedUser));
+              setCurrentScreen("PasswordResetSuccess");
             }}
           />
         )}
@@ -493,7 +526,12 @@ function App() {
             userPhone={user?.phone || ""}
             onBack={() => setCurrentScreen("Pin")}
             onPinReset={(newPin) => {
+              // Save PIN to localStorage
               localStorage.setItem("userPin", newPin);
+              // Also save to user object for consistency
+              const updatedUser = { ...user, transactionPin: newPin };
+              setUser(updatedUser);
+              localStorage.setItem("user", JSON.stringify(updatedUser));
               setCurrentScreen("Pin");
             }}
           />
@@ -571,7 +609,12 @@ function App() {
                 user={user}
                 onBack={() => setDangerZoneAction(null)}
                 onResetPin={(newPin) => {
+                  // Save PIN to localStorage
                   localStorage.setItem("userPin", newPin);
+                  // Also save to user object for consistency
+                  const updatedUser = { ...user, transactionPin: newPin };
+                  setUser(updatedUser);
+                  localStorage.setItem("user", JSON.stringify(updatedUser));
                   setDangerZoneAction(null);
                 }}
               />
@@ -685,7 +728,9 @@ function App() {
                 ...data,
                 type: "withdraw",
                 source: "Savings Vault",
-                destination: data.selectedAccount || data.destinationBank || "Bank Account",
+                destination: (typeof data.selectedAccount === 'object' && data.selectedAccount?.bankName) 
+                  ? `${data.selectedAccount.bankName} ...${data.selectedAccount.accountNumber?.slice(-4) || 'xxxx'}`
+                  : data.destinationBank || "Bank Account",
                 paymentMethod: data.paymentMethod || "bank",
               };
               setPendingPayment(payload);
@@ -768,6 +813,15 @@ function App() {
         {currentScreen === "PaymentProcessing" && pendingPayment && (
           <PaymentProcessingScreen
             darkMode={darkMode}
+            message={
+              pendingPayment.type === "withdraw"
+                ? "Processing your withdrawal..."
+                : pendingPayment.type === "deposit"
+                ? "Processing your deposit..."
+                : pendingPayment.type === "save" || pendingPayment.type === "topup"
+                ? "Setting up your savings..."
+                : "Securing your transaction..."
+            }
             onComplete={() => processTransaction(pendingPayment)}
           />
         )}

@@ -91,8 +91,8 @@ export default function HomeScreen({
                       ? "bg-gray-700 text-gray-400 cursor-not-allowed"
                       : "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : darkMode
-                      ? "bg-red-600/30 hover:bg-red-600/40"
-                      : "bg-red-500/20 hover:bg-red-500/30"
+                      ? "bg-emerald-600/30 hover:bg-emerald-600/40"
+                    : "bg-emerald-500/20 hover:bg-emerald-500/30"
                 }`}
                 disabled={user?.savingsPlan?.isActive}
               >

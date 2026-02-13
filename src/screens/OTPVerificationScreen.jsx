@@ -13,6 +13,7 @@ const OTPVerificationScreen = ({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const otpInputRef = useRef(null);
 
   // Auto-focus OTP input
@@ -56,11 +57,12 @@ const OTPVerificationScreen = ({
       // Check if OTP is correct (in real app, verify with backend)
       // For demo, any 6-digit code works, but show success animation
       setSuccess(true);
+      setShowSuccessNotification(true);
       
       // Call the onVerify callback after animation
       setTimeout(() => {
         onVerify && onVerify(otpValue);
-      }, 1500);
+      }, 2500);
     } catch (err) {
       setError(err.message || "OTP verification failed. Please try again.");
       setIsVerifying(false);
@@ -135,14 +137,14 @@ const OTPVerificationScreen = ({
             disabled={isVerifying || success}
             placeholder="000000"
             maxLength="6"
-            className={`w-full p-4 text-center text-4xl font-bold tracking-[0.5em] rounded-2xl border-2 outline-none transition-all ${
+            className={`w-full p-4 text-center text-4xl font-bold tracking-[0.5em] rounded-2xl border-2 outline-none transition-all duration-200 ${
               inputBg
             } ${
               success
-                ? `${darkMode ? "border-emerald-500 bg-emerald-500/10" : "border-emerald-500 bg-emerald-50"}`
+                ? `${darkMode ? "border-emerald-500 bg-emerald-500/10" : "border-emerald-500 bg-emerald-50"} animate-in scale-in duration-300`
                 : error
-                ? `${darkMode ? "border-red-500 bg-red-500/10" : "border-red-500 bg-red-50"}`
-                : `${darkMode ? "border-gray-700 focus:border-blue-500" : "border-gray-200 focus:border-blue-500"}`
+                ? `${darkMode ? "border-red-500 bg-red-500/10" : "border-red-500 bg-red-50"} animate-in shake duration-300`
+                : `${darkMode ? "border-gray-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20" : "border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"}`
             } ${isVerifying || success ? "opacity-70" : ""}`}
           />
           {error && (
@@ -203,6 +205,33 @@ const OTPVerificationScreen = ({
             OTP codes are valid for 10 minutes. If you don't receive the code, check
             your spam folder or request a new one.
           </p>
+        </div>
+      </div>
+
+      {/* Success Notification Popup - Slides up from bottom */}
+      <div className={`fixed inset-0 pointer-events-none transition-all duration-300 ${
+        showSuccessNotification ? 'opacity-100' : 'opacity-0'
+      }`}>
+        <div className={`absolute bottom-20 left-6 right-6 p-4 rounded-2xl border shadow-2xl flex items-center gap-3 transform transition-all duration-500 ${
+          showSuccessNotification 
+            ? 'translate-y-0 opacity-100 animate-in slide-in-from-bottom-4' 
+            : 'translate-y-32 opacity-0'
+        } ${
+          darkMode
+            ? 'bg-emerald-900/90 border-emerald-800 backdrop-blur'
+            : 'bg-emerald-50 border-emerald-300 backdrop-blur'
+        }`}>
+          <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 animate-bounce">
+            <CheckCircle size={20} className="text-white" />
+          </div>
+          <div>
+            <p className={`font-bold text-sm ${darkMode ? 'text-emerald-200' : 'text-emerald-900'}`}>
+              Email Verified!
+            </p>
+            <p className={`text-xs ${darkMode ? 'text-emerald-100/70' : 'text-emerald-700/70'}`}>
+              Your email has been confirmed..
+            </p>
+          </div>
         </div>
       </div>
     </div>

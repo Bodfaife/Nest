@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, AlertCircle } from 'lucide-react';
+import { ChevronLeft, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function CardPaymentOTPScreen({
   darkMode = false,
@@ -12,6 +12,7 @@ export default function CardPaymentOTPScreen({
   const [error, setError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutes
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
 
   // Countdown timer
   useEffect(() => {
@@ -54,12 +55,13 @@ export default function CardPaymentOTPScreen({
 
     // Simulate OTP verification
     setIsVerifying(true);
+    setShowSuccessNotification(true);
     
     // In a real app, this would verify against a backend
     // For demo, we'll accept any valid 6-digit OTP
     setTimeout(() => {
       onVerify(otpValue);
-    }, 1500);
+    }, 2500);
   };
 
   const handleResendOTP = () => {
@@ -80,7 +82,7 @@ export default function CardPaymentOTPScreen({
   const seconds = timeLeft % 60;
 
   return (
-    <div className={`min-h-screen flex flex-col ${bgClass} p-6`}>
+    <div className={`min-h-screen flex flex-col ${bgClass} p-6 overflow-hidden animate-in fade-in slide-in-from-right duration-300`}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         {!isVerifying && (
@@ -141,7 +143,9 @@ export default function CardPaymentOTPScreen({
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     disabled={isVerifying}
-                    className={`w-12 h-14 text-center text-2xl font-bold rounded-lg outline-none focus:border-emerald-500 disabled:opacity-50 transition ${inputClass}`}
+                    className={`w-12 h-14 text-center text-2xl font-bold rounded-lg outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-50 transition-all duration-200 ${
+                      inputClass
+                    } ${digit ? 'animate-in scale-in-105 duration-200' : ''}`}
                   />
                 ))}
               </div>
@@ -198,9 +202,7 @@ export default function CardPaymentOTPScreen({
         ) : (
           <div className="flex pb-64 flex-col items-center justify-center space-y-6">
             <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center animate-pulse">
-              <svg className="w-8 h-8 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
+              <CheckCircle size={32} className="text-emerald-600" />
             </div>
             <div className="text-center">
               <h2 className="text-2xl font-black mb-2">OTP Verified!</h2>
@@ -212,7 +214,32 @@ export default function CardPaymentOTPScreen({
         )}
       </div>
 
-     
+      {/* Success Notification Popup - Slides up from bottom */}
+      <div className={`fixed inset-0 pointer-events-none transition-all duration-300 ${
+        showSuccessNotification ? 'opacity-100' : 'opacity-0'
+      }`}>
+        <div className={`absolute bottom-20 left-6 right-6 p-4 rounded-2xl border shadow-2xl flex items-center gap-3 transform transition-all duration-500 ${
+          showSuccessNotification 
+            ? 'translate-y-0 opacity-100 animate-in slide-in-from-bottom-4' 
+            : 'translate-y-32 opacity-0'
+        } ${
+          darkMode
+            ? 'bg-emerald-900/90 border-emerald-800 backdrop-blur'
+            : 'bg-emerald-50 border-emerald-300 backdrop-blur'
+        }`}>
+          <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 animate-bounce">
+            <CheckCircle size={20} className="text-white" />
+          </div>
+          <div>
+            <p className={`font-bold text-sm ${darkMode ? 'text-emerald-200' : 'text-emerald-900'}`}>
+              OTP Verified Successfully!
+            </p>
+            <p className={`text-xs ${darkMode ? 'text-emerald-100/70' : 'text-emerald-700/70'}`}>
+              Confirming payment details...
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

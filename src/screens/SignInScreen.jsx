@@ -65,7 +65,18 @@ export default function SignInScreen({ onSignIn, onNavigateToSignUp, onNavigateT
       {/* Actions */}
       <div className="pb-4">
         <button 
-          onClick={() => onSignIn(email, password)} 
+          onClick={() => {
+            // Validate email and password against stored user
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            if (storedUser.email === email && storedUser.password === password) {
+              // Password matches, proceed with sign in
+              onSignIn(storedUser);
+            } else {
+              // Invalid credentials
+              alert('Invalid email or password');
+              setPassword('');
+            }
+          }} 
           className="w-full py-4 rounded-2xl font-bold text-white bg-[#00875A] shadow-lg shadow-emerald-100 active:scale-[0.98] transition-all"
         >
           Sign In
