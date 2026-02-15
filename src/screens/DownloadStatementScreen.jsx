@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, FileText, Calendar, Download } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
+import { formatStatementAsCSV, formatStatementAsHTML, downloadCSV, openStatementPreview } from '../helpers/statementFormatter';
 
 const DownloadStatementScreen = ({ transactions = [], onBack, darkMode = false }) => {
   const [startDate, setStartDate] = useState('');
@@ -47,53 +48,14 @@ const DownloadStatementScreen = ({ transactions = [], onBack, darkMode = false }
 
   const handleDownload = () => {
     if (statementFormat === 'pdf') {
-      downloadPDF();
+      openStatementPreview(filteredTransactions, startDate, endDate);
     } else {
-      downloadCSV();
+      downloadCSV(formatStatementAsCSV(filteredTransactions, startDate, endDate), startDate, endDate);
     }
   };
 
-  const downloadPDF = () => {
-    // Generate PDF content
-    const pdfContent = `
-      NEST SAVINGS ACCOUNT - TRANSACTION STATEMENT
-      ${startDate} to ${endDate}
-      
-      Statement Summary:
-      Total Deposits: ${summary.deposits}
-      Total Withdrawals: ${summary.withdrawals}
-      Total Transactions: ${summary.count}
-      
-      Transactions:
-      ${filteredTransactions.map(tx => 
-        `${new Date(tx.date).toLocaleString()} | ${tx.type.toUpperCase()} | ${tx.amount} | ${tx.reference}`
-      ).join('\n')}
-    `;
-
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(pdfContent));
-    element.setAttribute('download', `nest-statement-${startDate}-to-${endDate}.txt`);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  };
-
-  const downloadCSV = () => {
-    // Generate CSV content
-    const header = 'Date,Type,Amount,Reference,Status\n';
-    const rows = filteredTransactions.map(tx =>
-      `"${new Date(tx.date).toLocaleString()}","${tx.type}","${tx.amount}","${tx.reference}","${tx.status || 'success'}"`
-    ).join('\n');
-    const csvContent = header + rows;
-
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
-    element.setAttribute('download', `nest-statement-${startDate}-to-${endDate}.csv`);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+  const handlePreview = () => {
+    openStatementPreview(filteredTransactions, startDate, endDate);
   };
 
   const isValidDate = startDate && endDate && new Date(startDate) <= new Date(endDate);

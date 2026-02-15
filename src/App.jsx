@@ -46,6 +46,10 @@ import CardPaymentProcessingScreen from "./screens/CardPaymentProcessingScreen";
 import BankTransferPaymentScreen from "./screens/BankTransferPaymentScreen";
 import BankTransferInstructionsScreen from "./screens/BankTransferInstructionsScreen";
 
+// Bank Account Screens
+import AddBankAccountScreen from "./screens/AddBankAccountScreen";
+import BankAccountSuccessScreen from "./screens/BankAccountSuccessScreen";
+
 // Savings Lock Screens
 import LockSavingsMethodScreen from "./screens/LockSavingsMethodScreen";
 
@@ -137,6 +141,7 @@ function App() {
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showSavedCards, setShowSavedCards] = useState(false);
   const [showSavedAccounts, setShowSavedAccounts] = useState(false);
+  const [newBankAccountData, setNewBankAccountData] = useState(null); // Account data after successful addition
   const [showCardDetails, setShowCardDetails] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
   const [profilePicture, setProfilePicture] = useState(() => {
@@ -661,7 +666,7 @@ function App() {
                 darkMode={darkMode}
                 accounts={bankAccounts}
                 onBack={() => setShowSavedAccounts(false)}
-                onAddAccount={() => openScreen("AddPaymentSource")}
+                onAddAccount={() => openScreen("AddBankAccount")}
                 onDeleteAccount={(accountIdx) => {
                   setBankAccounts(prev => prev.filter((_, idx) => idx !== accountIdx));
                 }}
@@ -943,6 +948,31 @@ function App() {
               />
             )}
           </>
+        )}
+
+        {/* ===== BANK ACCOUNT SCREENS ===== */}
+        {currentScreen === "AddBankAccount" && (
+          <AddBankAccountScreen
+            darkMode={darkMode}
+            onBack={handleBack}
+            onAddAccount={(accountData) => {
+              setNewBankAccountData(accountData);
+              setBankAccounts((prev) => [...prev, { id: Date.now().toString(), ...accountData }]);
+              setCurrentScreen("BankAccountSuccess");
+            }}
+          />
+        )}
+
+        {currentScreen === "BankAccountSuccess" && newBankAccountData && (
+          <BankAccountSuccessScreen
+            darkMode={darkMode}
+            accountData={newBankAccountData}
+            onContinue={() => {
+              setNewBankAccountData(null);
+              setShowSavedAccounts(true);
+              setCurrentScreen("Main");
+            }}
+          />
         )}
 
         {/* ===== LOCK SAVINGS SCREENS ===== */}
