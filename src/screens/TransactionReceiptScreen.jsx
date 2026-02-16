@@ -60,8 +60,8 @@ export default function TransactionReceiptScreen({
   } else {
     typeLabel = 'Withdrawal';
     typeIcon = <ArrowUpRight size={24} />;
-    circleBg = darkMode ? 'bg-red-700' : 'bg-red-50';
-    circleColor = darkMode ? 'text-red-400' : 'text-red-500';
+    circleBg = darkMode ? 'bg-gray-700' : 'bg-red-50';
+    circleColor = darkMode ? 'text-red-600' : 'text-red-600';
     fullTypeDisplay = typeLabel;
   }
 

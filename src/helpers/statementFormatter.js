@@ -44,17 +44,39 @@ export const downloadCSV = (csv, filename = 'bank_statement.csv') => {
 export const formatStatementAsHTML = (transactions, user, balance) => {
   const timestamp = new Date().toLocaleDateString('en-NG');
   const timestamp_time = new Date().toLocaleTimeString('en-NG');
+  const statementDate = new Date();
+  const periodStart = new Date(statementDate.getFullYear(), statementDate.getMonth(), 1);
+  const periodEnd = new Date(statementDate.getFullYear(), statementDate.getMonth() + 1, 0);
 
-  const transactionRows = transactions.map(tx => `
-    <tr>
-      <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #666;">${new Date(tx.date).toLocaleDateString('en-NG')}</td>
-      <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #333; font-weight: 600;">${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}</td>
-      <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #666;">${tx.paymentSource || 'N/A'}</td>
-      <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #00875A; font-weight: 600; text-align: right;">₦${tx.amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
-      <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #333; font-weight: 600; text-align: right;">₦${(tx.balanceAfter || 0).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
-      <td style="padding: 12px; border-bottom: 1px solid #e0e0e0; color: #666;">${tx.reference || 'N/A'}</td>
-    </tr>
-  `).join('');
+  // Calculate summary statistics
+  const totalDebits = transactions
+    .filter(tx => tx.type === 'withdraw')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+  const totalCredits = transactions
+    .filter(tx => tx.type === 'deposit')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const transactionRows = transactions.map((tx, idx) => {
+    const typeLabel = tx.type.charAt(0).toUpperCase() + tx.type.slice(1);
+    const typeClass = tx.type === 'withdraw' ? 'debit' : 'credit';
+    const amount = tx.amount.toLocaleString('en-NG', { minimumFractionDigits: 2 });
+    const balanceAfter = (tx.balanceAfter || 0).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+    const date = new Date(tx.date).toLocaleDateString('en-NG');
+    
+    return `
+      <tr class="${typeClass}">
+        <td class="date-cell">${date}</td>
+        <td class="type-cell">
+          <span class="type-badge ${typeClass}">${typeLabel}</span>
+        </td>
+        <td class="amount-cell ${typeClass}">₦${amount}</td>
+        <td class="balance-cell">₦${balanceAfter}</td>
+        <td class="status-cell">
+          <span class="status-badge ${tx.status || 'completed'}">${tx.status ? tx.status.charAt(0).toUpperCase() + tx.status.slice(1) : 'Completed'}</span>
+        </td>
+      </tr>
+    `;
+  }).join('');
 
   const html = `
     <!DOCTYPE html>
@@ -64,198 +86,500 @@ export const formatStatementAsHTML = (transactions, user, balance) => {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Bank Statement - Nest</title>
       <style>
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-          color: #333;
-          background: #f5f5f5;
-          padding: 20px;
+        * {
           margin: 0;
+          padding: 0;
+          box-sizing: border-box;
         }
-        .container {
-          max-width: 900px;
-          margin: 0 auto;
+
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          color: #1a1a1a;
+          background: #f8fafb;
+          padding: 0;
+          line-height: 1.6;
+        }
+
+        .page-wrapper {
+          max-width: 210mm;
+          height: 297mm;
+          margin: 20px auto;
           background: white;
-          padding: 40px;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+          position: relative;
+          overflow: hidden;
         }
-        .header {
+
+        .watermark {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-45deg);
+          font-size: 120px;
+          font-weight: 700;
+          color: rgba(0, 135, 90, 0.03);
+          white-space: nowrap;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .content {
+          padding: 40px 50px;
+          position: relative;
+          z-index: 1;
+          height: 100%;
           display: flex;
-          align-items: center;
-          justify-content: space-between;
+          flex-direction: column;
+        }
+
+        .header-section {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 40px;
           margin-bottom: 40px;
-          padding-bottom: 20px;
-          border-bottom: 2px solid #00875A;
+          padding-bottom: 30px;
+          border-bottom: 3px solid #00875A;
         }
-        .logo-section {
+
+        .logo-company {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 15px;
         }
+
         .logo {
-          width: 48px;
-          height: 48px;
-          background: #00875A;
-          border-radius: 8px;
+          width: 60px;
+          height: 60px;
+          background: linear-gradient(135deg, #00875A 0%, #006d49 100%);
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
           color: white;
-          font-weight: bold;
-          font-size: 24px;
+          font-weight: 800;
+          font-size: 32px;
+          box-shadow: 0 4px 15px rgba(0, 135, 90, 0.2);
         }
-        .company-name {
-          font-size: 28px;
-          font-weight: 700;
+
+        .company-info h1 {
+          font-size: 32px;
+          font-weight: 800;
           color: #00875A;
+          margin: 0;
+          line-height: 1;
         }
-        .statement-title {
+
+        .company-info p {
+          font-size: 12px;
+          color: #666;
+          margin: 4px 0 0 0;
+          letter-spacing: 0.5px;
+        }
+
+        .statement-header {
           text-align: right;
         }
-        .statement-title h1 {
-          margin: 0;
-          font-size: 20px;
-          color: #333;
+
+        .statement-header h2 {
+          font-size: 28px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0 0 8px 0;
         }
-        .statement-title p {
-          margin: 4px 0 0 0;
-          color: #999;
+
+        .statement-header p {
+          margin: 4px 0;
+          font-size: 13px;
+          color: #666;
+        }
+
+        .statement-date {
+          background: #f0f8f5;
+          padding: 8px 16px;
+          border-radius: 6px;
+          margin-top: 8px;
+          font-weight: 600;
+          color: #00875A;
+          display: inline-block;
           font-size: 12px;
         }
-        .account-info {
-          background: #f9f9f9;
-          padding: 24px;
-          border-radius: 8px;
-          margin-bottom: 32px;
+
+        .account-details {
           display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
-          gap: 24px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 30px;
+          margin-bottom: 35px;
+          padding: 24px;
+          background: linear-gradient(135deg, #f0f8f5 0%, #fafbf8 100%);
+          border-radius: 15px;
+          border-left: 4px solid #00875A;
         }
-        .info-item {
+
+        .detail-item {
           display: flex;
           flex-direction: column;
         }
-        .info-label {
-          font-size: 11px;
+
+        .detail-label {
+          font-size: 10px;
           font-weight: 700;
           color: #999;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 8px;
+        }
+
+        .detail-value {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1a1a1a;
+        }
+
+        .balance-value {
+          color: #00875A;
+          font-size: 24px;
+          font-weight: 800;
+        }
+
+        .summary-section {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px;
+          margin-bottom: 30px;
+        }
+
+        .summary-box {
+          padding: 16px;
+          border-radius: 10px;
+          border-left: 4px solid;
+        }
+
+        .summary-box.credits {
+          background: #f0f8f5;
+          border-left-color: #00875A;
+        }
+
+        .summary-box.debits {
+          background: #fef5f5;
+          border-left-color: #e74c3c;
+        }
+
+        .summary-box-label {
+          font-size: 11px;
+          font-weight: 700;
+          color: #666;
           text-transform: uppercase;
           letter-spacing: 0.5px;
           margin-bottom: 8px;
         }
-        .info-value {
-          font-size: 16px;
-          font-weight: 600;
-          color: #333;
-        }
-        .balance-highlight {
-          color: #00875A;
-          font-size: 20px;
-          font-weight: 700;
-        }
-        .transactions-section h2 {
+
+        .summary-box-value {
           font-size: 18px;
-          color: #333;
-          margin: 24px 0 16px 0;
           font-weight: 700;
         }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-bottom: 32px;
+
+        .summary-box.credits .summary-box-value {
+          color: #00875A;
         }
-        th {
-          background: #f0f0f0;
-          padding: 12px;
-          text-align: left;
-          font-weight: 600;
-          font-size: 12px;
-          color: #666;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
+
+        .summary-box.debits .summary-box-value {
+          color: #e74c3c;
+        }
+
+        .transactions-heading {
+          font-size: 18px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin-bottom: 16px;
+          margin-top: 25px;
+          padding-bottom: 12px;
           border-bottom: 2px solid #e0e0e0;
         }
-        .footer {
-          margin-top: 40px;
-          padding-top: 20px;
-          border-top: 1px solid #e0e0e0;
-          text-align: center;
-          color: #999;
-          font-size: 11px;
+
+        table {
+          width: 100%;
+          margin-bottom: 30px;
+          border-collapse: collapse;
+          font-size: 13px;
         }
-        .security-badge {
-          display: inline-flex;
+
+        thead {
+          background: #f5f7fa;
+        }
+
+        th {
+          padding: 12px 10px;
+          text-align: left;
+          font-weight: 700;
+          color: #666;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          border-bottom: 2px solid #ddd;
+        }
+
+        td {
+          padding: 14px 10px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr.debit:hover {
+          background: #faf9f9;
+        }
+
+        tr.credit:hover {
+          background: #f9faf8;
+        }
+
+        .date-cell {
+          font-weight: 500;
+          color: #666;
+          width: 20%;
+        }
+
+        .type-cell {
+          width: 20%;
+        }
+
+        .type-badge {
+          display: inline-block;
+          padding: 4px 12px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
+        .type-badge.credit {
+          color: #006d49;
+        }
+
+        .type-badge.debit {
+          color: #c0392b;
+        }
+
+        .amount-cell.credit {
+          color: #00875A;
+        }
+
+        .amount-cell.debit {
+          color: #e74c3c;
+        }
+
+        .balance-cell {
+          text-align: right;
+          color: #666;
+          font-weight: 600;
+          width: 20%;
+        }
+
+        .status-cell {
+          width: 20%;
+        }
+
+        .status-badge {
+          display: inline-block;
+          padding: 4px 12px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: capitalize;
+        }
+
+        .status-badge.completed {
+          color: #2e7d32;
+        }
+
+        .status-badge.pending {
+          color: #f57f17;
+        }
+
+        .footer-section {
+          margin-top: auto;
+          padding-top: 24px;
+          border-top: 2px solid #eee;
+          font-size: 11px;
+          color: #999;
+        }
+
+        .footer-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+        }
+
+        .security-info {
+          display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 16px;
-          background: #e8f5f0;
-          border-radius: 20px;
-          margin-top: 16px;
-          font-size: 11px;
-          color: #00875A;
+          background: #f0f8f5;
+          border-radius: 8px;
           font-weight: 600;
+          color: #00875A;
         }
+
+        .security-info::before {
+          content: "✓";
+          font-weight: 700;
+        }
+
+        .footer-disclaimer {
+          text-align: center;
+          margin-top: 16px;
+          padding-top: 16px;
+          border-top: 1px solid #eee;
+          line-height: 1.4;
+        }
+
+        .footer-disclaimer p {
+          margin: 4px 0;
+        }
+
+        .copyright {
+          text-align: center;
+          font-size: 10px;
+          color: #ccc;
+          margin-top: 12px;
+        }
+
         @media print {
-          body { background: white; }
-          .container { box-shadow: none; }
-          .security-badge { display: none; }
+          body {
+            background: white;
+            padding: 0;
+          }
+          .page-wrapper {
+            margin: 0;
+            box-shadow: none;
+            max-width: 100%;
+            height: auto;
+            page-break-after: auto;
+          }
+          .content {
+            padding: 40px;
+          }
+          table {
+            page-break-inside: auto;
+          }
+          tbody {
+            page-break-inside: auto;
+          }
+          tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+          }
+        }
+
+        @media screen and (max-width: 768px) {
+          .page-wrapper {
+            margin: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+          }
+          .content {
+            padding: 30px;
+          }
+          .header-section {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
+          .account-details {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+          .summary-section {
+            grid-template-columns: 1fr;
+          }
+          table {
+            font-size: 12px;
+          }
+          th, td {
+            padding: 10px 6px;
+          }
         }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <div class="logo-section">
-            <div class="logo">🏦</div>
-            <div class="company-name">Nest.</div>
+      <div class="page-wrapper">
+        <div class="watermark">NEST</div>
+        <div class="content">
+          <!-- Header Section -->
+          <div class="header-section">
+            <div class="logo-company">
+              <div class="logo">🏦</div>
+              <div class="company-info">
+                <h1>Nest.</h1>
+                <p>Financial Services</p>
+              </div>
+            </div>
+            <div class="statement-header">
+              <h2>Account Statement</h2>
+              <p>${periodStart.toLocaleDateString('en-NG')} to ${periodEnd.toLocaleDateString('en-NG')}</p>
+              <div class="statement-date">Generated: ${timestamp}</div>
+            </div>
           </div>
-          <div class="statement-title">
-            <h1>Bank Statement</h1>
-            <p>Generated on ${timestamp} at ${timestamp_time}</p>
-          </div>
-        </div>
 
-        <div class="account-info">
-          <div class="info-item">
-            <span class="info-label">Account Holder</span>
-            <span class="info-value">${user?.fullName || 'User'}</span>
+          <!-- Account Details -->
+          <div class="account-details">
+            <div class="detail-item">
+              <span class="detail-label">Account Holder</span>
+              <span class="detail-value">${user?.fullName || 'Account Owner'}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Email Address</span>
+              <span class="detail-value">${user?.email || 'Not Available'}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Current Balance</span>
+              <span class="detail-value balance-value">₦${balance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">Email</span>
-            <span class="info-value">${user?.email || 'N/A'}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Current Balance</span>
-            <span class="info-value balance-highlight">₦${balance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
-          </div>
-        </div>
 
-        <div class="transactions-section">
-          <h2>Transactions (Last 30 Days)</h2>
+          <!-- Summary Section -->
+          <div class="summary-section">
+            <div class="summary-box credits">
+              <div class="summary-box-label">Total Deposits</div>
+              <div class="summary-box-value">₦${totalCredits.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</div>
+            </div>
+            <div class="summary-box debits">
+              <div class="summary-box-label">Total Withdrawals</div>
+              <div class="summary-box-value">₦${totalDebits.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</div>
+            </div>
+          </div>
+
+          <!-- Transactions Table -->
+          <h3 class="transactions-heading">Transaction History</h3>
           <table>
             <thead>
               <tr>
                 <th>Date</th>
                 <th>Type</th>
-                <th>Description</th>
                 <th style="text-align: right;">Amount</th>
                 <th style="text-align: right;">Balance</th>
-                <th>Reference</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
               ${transactionRows}
             </tbody>
           </table>
-        </div>
 
-        <div class="footer">
-          <p>This is an official statement from Nest Financial Services.</p>
-          <p>For security reasons, do not share this document with unauthorized persons.</p>
-          <div class="security-badge">
-            ✓ Secure & Encrypted
+          <!-- Footer Section -->
+          <div class="footer-section">
+            <div class="footer-content">
+              <div class="security-info">Secure & Encrypted</div>
+              <div style="text-align: right; font-size: 12px; color: #666;">
+                Generated: ${timestamp_time}
+              </div>
+            </div>
+            <div class="footer-disclaimer">
+              <p><strong>Disclaimer:</strong> This is an official statement from Nest Financial Services. For security reasons, do not share this document with unauthorized persons.</p>
+              <p>All transactions are processed in Nigerian Naira (₦) and may be subject to applicable fees and charges.</p>
+            </div>
+            <div class="copyright">
+              <p>© ${new Date().getFullYear()} Nest Financial Services. All rights reserved. | Confidential & Proprietary</p>
+            </div>
           </div>
-          <p style="margin-top: 24px; color: #ccc;">© ${new Date().getFullYear()} Nest Financial Services. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -266,16 +590,85 @@ export const formatStatementAsHTML = (transactions, user, balance) => {
 };
 
 export const downloadPDF = async (html, filename = 'bank_statement.pdf') => {
-  // This function requires a PDF library like jsPDF or html2pdf
-  // For now, we'll create a print-friendly version
-  const printWindow = window.open('', '', 'width=1200,height=800');
-  if (printWindow) {
-    printWindow.document.write(html);
-    printWindow.document.close();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 250);
+  try {
+    const { jsPDF } = await import('jspdf');
+    const html2canvas = (await import('html2canvas')).default;
+
+    // Create a container element
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    
+    // Style it for rendering
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.width = '210mm';
+    container.style.height = 'auto';
+    container.style.visibility = 'visible';
+    container.style.opacity = '1';
+    container.style.zIndex = '-9999';
+    container.style.backgroundColor = '#ffffff';
+    container.style.padding = '0';
+    container.style.margin = '0';
+    
+    document.body.appendChild(container);
+
+    // Wait for all content to render
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Get all elements and ensure they're visible
+    const allElements = container.querySelectorAll('*');
+    allElements.forEach(el => {
+      el.style.display = el.style.display || 'block';
+      el.style.visibility = el.style.visibility || 'visible';
+      el.style.opacity = el.style.opacity || '1';
+    });
+
+    // Convert to canvas with high quality
+    const canvas = await html2canvas(container, {
+      allowTaint: true,
+      useCORS: true,
+      scale: 2,
+      backgroundColor: '#ffffff',
+      logging: false,
+      windowHeight: container.scrollHeight,
+    });
+
+    // Calculate PDF dimensions
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgData = canvas.toDataURL('image/png');
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // Add image to PDF, handling multiple pages
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    // Save the PDF
+    pdf.save(filename);
+
+    // Clean up
+    document.body.removeChild(container);
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    alert('Error generating PDF: ' + error.message);
   }
 };
 

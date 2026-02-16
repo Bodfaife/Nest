@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { ChevronLeft, FileText, Calendar, Download } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
-import { formatStatementAsCSV, formatStatementAsHTML, downloadCSV, openStatementPreview } from '../helpers/statementFormatter';
+import { formatStatementAsCSV, formatStatementAsHTML, downloadCSV, downloadPDF } from '../helpers/statementFormatter';
 
-const DownloadStatementScreen = ({ transactions = [], onBack, darkMode = false }) => {
+const DownloadStatementScreen = ({ transactions = [], onBack, darkMode = false, user = {} }) => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [statementFormat, setStatementFormat] = useState('pdf'); // pdf | csv
@@ -35,7 +35,7 @@ const DownloadStatementScreen = ({ transactions = [], onBack, darkMode = false }
   // Calculate summary
   const summary = filteredTransactions.reduce(
     (acc, tx) => {
-      if (tx.type === 'save' || tx.type === 'topup') {
+      if (tx.type === 'save' || tx.type === 'topup' || tx.type === 'deposit') {
         acc.deposits += tx.amount;
       } else {
         acc.withdrawals += tx.amount;
@@ -46,16 +46,24 @@ const DownloadStatementScreen = ({ transactions = [], onBack, darkMode = false }
     { deposits: 0, withdrawals: 0, count: 0 }
   );
 
+  // Get current balance (last transaction's balance or 0)
+  const currentBalance = filteredTransactions.length > 0 
+    ? filteredTransactions[filteredTransactions.length - 1].balanceAfter || 0
+    : 0;
+
   const handleDownload = () => {
     if (statementFormat === 'pdf') {
-      openStatementPreview(filteredTransactions, startDate, endDate);
+      const html = formatStatementAsHTML(filteredTransactions, user, currentBalance);
+      downloadPDF(html, `statement_${startDate}_to_${endDate}.pdf`);
     } else {
-      downloadCSV(formatStatementAsCSV(filteredTransactions, startDate, endDate), startDate, endDate);
+      const csv = formatStatementAsCSV(filteredTransactions, user, currentBalance);
+      downloadCSV(csv, `statement_${startDate}_to_${endDate}.csv`);
     }
   };
 
   const handlePreview = () => {
-    openStatementPreview(filteredTransactions, startDate, endDate);
+    const html = formatStatementAsHTML(filteredTransactions, user, currentBalance);
+    openStatementPreview(html);
   };
 
   const isValidDate = startDate && endDate && new Date(startDate) <= new Date(endDate);

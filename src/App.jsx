@@ -152,6 +152,7 @@ function App() {
 
   // ===== Navigation Context =====
   const [openedFrom, setOpenedFrom] = useState(null);
+  const [returnToProfileSubScreen, setReturnToProfileSubScreen] = useState(null); // null | 'SavedCards' | 'SavedAccounts'
   const [bankTransferStep, setBankTransferStep] = useState(null);
 
   // ===== Signup OTP State =====
@@ -195,6 +196,8 @@ function App() {
 
   // ===== Navigation Helpers =====
   const openScreen = (screen, data = null, fromScreen = null) => {
+    const previousScreen = fromScreen || currentScreen;
+    
     if (screen === "Notifications") {
       setProfileSection("notifications");
       return;
@@ -216,25 +219,34 @@ function App() {
       return;
     }
     if (screen === "TransactionHistory") {
-      setOpenedFrom(fromScreen || currentScreen);
+      setOpenedFrom(previousScreen);
       setCurrentScreen("TransactionHistory");
       return;
     }
     if (screen === "DownloadStatement") {
-      setOpenedFrom(fromScreen || currentScreen);
+      setOpenedFrom(previousScreen);
       setCurrentScreen("DownloadStatement");
       return;
     }
     if (screen === "Deposit") {
+      setOpenedFrom(previousScreen);
       setDepositMode(hasActiveSavings ? "topup" : "start");
       setCurrentScreen("Deposit");
       return;
     }
-    if (screen === "TransactionReceipt") {
-      setSelectedTransaction(data);
-    } else {
-      setSelectedTransaction(null);
+    if (screen === "AddBankAccount") {
+      setOpenedFrom(previousScreen);
+      setCurrentScreen("AddBankAccount");
+      return;
     }
+    if (screen === "TransactionReceipt") {
+      setOpenedFrom(previousScreen);
+      setSelectedTransaction(data);
+      setCurrentScreen("TransactionReceipt");
+      return;
+    }
+    // Default: set openedFrom for all other screens
+    setOpenedFrom(previousScreen);
     setCurrentScreen(screen);
   };
 
@@ -249,6 +261,23 @@ function App() {
   };
 
   const handleBack = () => {
+    // If we came from a profile sub-screen, return to it
+    if (returnToProfileSubScreen === "SavedCards") {
+      setCurrentScreen("Main");
+      setShowSavedCards(true);
+      setReturnToProfileSubScreen(null);
+      setOpenedFrom(null);
+      return;
+    }
+    if (returnToProfileSubScreen === "SavedAccounts") {
+      setCurrentScreen("Main");
+      setShowSavedAccounts(true);
+      setReturnToProfileSubScreen(null);
+      setOpenedFrom(null);
+      return;
+    }
+    
+    // Otherwise, use normal openedFrom navigation
     if (openedFrom && openedFrom !== "Main") {
       setCurrentScreen(openedFrom);
       setOpenedFrom(null);
@@ -344,6 +373,18 @@ function App() {
       newBalance = Math.max(0, balance - amount);
       if (savingsBalance >= amount) {
         newSavingsBalance = Math.max(0, savingsBalance - amount);
+        
+        // If all savings have been withdrawn, reset the savings plan
+        if (newSavingsBalance === 0) {
+          setUser(prev => ({
+            ...prev,
+            savingsPlan: null
+          }));
+          setSavingsPlanData(null);
+          localStorage.removeItem("savingsPlanData");
+          localStorage.removeItem("savedBioForm");
+          localStorage.removeItem("savedSavingsForm");
+        }
       } else {
         newSavingsBalance = savingsBalance;
       }
@@ -397,8 +438,14 @@ function App() {
                 }
               }
             }}
-            onNavigateToSignUp={() => setCurrentScreen("SignUp")}
-            onNavigateToForgotPassword={() => setCurrentScreen("ForgotPassword")}
+            onNavigateToSignUp={() => {
+              setOpenedFrom("SignIn");
+              setCurrentScreen("SignUp");
+            }}
+            onNavigateToForgotPassword={() => {
+              setOpenedFrom("SignIn");
+              setCurrentScreen("ForgotPassword");
+            }}
           />
         )}
 
@@ -416,9 +463,13 @@ function App() {
               };
               setUser(userObj);
               localStorage.setItem("user", JSON.stringify(userObj));
+              setOpenedFrom("SignUp");
               setCurrentScreen("OTPVerification");
             }}
-            onNavigateToSignIn={() => setCurrentScreen("SignIn")}
+            onNavigateToSignIn={() => {
+              setOpenedFrom("SignUp");
+              setCurrentScreen("SignIn");
+            }}
           />
         )}
 
@@ -426,8 +477,14 @@ function App() {
           <OTPVerificationScreen
             darkMode={darkMode}
             email={signupEmail}
-            onBack={() => setCurrentScreen("SignUp")}
-            onVerify={() => setCurrentScreen("RecoveryPhrase")}
+            onBack={() => {
+              setOpenedFrom("OTPVerification");
+              setCurrentScreen("SignUp");
+            }}
+            onVerify={() => {
+              setOpenedFrom("OTPVerification");
+              setCurrentScreen("RecoveryPhrase");
+            }}
             onResendOTP={() => console.log("OTP resent to", signupEmail)}
           />
         )}
@@ -464,6 +521,7 @@ function App() {
           <CreateSavingsFormSavingsScreen 
             onSubmit={(formData) => {
               setSavingsPlanData(formData);
+              setOpenedFrom("CreateSavingsDetails");
               setCurrentScreen("Deposit");
             }} 
           />
@@ -473,8 +531,14 @@ function App() {
         {currentScreen === "ForgotPassword" && (
           <ForgotPasswordScreen
             darkMode={darkMode}
-            onBack={() => setCurrentScreen("SignIn")}
-            onVerifyEmail={() => setCurrentScreen("RecoveryPhraseVerification")}
+            onBack={() => {
+              setOpenedFrom("ForgotPassword");
+              setCurrentScreen("SignIn");
+            }}
+            onVerifyEmail={() => {
+              setOpenedFrom("ForgotPassword");
+              setCurrentScreen("RecoveryPhraseVerification");
+            }}
           />
         )}
 
@@ -482,19 +546,29 @@ function App() {
           <RecoveryPhraseVerificationScreen
             darkMode={darkMode}
             recoveryPhrases={user?.recoveryPhrase || []}
-            onBack={() => setCurrentScreen("ForgotPassword")}
-            onVerified={() => setCurrentScreen("CreateNewPassword")}
+            onBack={() => {
+              setOpenedFrom("RecoveryPhraseVerification");
+              setCurrentScreen("ForgotPassword");
+            }}
+            onVerified={() => {
+              setOpenedFrom("RecoveryPhraseVerification");
+              setCurrentScreen("CreateNewPassword");
+            }}
           />
         )}
 
         {currentScreen === "CreateNewPassword" && (
           <CreateNewPasswordScreen
             darkMode={darkMode}
-            onBack={() => setCurrentScreen("RecoveryPhraseVerification")}
+            onBack={() => {
+              setOpenedFrom("CreateNewPassword");
+              setCurrentScreen("RecoveryPhraseVerification");
+            }}
             onPasswordCreated={(newPassword) => {
               const updatedUser = { ...user, password: newPassword };
               setUser(updatedUser);
               localStorage.setItem("user", JSON.stringify(updatedUser));
+              setOpenedFrom("CreateNewPassword");
               setCurrentScreen("PasswordResetSuccess");
             }}
           />
@@ -504,6 +578,7 @@ function App() {
           <PasswordResetSuccessScreen
             darkMode={darkMode}
             onContinueToLogin={() => {
+              setOpenedFrom("PasswordResetSuccess");
               setCurrentScreen("SignIn");
               setUser(null);
               localStorage.removeItem("user");
@@ -514,11 +589,15 @@ function App() {
         {currentScreen === "ResetPassword" && (
           <ResetPasswordScreen
             darkMode={darkMode}
-            onBack={() => setCurrentScreen("RecoveryPhraseVerification")}
+            onBack={() => {
+              setOpenedFrom("ResetPassword");
+              setCurrentScreen("RecoveryPhraseVerification");
+            }}
             onResetComplete={(newPassword) => {
               const updatedUser = { ...user, password: newPassword };
               setUser(updatedUser);
               localStorage.setItem("user", JSON.stringify(updatedUser));
+              setOpenedFrom("ResetPassword");
               setCurrentScreen("PasswordResetSuccess");
             }}
           />
@@ -529,7 +608,10 @@ function App() {
             darkMode={darkMode}
             userEmail={user?.email || ""}
             userPhone={user?.phone || ""}
-            onBack={() => setCurrentScreen("Pin")}
+            onBack={() => {
+              setOpenedFrom("ForgotTransactionPin");
+              setCurrentScreen("Pin");
+            }}
             onPinReset={(newPin) => {
               // Save PIN to localStorage
               localStorage.setItem("userPin", newPin);
@@ -654,7 +736,10 @@ function App() {
                 darkMode={darkMode}
                 cards={bankCards}
                 onBack={() => setShowSavedCards(false)}
-                onAddCard={() => openScreen("AddPaymentSource")}
+                onAddCard={() => {
+                  setReturnToProfileSubScreen("SavedCards");
+                  openScreen("AddPaymentSource");
+                }}
                 onDeleteCard={(cardIdx) => {
                   setBankCards(prev => prev.filter((_, idx) => idx !== cardIdx));
                 }}
@@ -666,7 +751,10 @@ function App() {
                 darkMode={darkMode}
                 accounts={bankAccounts}
                 onBack={() => setShowSavedAccounts(false)}
-                onAddAccount={() => openScreen("AddBankAccount")}
+                onAddAccount={() => {
+                  setReturnToProfileSubScreen("SavedAccounts");
+                  openScreen("AddBankAccount");
+                }}
                 onDeleteAccount={(accountIdx) => {
                   setBankAccounts(prev => prev.filter((_, idx) => idx !== accountIdx));
                 }}
@@ -763,7 +851,10 @@ function App() {
             darkMode={darkMode}
             onBack={handleBack}
             onSuccess={handlePinSuccess}
-            onForgotPin={() => setCurrentScreen("ForgotTransactionPin")}
+            onForgotPin={() => {
+              setOpenedFrom("Pin");
+              setCurrentScreen("ForgotTransactionPin");
+            }}
           />
         )}
 
@@ -845,8 +936,8 @@ function App() {
           <TransactionReceiptScreen
             transaction={selectedTransaction}
             darkMode={darkMode}
-            onBack={() => setCurrentScreen("TransactionHistory")}
-            onDone={() => setCurrentScreen("TransactionHistory")}
+            onBack={handleBack}
+            onDone={handleBack}
             onShare={(tx) => {
               const url = window.location.origin + "/receipt.html?data=" + encodeURIComponent(JSON.stringify(tx));
               window.open(url, "_blank");
@@ -865,11 +956,12 @@ function App() {
             openScreen={openScreen}
             onSelectTransaction={(tx) => {
               setSelectedTransaction(tx);
+              setOpenedFrom("TransactionHistory");
               setCurrentScreen("TransactionReceipt");
             }}
-            onBack={handleBackFromContextScreen}
+            onBack={handleBack}
             onDownloadStatement={() => {
-              setOpenedFrom(currentScreen);
+              setOpenedFrom("TransactionHistory");
               setCurrentScreen("DownloadStatement");
             }}
           />
@@ -879,7 +971,7 @@ function App() {
           <DownloadStatementScreen
             transactions={transactions}
             darkMode={darkMode}
-            onBack={handleBackFromContextScreen}
+            onBack={handleBack}
           />
         )}
 
@@ -907,7 +999,17 @@ function App() {
               <AddPaymentSourceScreen
                 user={user}
                 darkMode={darkMode}
-                onBack={handleBack}
+                onBack={() => {
+                  // If we came from SavedCards, return there
+                  if (returnToProfileSubScreen === "SavedCards") {
+                    setCurrentScreen("Main");
+                    setShowSavedCards(true);
+                    setReturnToProfileSubScreen(null);
+                    setOpenedFrom(null);
+                  } else {
+                    handleBack();
+                  }
+                }}
                 onSave={(card) => {
                   setCardBeingLinked(card);
                   setCardLinkingStep("verify");
@@ -922,6 +1024,7 @@ function App() {
                 onBack={() => {
                   setCardBeingLinked(null);
                   setCardLinkingStep("add");
+                  // returnToProfileSubScreen state is preserved automatically
                 }}
                 onVerified={(verifiedCard) => {
                   setCardBeingLinked(verifiedCard);
@@ -937,13 +1040,28 @@ function App() {
                 onBack={() => {
                   setCardBeingLinked(null);
                   setCardLinkingStep("add");
-                  goHome();
+                  // If we came from SavedCards, return there
+                  if (returnToProfileSubScreen === "SavedCards") {
+                    setCurrentScreen("Main");
+                    setShowSavedCards(true);
+                    setReturnToProfileSubScreen(null);
+                    setOpenedFrom(null);
+                  } else {
+                    goHome();
+                  }
                 }}
                 onConfirm={(savedCard) => {
                   setBankCards((prev) => [...prev, savedCard]);
                   setCardBeingLinked(null);
                   setCardLinkingStep("add");
-                  setCurrentScreen("Deposit");
+                  // If we came from SavedCards, return there; otherwise go to Deposit
+                  if (returnToProfileSubScreen === "SavedCards") {
+                    setShowSavedCards(true);
+                    setReturnToProfileSubScreen(null);
+                    setCurrentScreen("Main");
+                  } else {
+                    setCurrentScreen("Deposit");
+                  }
                 }}
               />
             )}
@@ -958,6 +1076,7 @@ function App() {
             onAddAccount={(accountData) => {
               setNewBankAccountData(accountData);
               setBankAccounts((prev) => [...prev, { id: Date.now().toString(), ...accountData }]);
+              setOpenedFrom("AddBankAccount");
               setCurrentScreen("BankAccountSuccess");
             }}
           />
@@ -970,6 +1089,7 @@ function App() {
             onContinue={() => {
               setNewBankAccountData(null);
               setShowSavedAccounts(true);
+              setOpenedFrom("BankAccountSuccess");
               setCurrentScreen("Main");
             }}
           />

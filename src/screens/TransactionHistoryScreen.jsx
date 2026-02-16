@@ -27,7 +27,7 @@ export default function TransactionHistoryScreen({ transactions = [], onBack, op
           <button onClick={onBack} className="p-1 hover:bg-gray-100 rounded-full">
             <ChevronLeft size={24} />
           </button>
-          <h1 className="text-xl font-bold">Activities</h1>
+          <h1 className="text-xl font-bold">History</h1>
           <button onClick={onDownloadStatement} className="ml-auto p-2 hover:bg-gray-100 rounded-xl transition-colors">
             <Download size={20} />
           </button>
