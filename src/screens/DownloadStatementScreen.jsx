@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ChevronLeft, FileText, Calendar, Download } from 'lucide-react';
+import { ChevronLeft, Calendar, Download } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
-import { formatStatementAsCSV, formatStatementAsHTML, downloadCSV, downloadPDF } from '../helpers/statementFormatter';
+import { formatStatementAsCSV, formatStatementAsHTML, downloadCSV, openStatementPreview } from '../helpers/statementFormatter';
 
 const DownloadStatementScreen = ({ transactions = [], onBack, darkMode = false, user = {} }) => {
   const [startDate, setStartDate] = useState('');
@@ -51,20 +51,18 @@ const DownloadStatementScreen = ({ transactions = [], onBack, darkMode = false, 
     ? filteredTransactions[filteredTransactions.length - 1].balanceAfter || 0
     : 0;
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (statementFormat === 'pdf') {
       const html = formatStatementAsHTML(filteredTransactions, user, currentBalance);
-      downloadPDF(html, `statement_${startDate}_to_${endDate}.pdf`);
+      // open preview in browser tab (preview contains its own Download button)
+      openStatementPreview(html);
     } else {
       const csv = formatStatementAsCSV(filteredTransactions, user, currentBalance);
       downloadCSV(csv, `statement_${startDate}_to_${endDate}.csv`);
     }
   };
 
-  const handlePreview = () => {
-    const html = formatStatementAsHTML(filteredTransactions, user, currentBalance);
-    openStatementPreview(html);
-  };
+  
 
   const isValidDate = startDate && endDate && new Date(startDate) <= new Date(endDate);
 
@@ -159,7 +157,7 @@ const DownloadStatementScreen = ({ transactions = [], onBack, darkMode = false, 
         {/* Info */}
         <div className={`p-4 rounded-2xl ${cardBg}`}>
           <p className={`text-xs ${textSecondary}`}>
-            Your statement will be generated and downloaded automatically. You can view and manage your downloaded files in your device's Downloads folder.
+            If you choose PDF the statement will open in a new browser tab for preview; use your browser's Save/Print to save as PDF. CSV will download directly.
           </p>
         </div>
       </div>
@@ -178,7 +176,7 @@ const DownloadStatementScreen = ({ transactions = [], onBack, darkMode = false, 
           }`}
         >
           <Download size={20} />
-          Download Statement
+          {statementFormat === 'pdf' ? 'Download PDF' : 'Download CSV'}
         </button>
       </div>
     </div>

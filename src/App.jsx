@@ -972,6 +972,7 @@ function App() {
             transactions={transactions}
             darkMode={darkMode}
             onBack={handleBack}
+            user={user}
           />
         )}
 

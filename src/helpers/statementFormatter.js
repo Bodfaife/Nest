@@ -78,6 +78,9 @@ export const formatStatementAsHTML = (transactions, user, balance) => {
     `;
   }).join('');
 
+  // Pre-generate CSV content so preview page can offer CSV download client-side
+  const csvData = formatStatementAsCSV(transactions, user, balance);
+
   const html = `
     <!DOCTYPE html>
     <html lang="en">
@@ -107,7 +110,8 @@ export const formatStatementAsHTML = (transactions, user, balance) => {
           background: white;
           box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
           position: relative;
-          overflow: hidden;
+          overflow-x: auto;
+          overflow-y: hidden;
         }
 
         .watermark {
@@ -124,7 +128,7 @@ export const formatStatementAsHTML = (transactions, user, balance) => {
         }
 
         .content {
-          padding: 40px 50px;
+          padding: 30px 20px;
           position: relative;
           z-index: 1;
           height: 100%;
@@ -150,15 +154,20 @@ export const formatStatementAsHTML = (transactions, user, balance) => {
         .logo {
           width: 60px;
           height: 60px;
-          background: linear-gradient(135deg, #00875A 0%, #006d49 100%);
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: white;
-          font-weight: 800;
-          font-size: 32px;
+          overflow: hidden;
           box-shadow: 0 4px 15px rgba(0, 135, 90, 0.2);
+          background: transparent;
+        }
+
+        .logo-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
         }
 
         .company-info h1 {
@@ -334,11 +343,11 @@ export const formatStatementAsHTML = (transactions, user, balance) => {
         .date-cell {
           font-weight: 500;
           color: #666;
-          width: 20%;
+          width: 12%;
         }
 
         .type-cell {
-          width: 20%;
+          width: 12%;
         }
 
         .type-badge {
@@ -358,6 +367,11 @@ export const formatStatementAsHTML = (transactions, user, balance) => {
           color: #c0392b;
         }
 
+        .amount-cell {
+          width: 36%;
+          text-align: right;
+        }
+
         .amount-cell.credit {
           color: #00875A;
         }
@@ -370,11 +384,18 @@ export const formatStatementAsHTML = (transactions, user, balance) => {
           text-align: right;
           color: #666;
           font-weight: 600;
-          width: 20%;
+          width: 15%;
         }
 
         .status-cell {
-          width: 20%;
+          width: 15%;
+          min-width: 120px;
+          padding-left: 8px;
+          overflow: visible;
+        }
+
+        .status-badge {
+          white-space: nowrap;
         }
 
         .status-badge {
@@ -500,13 +521,17 @@ export const formatStatementAsHTML = (transactions, user, balance) => {
       </style>
     </head>
     <body>
+      <div class="preview-toolbar" style="position:fixed;top:12px;right:12px;z-index:9999;display:flex;gap:8px;">
+        <button id="download-pdf-btn" style="background:#00875A;color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;">Download PDF</button>
+        <button id="download-csv-btn" style="background:#fff;color:#00875A;border:2px solid #00875A;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;">Download CSV</button>
+      </div>
       <div class="page-wrapper">
         <div class="watermark">NEST</div>
         <div class="content">
           <!-- Header Section -->
           <div class="header-section">
             <div class="logo-company">
-              <div class="logo">🏦</div>
+              <div class="logo"><img src="/Nest logo.png" alt="Nest Logo" class="logo-img" /></div>
               <div class="company-info">
                 <h1>Nest.</h1>
                 <p>Financial Services</p>
@@ -582,12 +607,14 @@ export const formatStatementAsHTML = (transactions, user, balance) => {
           </div>
         </div>
       </div>
+      <script>window.__NEST_STATEMENT_CSV = ${JSON.stringify(csvData)};</script>
     </body>
     </html>
   `;
 
   return html;
 };
+
 
 export const downloadPDF = async (html, filename = 'bank_statement.pdf') => {
   try {
@@ -673,9 +700,83 @@ export const downloadPDF = async (html, filename = 'bank_statement.pdf') => {
 };
 
 export const openStatementPreview = (html) => {
-  const previewWindow = window.open('', 'statement_preview', 'width=1200,height=800');
+  // Open in a new tab so the preview uses full device width
+  const previewWindow = window.open('', '_blank');
   if (previewWindow) {
-    previewWindow.document.write(html);
+    // Inject client-side scripts for PDF / CSV download into the preview HTML
+    const enhanced = html.replace('</body>', `
+      <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+      <script>
+            (function(){
+              const csvContent = window.__NEST_STATEMENT_CSV || '';
+          const pdfBtn = document.getElementById('download-pdf-btn');
+          const csvBtn = document.getElementById('download-csv-btn');
+
+          if (pdfBtn) {
+            pdfBtn.addEventListener('click', async function(){
+              pdfBtn.disabled = true;
+              const originalText = pdfBtn.innerText;
+              pdfBtn.innerText = 'Generating PDF...';
+              try {
+                const wrapper = document.querySelector('.page-wrapper');
+                const canvas = await html2canvas(wrapper, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                while (heightLeft > 0) {
+                  position = heightLeft - imgHeight;
+                  pdf.addPage();
+                  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                  heightLeft -= pageHeight;
+                }
+                pdf.save('statement.pdf');
+              } catch (e) {
+                alert('PDF generation failed: ' + (e && e.message ? e.message : e));
+              } finally {
+                pdfBtn.disabled = false;
+                pdfBtn.innerText = originalText;
+              }
+            });
+          }
+
+          if (csvBtn) {
+            csvBtn.addEventListener('click', function(){
+              try {
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'statement.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch (e) {
+                alert('CSV download failed: ' + e.message);
+              }
+            });
+          }
+
+          // Native horizontal scroll is enabled via overflow-x: auto on page-wrapper
+        })();
+      </script>
+    </body>`);
+
+    previewWindow.document.write(enhanced);
     previewWindow.document.close();
+    try {
+      // Attempt to maximize the new window (may be blocked by browser)
+      previewWindow.moveTo(0, 0);
+      previewWindow.resizeTo(screen.availWidth, screen.availHeight);
+    } catch (e) {
+      // ignore if browser blocks resize
+    }
   }
 };
