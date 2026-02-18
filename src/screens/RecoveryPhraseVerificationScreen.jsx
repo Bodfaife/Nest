@@ -20,19 +20,16 @@ export default function RecoveryPhraseVerificationScreen({
 
   const handleVerify = () => {
     // Check if all phrases are entered
-    if (enteredPhrases.some(p => !p.trim())) {
+    if (enteredPhrases.some(p => p === undefined || p === null || p.length === 0)) {
       setError('Please enter all recovery phrases');
       return;
     }
 
-    // Verify phrases match exactly (case-insensitive, trimmed)
-    const enteredLower = enteredPhrases.map(p => p.trim().toLowerCase());
-    const originalLower = recoveryPhrases.map(p => p.toLowerCase());
-
-    const phrasesMatch = enteredLower.every((phrase, index) => phrase === originalLower[index]);
+    // Verify phrases match exactly (case-sensitive, word-for-word)
+    const phrasesMatch = enteredPhrases.every((p, index) => p.trim() === recoveryPhrases[index]);
 
     if (!phrasesMatch) {
-      setError('Recovery phrases do not match. Please check your entries and try again.');
+      setError('Recovery phrases do not match. Ensure spelling and capitalization are exact.');
       return;
     }
 
@@ -40,10 +37,11 @@ export default function RecoveryPhraseVerificationScreen({
     setIsVerifying(true);
     setTimeout(() => {
       onVerified();
-    }, 1500);
+    }, 800);
   };
 
-  const allFilled = enteredPhrases.every(p => p.trim().length > 0);
+  const allFilled = enteredPhrases.every(p => p && p.trim().length > 0);
+  const exactMatch = recoveryPhrases.length > 0 && enteredPhrases.every((p, i) => p.trim() === recoveryPhrases[i]);
   const bgClass = darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
   const inputClass = darkMode
     ? 'bg-gray-800 text-white border border-gray-700'
@@ -93,12 +91,49 @@ export default function RecoveryPhraseVerificationScreen({
               </p>
             </div>
 
-            {/* Verify Button - Positioned after info box */}
+            
+
+            {exactMatch && (
+              <div className="mb-4 flex items-center gap-2 text-emerald-600">
+                <CheckCircle size={16} />
+                <span className="text-sm font-semibold">All phrases match exactly.</span>
+              </div>
+            )}
+
+            {/* Recovery Phrases Input Section */}
+            <div className="mb-8">
+              <label className={`block text-sm font-bold mb-4 ${labelClass}`}>
+                Enter Your Recovery Phrases
+              </label>
+
+              {/* Pasteable rectangle for full phrase */}
+              <div className={`p-4 rounded-xl mb-4 border ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'}`}>
+                <p className={`text-xs mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  Paste your full recovery phrase (space-separated) or type the words below.
+                </p>
+                <textarea
+                  placeholder="e.g. word1 word2 word3 ..."
+                  className={`w-full p-3 rounded-md resize-none h-20 outline-none ${inputClass}`}
+                  onChange={(e) => {
+                    const raw = e.target.value || '';
+                    const parts = raw.trim().split(/\s+/).filter(Boolean);
+                    if (parts.length >= recoveryPhrases.length) {
+                      const newP = Array(recoveryPhrases.length).fill('');
+                      for (let i = 0; i < recoveryPhrases.length; i++) newP[i] = parts[i] || '';
+                      setEnteredPhrases(newP);
+                      setError('');
+                    }
+                    // allow partial paste/typing without overwriting when insufficient words
+                  }}
+                />
+              </div>
+
+              {/* Verify Button - Positioned after info box */}
             <button
               onClick={handleVerify}
-              disabled={!allFilled}
+              disabled={!exactMatch}
               className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all mb-8 ${
-                allFilled
+                exactMatch
                   ? 'bg-[#00875A] shadow-emerald-100 active:scale-[0.98]'
                   : 'bg-gray-400 cursor-not-allowed'
               }`}
@@ -106,11 +141,6 @@ export default function RecoveryPhraseVerificationScreen({
               Verify Phrases
             </button>
 
-            {/* Recovery Phrases Input Section */}
-            <div className="mb-8">
-              <label className={`block text-sm font-bold mb-4 ${labelClass}`}>
-                Enter Your Recovery Phrases
-              </label>
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {recoveryPhrases.map((_, index) => (
                   <div key={index} className="flex items-center gap-3">

@@ -8,6 +8,7 @@ import SignUpScreen from "./screens/SignUpScreen";
 import OTPVerificationScreen from "./screens/OTPVerificationScreen";
 import RecoveryPhraseScreen from "./screens/RecoveryPhraseScreen";
 import RegistrationSplashScreen from "./screens/RegistrationSplashScreen";
+import CreateTransactionPinScreen from "./screens/CreateTransactionPinScreen";
 import CreateSavingsPromptScreen from "./screens/CreateSavingsPromptScreen";
 import CreateSavingsFormBioScreen from "./screens/CreateSavingsFormBioScreen";
 import CreateSavingsFormSavingsScreen from "./screens/CreateSavingsFormSavingsScreen";
@@ -69,6 +70,7 @@ import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 import NestTransactionReceiptPDF from "./screens/NestTransactionReceiptPDF";
 import { generateReference } from "./helpers/reference";
 import { generateRecoveryPhrase } from "./helpers/generateRecoveryPhrase";
+import { useRef } from "react";
 
 function App() {
   // ===== Core Navigation State =====
@@ -79,7 +81,11 @@ function App() {
   // ===== User & Authentication =====
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
+    const parsed = saved ? JSON.parse(saved) : null;
+    if (parsed) {
+      console.log("📱 App init: Found saved user account with", parsed.email ? "email" : "phone", parsed.email || parsed.phone);
+    }
+    return parsed;
   });
 
   // ===== Balance & Transactions =====
@@ -117,6 +123,8 @@ function App() {
     const accounts = localStorage.getItem("bankAccounts");
     return accounts ? JSON.parse(accounts) : [];
   });
+  const [swRegistration, setSwRegistration] = useState(null);
+  const reminderTimerRef = useRef(null);
 
   // ===== Savings & Subscription State =====
   const [savingsPlanData, setSavingsPlanData] = useState(null);
@@ -161,13 +169,132 @@ function App() {
 
   // ===== Persistence =====
   useEffect(() => {
+    // Register service worker to enable notifications where possible
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(reg => {
+        setSwRegistration(reg);
+      }).catch(() => {});
+    }
+
+    // On app load, schedule any pending savings reminder saved previously
+    const nextTop = localStorage.getItem('nextTopup');
+    if (nextTop) {
+      try {
+        const ts = parseInt(nextTop, 10);
+        schedulePendingReminder(ts);
+      } catch (e) {}
+    }
     const u = localStorage.getItem("user");
+    if (u) {
+      const parsed = JSON.parse(u);
+      setUser(parsed);
+    }
     const savingsFlowScreenSaved = localStorage.getItem("savingsFlowScreen");
     const savingsPlanDataSaved = localStorage.getItem("savingsPlanData");
-    if (u) setUser(JSON.parse(u));
     if (savingsFlowScreenSaved) setSavingsFlowScreen(savingsFlowScreenSaved);
     if (savingsPlanDataSaved) setSavingsPlanData(JSON.parse(savingsPlanDataSaved));
   }, []);
+
+  useEffect(() => {
+    // Log on user login/logout
+    if (user) {
+      console.log("👤 User authenticated:", user.email || user.phone);
+    } else {
+      console.log("👤 User logged out or not authenticated");
+    }
+  }, [user]);
+
+  // Expose a test function to window for debugging
+  React.useEffect(() => {
+    window.debugLocalStorage = () => {
+      console.log("🔍 === LOCALSTORAGE DEBUG ===");
+      const user = localStorage.getItem("user");
+      console.log("user:", user ? JSON.parse(user) : null);
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+        if (key !== "user") {
+          console.log(`${key}:`, value?.substring(0, 100) + (value?.length > 100 ? "..." : ""));
+        }
+      }
+      console.log("🔍 === END DEBUG ===");
+    };
+    console.log("💡 Tip: Run window.debugLocalStorage() in console to see all localStorage data");
+  }, []);
+
+  useEffect(() => {
+    // Clean up reminder timer on unmount
+    return () => {
+      if (reminderTimerRef.current) clearTimeout(reminderTimerRef.current);
+    };
+  }, []);
+
+  // Redirect to add payment source/account when missing before confirmation
+  useEffect(() => {
+    if (currentScreen === 'ConfirmPayment' && pendingPayment) {
+      if (pendingPayment.paymentMethod === 'card' && !pendingPayment.selectedCard) {
+        setOpenedFrom('ConfirmPayment');
+        setCurrentScreen('AddPaymentSource');
+      } else if (pendingPayment.paymentMethod === 'bank' && !pendingPayment.selectedAccount) {
+        setOpenedFrom('ConfirmPayment');
+        setCurrentScreen('AddBankAccount');
+      }
+    }
+  }, [currentScreen, pendingPayment]);
+
+  const showNotification = async (title, body) => {
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'granted') {
+      try { await Notification.requestPermission(); } catch (e) { return; }
+    }
+    if (Notification.permission !== 'granted') return;
+
+    if (swRegistration && swRegistration.showNotification) {
+      try {
+        swRegistration.showNotification(title, { body });
+        return;
+      } catch (e) {}
+    }
+
+    // Fallback to page Notification
+    try { new Notification(title, { body }); } catch (e) {}
+  };
+
+  const MAX_TIMEOUT = 2147483647; // max setTimeout (~24.8 days)
+
+  const schedulePendingReminder = (timestamp) => {
+    const now = Date.now();
+    const ms = timestamp - now;
+    if (ms <= 0) {
+      // overdue - notify immediately and compute next
+      showNotification('Time to top up', 'It\'s time to top up your savings.');
+      // remove stored pending and let next schedule be set by subsequent saves
+      localStorage.removeItem('nextTopup');
+      return;
+    }
+
+    const delay = Math.min(ms, MAX_TIMEOUT);
+    if (reminderTimerRef.current) clearTimeout(reminderTimerRef.current);
+    reminderTimerRef.current = setTimeout(() => {
+      showNotification('Time to top up', 'It\'s time to top up your savings.');
+      localStorage.removeItem('nextTopup');
+    }, delay);
+  };
+
+  const scheduleSavingsReminder = (form) => {
+    if (!form || !form.reminder) return;
+    const now = new Date();
+    let next = new Date(now.getTime());
+    const freq = (form.frequency || '').toLowerCase();
+    if (freq === 'daily') next.setDate(next.getDate() + 1);
+    else if (freq === 'weekly') next.setDate(next.getDate() + 7);
+    else if (freq === 'monthly') next.setMonth(next.getMonth() + 1);
+    else next.setDate(next.getDate() + 1);
+
+    const ts = next.getTime();
+    localStorage.setItem('nextTopup', String(ts));
+    schedulePendingReminder(ts);
+  };
 
   useEffect(() => {
     if (user) localStorage.setItem("user", JSON.stringify(user));
@@ -299,8 +426,9 @@ function App() {
   };
 
   const handleLogout = () => {
+    // Just logout the session - keep all user data in localStorage
+    // All transactions, balance, cards, accounts, everything remains
     setUser(null);
-    localStorage.clear();
     setCurrentScreen("SignIn");
   };
 
@@ -360,6 +488,7 @@ function App() {
           },
         };
       });
+      try { scheduleSavingsReminder(pendingPayment); } catch (e) {}
       localStorage.removeItem("savedBioForm");
       localStorage.removeItem("savedSavingsForm");
       localStorage.removeItem("savingsPlanData");
@@ -452,17 +581,48 @@ function App() {
         {currentScreen === "SignUp" && (
           <SignUpScreen
             onSignUp={(u) => {
-              setSignupEmail(u.email);
+              // store whichever contact user provided (email or phone)
+              const contactValue = u.email || u.phone || '';
+              setSignupEmail(contactValue);
               const recoveryPhrase = generateRecoveryPhrase();
               const userObj = {
                 fullName: u.fullName,
-                email: u.email,
+                email: u.email || null,
+                phone: u.phone || null,
                 password: u.password,
                 savingsPlan: null,
                 recoveryPhrase,
               };
+              // Clear any seeded/demo data for a fresh account
+              localStorage.removeItem("transactions");
+              localStorage.removeItem("userPin");
+              localStorage.removeItem("lastTransaction");
+              localStorage.removeItem("bankCards");
+              localStorage.removeItem("bankAccounts");
+              // Clear seeded profile image if present
+              localStorage.removeItem("profilePicture");
+              setTransactions([]);
+              setBalance(0);
+              setSavingsBalance(0);
+              setBankCards([]);
+              setBankAccounts([]);
+              setProfilePicture(null);
+
               setUser(userObj);
-              localStorage.setItem("user", JSON.stringify(userObj));
+              const serialized = JSON.stringify(userObj);
+              localStorage.setItem("user", serialized);
+              
+              // Immediately verify localStorage persisted the data
+              const verifyRead = localStorage.getItem("user");
+              const canReadBack = verifyRead ? JSON.parse(verifyRead) : null;
+              console.log("✅ SignUp: User saved to localStorage");
+              console.log("   Email:", userObj.email || "(none)");
+              console.log("   Phone:", userObj.phone || "(none)");
+              console.log("🔐 Verification: Can read back?", canReadBack ? "YES ✓" : "NO ✗");
+              if (!canReadBack) {
+                console.error("⚠️ WARNING: localStorage.setItem appeared to fail or localStorage is unavailable!");
+              }
+              
               setOpenedFrom("SignUp");
               setCurrentScreen("OTPVerification");
             }}
@@ -492,7 +652,23 @@ function App() {
         {currentScreen === "RecoveryPhrase" && (
           <RecoveryPhraseScreen 
             phrases={user?.recoveryPhrase || []}
-            onContinue={() => setCurrentScreen("RegistrationSplash")} 
+            onContinue={() => setCurrentScreen("CreatePin")} 
+          />
+        )}
+
+        {currentScreen === "CreatePin" && (
+          <CreateTransactionPinScreen
+            darkMode={darkMode}
+            onBack={() => setCurrentScreen("RecoveryPhrase")}
+            onPinCreated={(newPin) => {
+              // Save PIN to localStorage and user object
+              localStorage.setItem("userPin", newPin);
+              const updatedUser = { ...user, transactionPin: newPin };
+              setUser(updatedUser);
+              localStorage.setItem("user", JSON.stringify(updatedUser));
+              // Continue to registration splash which shows account number
+              setCurrentScreen("RegistrationSplash");
+            }}
           />
         )}
 
@@ -510,6 +686,7 @@ function App() {
           <CreateSavingsPromptScreen 
             onCreate={() => setCurrentScreen("CreateSavingsBio")}
             onStart={() => setCurrentScreen("CreateSavingsBio")}
+            onSkip={() => goHome()}
           />
         )}
 
@@ -521,6 +698,8 @@ function App() {
           <CreateSavingsFormSavingsScreen 
             onSubmit={(formData) => {
               setSavingsPlanData(formData);
+              // schedule reminder if user asked for it
+              try { scheduleSavingsReminder(formData); } catch (e) {}
               setOpenedFrom("CreateSavingsDetails");
               setCurrentScreen("Deposit");
             }} 
@@ -531,6 +710,7 @@ function App() {
         {currentScreen === "ForgotPassword" && (
           <ForgotPasswordScreen
             darkMode={darkMode}
+            user={user}
             onBack={() => {
               setOpenedFrom("ForgotPassword");
               setCurrentScreen("SignIn");
@@ -581,7 +761,8 @@ function App() {
               setOpenedFrom("PasswordResetSuccess");
               setCurrentScreen("SignIn");
               setUser(null);
-              localStorage.removeItem("user");
+              // Keep user account data in localStorage so they can login with their new password
+              // Don't remove it - just clear the in-memory state
             }}
           />
         )}
@@ -712,8 +893,8 @@ function App() {
                 darkMode={darkMode}
                 onBack={() => setDangerZoneAction(null)}
                 onCloseAccount={() => {
+                  // Logout - keep all user data in localStorage
                   setUser(null);
-                  localStorage.clear();
                   setCurrentScreen("SignIn");
                   setProfileSection(null);
                   setDangerZoneAction(null);

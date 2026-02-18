@@ -16,7 +16,7 @@ export default function SignInScreen({ onSignIn, onNavigateToSignUp, onNavigateT
         </div>
 
         {/* Welcome Text */}
-        <h2 className="text-3xl font-black text-gray-900 mb-2">Welcome Back</h2>
+        <h2 className="text-3xl font-black text-gray-900 mb-2">Welcome.</h2>
         <p className="text-gray-400 mb-10 font-medium">Please sign in to your account.</p>
 
         {/* Inputs */}

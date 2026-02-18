@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronLeft, Mail, CheckCircle, AlertCircle, Loader } from "lucide-react";
+import { ChevronLeft, Mail, Phone, CheckCircle, AlertCircle, Loader } from "lucide-react";
 
 const OTPVerificationScreen = ({ 
   onBack, 
@@ -101,21 +101,22 @@ const OTPVerificationScreen = ({
         >
           <ChevronLeft size={24} />
         </button>
-        <h1 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Verify Your Email</h1>
+        <h1 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{email && email.includes('@') ? 'Verify Your Email' : 'Verify Your Phone'}</h1>
       </div>
 
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Icon */}
         <div className={`p-4 rounded-full mb-6 ${darkMode ? "bg-gray-800" : "bg-gray-100"}`}>
-          <Mail
-            size={32}
-            className={success ? successColor : darkMode ? "text-blue-400" : "text-blue-600"}
-          />
+          {email && email.includes('@') ? (
+            <Mail size={32} className={success ? successColor : darkMode ? "text-blue-400" : "text-blue-600"} />
+          ) : (
+            <Phone size={32} className={success ? successColor : darkMode ? "text-blue-400" : "text-blue-600"} />
+          )}
         </div>
 
         {/* Title */}
-        <h2 className="text-2xl font-bold text-center mb-3">Verify Your Email</h2>
+        <h2 className="text-2xl font-bold text-center mb-3">{email && email.includes('@') ? 'Verify Your Email' : 'Verify Your Phone'}</h2>
 
         {/* Subtitle */}
         <p className={`text-center mb-2 ${secondaryText}`}>
@@ -212,7 +213,7 @@ const OTPVerificationScreen = ({
       <div className={`fixed inset-0 pointer-events-none transition-all duration-300 ${
         showSuccessNotification ? 'opacity-100' : 'opacity-0'
       }`}>
-        <div className={`absolute bottom-20 left-6 right-6 p-4 rounded-2xl border shadow-2xl flex items-center gap-3 transform transition-all duration-500 ${
+            <div className={`absolute bottom-20 left-6 right-6 p-4 rounded-2xl border shadow-2xl flex items-center gap-3 transform transition-all duration-500 ${
           showSuccessNotification 
             ? 'translate-y-0 opacity-100 animate-in slide-in-from-bottom-4' 
             : 'translate-y-32 opacity-0'
@@ -226,10 +227,10 @@ const OTPVerificationScreen = ({
           </div>
           <div>
             <p className={`font-bold text-sm ${darkMode ? 'text-emerald-200' : 'text-emerald-900'}`}>
-              Email Verified!
+              {email && email.includes('@') ? 'Email Verified!' : 'Phone Number Verified!'}
             </p>
             <p className={`text-xs ${darkMode ? 'text-emerald-100/70' : 'text-emerald-700/70'}`}>
-              Your email has been confirmed..
+              {email && email.includes('@') ? 'Your email has been confirmed.' : 'Your phone number has been confirmed.'}
             </p>
           </div>
         </div>

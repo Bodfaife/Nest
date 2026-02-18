@@ -1,8 +1,14 @@
 import React from "react";
 
-export default function CreateSavingsPromptScreen({ onCreate }) {
+export default function CreateSavingsPromptScreen({ onCreate, onSkip }) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6 py-12 font-['Plus_Jakarta_Sans',_sans-serif]">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6 py-12 font-['Plus_Jakarta_Sans',_sans-serif] relative">
+      <button
+        onClick={onSkip}
+        className="absolute right-6 top-6 text-sm font-semibold text-gray-500 hover:text-gray-700"
+      >
+        Skip
+      </button>
       <img src="/Nest logo.png" alt="Nest Logo" className="w-12 h-12 mb-6 rounded-xl" />
       <h2 className="text-2xl font-black text-emerald-900 mb-2">Create Your First Savings</h2>
       <p className="text-gray-500 mb-6 text-center max-w-xs">Start your journey to financial freedom. Create a savings plan to begin.</p>

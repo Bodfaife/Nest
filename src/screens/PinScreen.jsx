@@ -32,9 +32,8 @@ const TransactionPinScreen = ({
   useEffect(() => {
     if (pin.length === pinLength) {
       const timer = setTimeout(() => {
-        // Get stored PIN from localStorage, default to '1234' if not set
-        const storedPin = localStorage.getItem('userPin') || '1234';
-        if (pin === storedPin) {
+        const storedPin = localStorage.getItem('userPin');
+        if (storedPin && pin === storedPin) {
           onSuccess();
         } else {
           setError(true);
