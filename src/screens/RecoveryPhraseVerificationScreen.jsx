@@ -45,7 +45,10 @@ export default function RecoveryPhraseVerificationScreen({
   };
 
   const allFilled = enteredPhrases.every(p => p && p.trim().length > 0);
-  const exactMatch = recoveryPhrases.length > 0 && enteredPhrases.every((p, i) => (p || '').toString().trim().toLowerCase() === (recoveryPhrases[i] || '').toString().trim().toLowerCase());
+  const normalize = (s) => (s || '').toString().trim().toLowerCase();
+  const exactMatch = recoveryPhrases.length > 0 && enteredPhrases.every((p, i) => normalize(p) === normalize(recoveryPhrases[i]));
+  // Per-word match booleans for visual feedback
+  const enteredMatches = recoveryPhrases.map((_, i) => normalize(enteredPhrases[i]) === normalize(recoveryPhrases[i]));
   const bgClass = darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
   const inputClass = darkMode
     ? 'bg-gray-800 text-white border border-gray-700'
@@ -155,14 +158,22 @@ export default function RecoveryPhraseVerificationScreen({
                     }`}>
                       {index + 1}
                     </span>
-                    <input
-                      type="text"
-                      placeholder={`Word ${index + 1}`}
-                      value={enteredPhrases[index]}
-                      onChange={(e) => handlePhrasesChange(index, e.target.value)}
-                      disabled={isVerifying}
-                      className={`flex-1 p-3 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition-all ${inputClass}`}
-                    />
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        placeholder={`Word ${index + 1}`}
+                        value={enteredPhrases[index]}
+                        onChange={(e) => handlePhrasesChange(index, e.target.value)}
+                        disabled={isVerifying}
+                        className={`w-full p-3 rounded-xl outline-none transition-all disabled:opacity-50 ${inputClass} ${enteredPhrases[index] ? (enteredMatches[index] ? (darkMode ? 'border-emerald-500 bg-emerald-900/20' : 'border-emerald-500 bg-emerald-50') : (darkMode ? 'border-red-500 bg-red-900/10' : 'border-red-500 bg-red-50')) : ''}`}
+                      />
+                      {enteredPhrases[index] && enteredMatches[index] && (
+                        <CheckCircle size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600" />
+                      )}
+                      {enteredPhrases[index] && !enteredMatches[index] && (
+                        <AlertCircle size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500" />
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
