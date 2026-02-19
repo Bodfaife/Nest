@@ -16,7 +16,7 @@ export default function PaymentProcessingScreen({ message, onComplete, darkMode 
       if (typeof onComplete === "function") {
         onComplete();
       }
-    }, 3000);
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, [onComplete]);

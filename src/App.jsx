@@ -557,15 +557,7 @@ function App() {
           <SignInScreen
             onSignIn={(u) => {
               setUser(u);
-              if (u?.savingsPlan?.isActive) {
-                goHome();
-              } else {
-                if (savingsFlowScreen) {
-                  setCurrentScreen(savingsFlowScreen);
-                } else {
-                  setCurrentScreen("CreateSavingsPrompt");
-                }
-              }
+              goHome();
             }}
             onNavigateToSignUp={() => {
               setOpenedFrom("SignIn");
@@ -725,7 +717,7 @@ function App() {
         {currentScreen === "RecoveryPhraseVerification" && (
           <RecoveryPhraseVerificationScreen
             darkMode={darkMode}
-            recoveryPhrases={user?.recoveryPhrase || []}
+            recoveryPhrases={user?.recoveryPhrase || (localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).recoveryPhrase : [])}
             onBack={() => {
               setOpenedFrom("RecoveryPhraseVerification");
               setCurrentScreen("ForgotPassword");
@@ -745,9 +737,19 @@ function App() {
               setCurrentScreen("RecoveryPhraseVerification");
             }}
             onPasswordCreated={(newPassword) => {
-              const updatedUser = { ...user, password: newPassword };
-              setUser(updatedUser);
-              localStorage.setItem("user", JSON.stringify(updatedUser));
+              try {
+                const raw = localStorage.getItem('user');
+                const base = user || (raw ? JSON.parse(raw) : {});
+                const updatedUser = { ...base, password: newPassword };
+                setUser(updatedUser);
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                console.log('🔐 Password updated and saved to localStorage for', updatedUser.email || updatedUser.phone);
+              } catch (e) {
+                // fallback: set from user state if available
+                const updatedUser = { ...(user || {}), password: newPassword };
+                setUser(updatedUser);
+                try { localStorage.setItem('user', JSON.stringify(updatedUser)); console.log('🔐 Password updated and saved to localStorage (fallback)'); } catch (err) {}
+              }
               setOpenedFrom("CreateNewPassword");
               setCurrentScreen("PasswordResetSuccess");
             }}
@@ -775,9 +777,17 @@ function App() {
               setCurrentScreen("RecoveryPhraseVerification");
             }}
             onResetComplete={(newPassword) => {
-              const updatedUser = { ...user, password: newPassword };
-              setUser(updatedUser);
-              localStorage.setItem("user", JSON.stringify(updatedUser));
+              try {
+                const raw = localStorage.getItem('user');
+                const base = user || (raw ? JSON.parse(raw) : {});
+                const updatedUser = { ...base, password: newPassword };
+                setUser(updatedUser);
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+              } catch (e) {
+                const updatedUser = { ...(user || {}), password: newPassword };
+                setUser(updatedUser);
+                try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (err) {}
+              }
               setOpenedFrom("ResetPassword");
               setCurrentScreen("PasswordResetSuccess");
             }}

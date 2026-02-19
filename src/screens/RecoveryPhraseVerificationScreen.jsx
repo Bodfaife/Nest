@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, AlertCircle, CheckCircle } from 'lucide-react';
+import PaymentProcessingScreen from './PaymentProcessingScreen';
 
 export default function RecoveryPhraseVerificationScreen({
   darkMode = false,
@@ -7,9 +8,20 @@ export default function RecoveryPhraseVerificationScreen({
   onBack,
   onVerified,
 }) {
+  React.useEffect(() => {
+    console.log('🔎 RecoveryPhraseVerificationScreen mounted');
+    console.log('   received recoveryPhrases prop:', recoveryPhrases);
+    try {
+      const raw = localStorage.getItem('user');
+      console.log('   localStorage.user:', raw ? JSON.parse(raw).recoveryPhrase : null);
+    } catch (e) {
+      console.error('   error reading localStorage user:', e);
+    }
+  }, []);
   const [enteredPhrases, setEnteredPhrases] = useState(Array(recoveryPhrases.length).fill(''));
   const [error, setError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [showProcessing, setShowProcessing] = useState(false);
 
   const handlePhrasesChange = (index, value) => {
     const newPhrases = [...enteredPhrases];
@@ -37,11 +49,8 @@ export default function RecoveryPhraseVerificationScreen({
       return;
     }
 
-    // Phrases verified successfully
-    setIsVerifying(true);
-    setTimeout(() => {
-      onVerified();
-    }, 800);
+    // Phrases verified successfully -> show processing screen first
+    setShowProcessing(true);
   };
 
   const allFilled = enteredPhrases.every(p => p && p.trim().length > 0);
@@ -76,7 +85,20 @@ export default function RecoveryPhraseVerificationScreen({
 
       {/* Content */}
       <div className="flex-1 flex flex-col justify-start">
-        {!isVerifying ? (
+        {showProcessing ? (
+          <PaymentProcessingScreen
+            message={"Verifying recovery phrases..."}
+            onComplete={() => {
+              // after processing, show verified UI then call parent
+              setShowProcessing(false);
+              setIsVerifying(true);
+              setTimeout(() => {
+                onVerified();
+              }, 800);
+            }}
+            darkMode={darkMode}
+          />
+        ) : !isVerifying ? (
           <>
             <p className={`text-sm mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
               Enter your recovery phrases below in the exact order and spelling as shown when you created your account. Case is ignored.
@@ -135,47 +157,51 @@ export default function RecoveryPhraseVerificationScreen({
                 />
               </div>
 
-              {/* Verify Button - Positioned after info box */}
-            <button
-              onClick={handleVerify}
-              disabled={!exactMatch}
-              className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all mb-8 ${
-                exactMatch
-                  ? 'bg-[#00875A] shadow-emerald-100 active:scale-[0.98]'
-                  : 'bg-gray-400 cursor-not-allowed'
-              }`}
-            >
-              Verify Phrases
-            </button>
-
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {recoveryPhrases.map((_, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <span className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      darkMode
-                        ? 'bg-emerald-900/40 text-emerald-300'
-                        : 'bg-emerald-100 text-emerald-700'
-                    }`}>
-                      {index + 1}
-                    </span>
-                    <div className="relative flex-1">
-                      <input
-                        type="text"
-                        placeholder={`Word ${index + 1}`}
-                        value={enteredPhrases[index]}
-                        onChange={(e) => handlePhrasesChange(index, e.target.value)}
-                        disabled={isVerifying}
-                        className={`w-full p-3 rounded-xl outline-none transition-all disabled:opacity-50 ${inputClass} ${enteredPhrases[index] ? (enteredMatches[index] ? (darkMode ? 'border-emerald-500 bg-emerald-900/20' : 'border-emerald-500 bg-emerald-50') : (darkMode ? 'border-red-500 bg-red-900/10' : 'border-red-500 bg-red-50')) : ''}`}
-                      />
-                      {enteredPhrases[index] && enteredMatches[index] && (
-                        <CheckCircle size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600" />
-                      )}
-                      {enteredPhrases[index] && !enteredMatches[index] && (
-                        <AlertCircle size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500" />
-                      )}
+                <div className="grid grid-cols-3 gap-3">
+                  {recoveryPhrases.map((_, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <span className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        darkMode
+                          ? 'bg-emerald-900/40 text-emerald-300'
+                          : 'bg-emerald-100 text-emerald-700'
+                      }`}>
+                        {index + 1}
+                      </span>
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          placeholder={`Word ${index + 1}`}
+                          value={enteredPhrases[index]}
+                          onChange={(e) => handlePhrasesChange(index, e.target.value)}
+                          disabled={isVerifying}
+                          className={`w-full p-3 rounded-xl outline-none transition-all disabled:opacity-50 ${inputClass} ${enteredPhrases[index] ? (enteredMatches[index] ? (darkMode ? 'border-emerald-500 bg-emerald-900/20' : 'border-emerald-500 bg-emerald-50') : (darkMode ? 'border-red-500 bg-red-900/10' : 'border-red-500 bg-red-50')) : ''}`}
+                        />
+                        {enteredPhrases[index] && enteredMatches[index] && (
+                          <CheckCircle size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600" />
+                        )}
+                        {enteredPhrases[index] && !enteredMatches[index] && (
+                          <AlertCircle size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500" />
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+
+                {/* Verify Button placed under the grid */}
+                <div className="mt-6">
+                  <button
+                    onClick={handleVerify}
+                    disabled={!exactMatch}
+                    className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all ${
+                      exactMatch
+                        ? 'bg-[#00875A] shadow-emerald-100 active:scale-[0.98]'
+                        : 'bg-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    Verify Phrases
+                  </button>
+                </div>
               </div>
             </div>
 

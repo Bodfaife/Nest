@@ -47,6 +47,14 @@ export default function CreateNewPasswordScreen({
     setIsCreating(true);
     // Simulate API call
     setTimeout(() => {
+      try {
+        const raw = localStorage.getItem('user');
+        if (raw) {
+          const u = JSON.parse(raw);
+          u.password = password;
+          localStorage.setItem('user', JSON.stringify(u));
+        }
+      } catch (e) {}
       onPasswordCreated(password);
     }, 2000);
   };

@@ -32,6 +32,16 @@ export default function ResetPasswordScreen({
     setError('');
     setIsResetting(true);
     setTimeout(() => {
+      try {
+        const raw = localStorage.getItem('user');
+        if (raw) {
+          const u = JSON.parse(raw);
+          u.password = password;
+          localStorage.setItem('user', JSON.stringify(u));
+        }
+      } catch (e) {
+        // ignore
+      }
       onResetComplete(password);
     }, 2000);
   };
