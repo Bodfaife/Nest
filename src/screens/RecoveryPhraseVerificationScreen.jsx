@@ -25,11 +25,15 @@ export default function RecoveryPhraseVerificationScreen({
       return;
     }
 
-    // Verify phrases match exactly (case-sensitive, word-for-word)
-    const phrasesMatch = enteredPhrases.every((p, index) => p.trim() === recoveryPhrases[index]);
+    // Verify phrases match (case-insensitive comparison)
+    const phrasesMatch = enteredPhrases.every((p, index) => {
+      const a = (p || '').toString().trim().toLowerCase();
+      const b = (recoveryPhrases[index] || '').toString().trim().toLowerCase();
+      return a === b;
+    });
 
     if (!phrasesMatch) {
-      setError('Recovery phrases do not match. Ensure spelling and capitalization are exact.');
+      setError('Recovery phrases do not match. Ensure spelling is correct (case is ignored).');
       return;
     }
 
@@ -41,7 +45,7 @@ export default function RecoveryPhraseVerificationScreen({
   };
 
   const allFilled = enteredPhrases.every(p => p && p.trim().length > 0);
-  const exactMatch = recoveryPhrases.length > 0 && enteredPhrases.every((p, i) => p.trim() === recoveryPhrases[i]);
+  const exactMatch = recoveryPhrases.length > 0 && enteredPhrases.every((p, i) => (p || '').toString().trim().toLowerCase() === (recoveryPhrases[i] || '').toString().trim().toLowerCase());
   const bgClass = darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
   const inputClass = darkMode
     ? 'bg-gray-800 text-white border border-gray-700'
@@ -72,7 +76,7 @@ export default function RecoveryPhraseVerificationScreen({
         {!isVerifying ? (
           <>
             <p className={`text-sm mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Enter your recovery phrases below in the exact order and spelling as shown when you created your account.
+              Enter your recovery phrases below in the exact order and spelling as shown when you created your account. Case is ignored.
             </p>
 
             {/* Info Box */}
@@ -84,10 +88,10 @@ export default function RecoveryPhraseVerificationScreen({
               }`}
             >
               <p className={`text-sm font-semibold mb-2 ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
-                Important: Case and spelling must match exactly
+                Important: Spelling and order must match (case-insensitive)
               </p>
               <p className={`text-xs ${darkMode ? 'text-amber-200' : 'text-amber-600'}`}>
-                Example: If you see "Coffee", don't enter "coffee" or "Coffee123"
+                Example: If you see "Coffee", entering "coffee" will be accepted.
               </p>
             </div>
 

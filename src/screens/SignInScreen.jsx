@@ -23,12 +23,12 @@ export default function SignInScreen({ onSignIn, onNavigateToSignUp, onNavigateT
         <div className="space-y-5">
           {/* Email */}
           <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700 ml-1">Email Address</label>
+            <label className="text-sm font-bold text-gray-700 ml-1">Email or Phone</label>
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
               <input 
-                type="email" 
-                placeholder="email@example.com" 
+                type="text" 
+                placeholder="email@example.com or 08012345678" 
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="w-full p-4 pl-12 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-[#00875A]" 
@@ -66,14 +66,20 @@ export default function SignInScreen({ onSignIn, onNavigateToSignUp, onNavigateT
       <div className="pb-4">
         <button 
           onClick={() => {
-            // Validate email and password against stored user
-            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-            if (storedUser.email === email && storedUser.password === password) {
-              // Password matches, proceed with sign in
+            // Validate email/phone and password against stored user
+            const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+            if (!storedUser) {
+              alert('No account found. Please sign up first.');
+              return;
+            }
+            const input = (email || '').toString().trim();
+            const normalizePhone = (p) => (p || '').toString().replace(/\D/g, '');
+            const matchesEmail = storedUser.email && storedUser.email.toLowerCase().trim() === input.toLowerCase();
+            const matchesPhone = storedUser.phone && normalizePhone(storedUser.phone) === normalizePhone(input);
+            if ((matchesEmail || matchesPhone) && storedUser.password === password) {
               onSignIn(storedUser);
             } else {
-              // Invalid credentials
-              alert('Invalid email or password');
+              alert('Invalid credentials');
               setPassword('');
             }
           }} 

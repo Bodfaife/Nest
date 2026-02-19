@@ -109,7 +109,7 @@ export default function SavingsScreen({
             <p className="text-lg font-semibold">No Active Savings Yet</p>
             <p className={`text-sm ${secondaryText}`}>Start saving today and lock your funds securely.</p>
             <button
-              onClick={() => openScreen("Deposit", { mode: "start" })} // Explicit first-time savings mode
+              onClick={() => openScreen("CreateSavingsPrompt")} // Start create-savings flow
               className="mt-4 w-full py-4 rounded-2xl font-bold bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
             >
               Start Saving

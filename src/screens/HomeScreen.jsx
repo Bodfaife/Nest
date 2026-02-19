@@ -48,7 +48,7 @@ export default function HomeScreen({
             </p>
 
             <button
-              onClick={() => openScreen("Deposit")}
+              onClick={() => openScreen("CreateSavingsPrompt")}
               className="w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 transition"
             >
               <ArrowUpRight size={18} />
