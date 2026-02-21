@@ -1,0 +1,69 @@
+name: Integration tests
+
+on:
+  push:
+    paths:
+      - 'nest-app/**'
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: nest
+          POSTGRES_USER: nest
+          POSTGRES_PASSWORD: nest
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U nest -d nest" --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        working-directory: nest-app
+        run: npm ci
+      - name: Wait for Postgres
+        run: |
+          for i in {1..10}; do
+            pg_isready -h localhost -p 5432 -U nest && break || sleep 2;
+          done
+      - name: Initialize DB (create extension)
+        working-directory: nest-app
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: nest
+          PGPASSWORD: nest
+        run: |
+          node scripts/ensure-uuid.js || true
+      - name: Run migrations
+        working-directory: nest-app
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USERNAME: nest
+          DB_PASSWORD: nest
+          DB_DATABASE: nest
+        run: npm run migration:run
+      - name: Start server (background)
+        working-directory: nest-app
+        run: npm run dev &
+      - name: Wait for server
+        run: |
+          for i in {1..20}; do
+            curl -sSf http://localhost:3333/api || sleep 1;
+          done
+      - name: Run webhook smoke
+        working-directory: nest-app
+        env:
+          PAYMENT_WEBHOOK_SECRET: ${{ secrets.PAYMENT_WEBHOOK_SECRET || 'dev-webhook-secret' }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET || 'whsec_demo_secret' }}
+        run: |
+          npm run webhook:smoke || true
+          npm run webhook:stripe-smoke || true

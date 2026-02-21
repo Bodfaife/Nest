@@ -1,0 +1,30 @@
+name: E2E Smoke Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install backend dependencies
+        run: npm ci --prefix nest-app
+
+      - name: Start backend (dev)
+        run: |
+          JWT_ACCESS_TOKEN_SECRET=ci_access JWT_REFRESH_TOKEN_SECRET=ci_refresh DB_USE_SQLITE=true npm --prefix nest-app run dev &
+
+      - name: Wait for backend
+        run: npx wait-on http://localhost:3333/api/health --timeout 30000
+
+      - name: Run smoke script
+        run: node nest-app/scripts/smoke.js

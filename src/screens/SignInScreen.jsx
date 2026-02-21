@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, Mail } from 'lucide-react';
+import api from '../helpers/apiClient';
 
 export default function SignInScreen({ onSignIn, onNavigateToSignUp, onNavigateToForgotPassword, darkMode }) {
   const [email, setEmail] = useState('');
@@ -65,21 +66,19 @@ export default function SignInScreen({ onSignIn, onNavigateToSignUp, onNavigateT
       {/* Actions */}
       <div className="pb-4">
         <button 
-          onClick={() => {
-            // Validate email/phone and password against stored user
-            const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-            if (!storedUser) {
-              alert('No account found. Please sign up first.');
-              return;
-            }
-            const input = (email || '').toString().trim();
-            const normalizePhone = (p) => (p || '').toString().replace(/\D/g, '');
-            const matchesEmail = storedUser.email && storedUser.email.toLowerCase().trim() === input.toLowerCase();
-            const matchesPhone = storedUser.phone && normalizePhone(storedUser.phone) === normalizePhone(input);
-            if ((matchesEmail || matchesPhone) && storedUser.password === password) {
-              onSignIn(storedUser);
-            } else {
-              alert('Invalid credentials');
+          onClick={async () => {
+            try {
+              const identifier = (email || '').toString().trim();
+              const data = await api.login(identifier, password);
+              const token = data.accessToken || localStorage.getItem('accessToken');
+              if (!token) throw new Error('No token received');
+              const user = await api.getMe(token);
+              if (user) {
+                localStorage.setItem('user', JSON.stringify(user));
+                onSignIn(user);
+              }
+            } catch (e) {
+              alert('Invalid credentials or server error');
               setPassword('');
             }
           }} 

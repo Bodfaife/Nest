@@ -1,0 +1,224 @@
+
+> nest-app@0.0.1 dev
+> ts-node-dev --respawn --transpile-only --ignore-watch node_modules --respawn src/main.ts
+
+[INFO] 19:48:33 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.9.3)
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTypeOrmModule dependencies initialized[39m[38;5;3m +30ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPassportModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mThrottlerModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJwtModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigHostModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTypeOrmCoreModule dependencies initialized[39m[38;5;3m +76ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTypeOrmModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTypeOrmModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUsersModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTransactionsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAppController {/api}:[39m[38;5;3m +22ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/health, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/register, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/login, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/logout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mUsersController {/api/users}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/users/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/users/:id, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTransactionsController {/api/transactions}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/transactions/create, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +4ms[39m
+[32m[Nest] 40880  - [39m20/02/2026, 19:48:41 [32m    LOG[39m [32mNest backend running on http://localhost:3333/api[39m
+[INFO] 19:58:49 Restarting: /home/pipstitan/Nest/frontend/nest-app/src/app.module.ts has been modified
+[32m[Nest] 52217  - [39m20/02/2026, 19:59:26 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 52217  - [39m20/02/2026, 19:59:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTypeOrmModule dependencies initialized[39m[38;5;3m +160ms[39m
+[32m[Nest] 52217  - [39m20/02/2026, 19:59:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPassportModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 52217  - [39m20/02/2026, 19:59:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mThrottlerModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 52217  - [39m20/02/2026, 19:59:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJwtModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 52217  - [39m20/02/2026, 19:59:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigHostModule dependencies initialized[39m[38;5;3m +1ms[39m
+[31m[Nest] 52217  - [39m20/02/2026, 19:59:26 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mNest can't resolve dependencies of the PaymentsController (IdempotencyService, ?). Please make sure that the argument TransactionsService at index [1] is available in the PaymentsModule context.
+
+Potential solutions:
+- Is PaymentsModule a valid NestJS module?
+- If TransactionsService is a provider, is it part of the current PaymentsModule?
+- If TransactionsService is exported from a separate @Module, is that module imported within PaymentsModule?
+  @Module({
+    imports: [ /* the Module containing TransactionsService */ ]
+  })
+[39m
+Error: Nest can't resolve dependencies of the PaymentsController (IdempotencyService, ?). Please make sure that the argument TransactionsService at index [1] is available in the PaymentsModule context.
+
+Potential solutions:
+- Is PaymentsModule a valid NestJS module?
+- If TransactionsService is a provider, is it part of the current PaymentsModule?
+- If TransactionsService is exported from a separate @Module, is that module imported within PaymentsModule?
+  @Module({
+    imports: [ /* the Module containing TransactionsService */ ]
+  })
+
+    at Injector.lookupComponentInParentModules (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:262:19)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Injector.resolveComponentInstance (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:215:33)
+    at resolveParam (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:129:38)
+    at async Promise.all (index 1)
+    at Injector.resolveConstructorParams (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:144:27)
+    at Injector.loadInstance (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at Injector.loadController (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:89:9)
+    at /home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/instance-loader.js:68:13
+    at async Promise.all (index 0)
+[INFO] 19:59:51 Restarting: /home/pipstitan/Nest/frontend/nest-app/src/app.module.ts has been modified
+[32m[Nest] 52368  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 52368  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTypeOrmModule dependencies initialized[39m[38;5;3m +48ms[39m
+[32m[Nest] 52368  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPassportModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 52368  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mThrottlerModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 52368  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJwtModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 52368  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigHostModule dependencies initialized[39m[38;5;3m +2ms[39m
+[31m[Nest] 52368  - [39m20/02/2026, 19:59:59 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mNest can't resolve dependencies of the PaymentsController (IdempotencyService, ?). Please make sure that the argument TransactionsService at index [1] is available in the PaymentsModule context.
+
+Potential solutions:
+- Is PaymentsModule a valid NestJS module?
+- If TransactionsService is a provider, is it part of the current PaymentsModule?
+- If TransactionsService is exported from a separate @Module, is that module imported within PaymentsModule?
+  @Module({
+    imports: [ /* the Module containing TransactionsService */ ]
+  })
+[39m
+Error: Nest can't resolve dependencies of the PaymentsController (IdempotencyService, ?). Please make sure that the argument TransactionsService at index [1] is available in the PaymentsModule context.
+
+Potential solutions:
+- Is PaymentsModule a valid NestJS module?
+- If TransactionsService is a provider, is it part of the current PaymentsModule?
+- If TransactionsService is exported from a separate @Module, is that module imported within PaymentsModule?
+  @Module({
+    imports: [ /* the Module containing TransactionsService */ ]
+  })
+
+    at Injector.lookupComponentInParentModules (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:262:19)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Injector.resolveComponentInstance (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:215:33)
+    at resolveParam (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:129:38)
+    at async Promise.all (index 1)
+    at Injector.resolveConstructorParams (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:144:27)
+    at Injector.loadInstance (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at Injector.loadController (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:89:9)
+    at /home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/instance-loader.js:68:13
+    at async Promise.all (index 0)
+utions:
+- Is PaymentsModule a valid NestJS module?
+- If TransactionsService is a provider, is it part of the current PaymentsModule?
+- If TransactionsService is exported from a separate @Module, is that module imported within PaymentsModule?
+  @Module({
+    imports: [ /* the Module containing TransactionsService */ ]
+  })
+
+    at Injector.lookupComponentInParentModules (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:262:19)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Injector.resolveComponentInstance (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:215:33)
+    at resolveParam (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:129:38)
+    at async Promise.all (index 1)
+    at Injector.resolveConstructorParams (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:144:27)
+    at Injector.loadInstance (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at Injector.loadController (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:89:9)
+    at /home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/instance-loader.js:68:13
+    at async Promise.all (index 0)
+ervice, ?). Please make sure that the argument TransactionsService at index [1] is available in the PaymentsModule context.
+
+Potential solutions:
+- Is PaymentsModule a valid NestJS module?
+- If TransactionsService is a provider, is it part of the current PaymentsModule?
+- If TransactionsService is exported from a separate @Module, is that module imported within PaymentsModule?
+  @Module({
+    imports: [ /* the Module containing TransactionsService */ ]
+  })
+
+    at Injector.lookupComponentInParentModules (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:262:19)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Injector.resolveComponentInstance (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:215:33)
+    at resolveParam (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:129:38)
+    at async Promise.all (index 1)
+    at Injector.resolveConstructorParams (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:144:27)
+    at Injector.loadInstance (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at Injector.loadController (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:89:9)
+    at /home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/instance-loader.js:68:13
+    at async Promise.all (index 0)
+[INFO] 19:59:51 Restarting: /home/pipstitan/Nest/frontend/nest-app/src/app.module.ts has been modified
+[32m[Nest] 52367  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 52367  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTypeOrmModule dependencies initialized[39m[38;5;3m +106ms[39m
+[32m[Nest] 52367  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPassportModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 52367  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mThrottlerModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 52367  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJwtModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 52367  - [39m20/02/2026, 19:59:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigHostModule dependencies initialized[39m[38;5;3m +1ms[39m
+[31m[Nest] 52367  - [39m20/02/2026, 19:59:59 [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mNest can't resolve dependencies of the PaymentsController (IdempotencyService, ?). Please make sure that the argument TransactionsService at index [1] is available in the PaymentsModule context.
+
+Potential solutions:
+- Is PaymentsModule a valid NestJS module?
+- If TransactionsService is a provider, is it part of the current PaymentsModule?
+- If TransactionsService is exported from a separate @Module, is that module imported within PaymentsModule?
+  @Module({
+    imports: [ /* the Module containing TransactionsService */ ]
+  })
+[39m
+Error: Nest can't resolve dependencies of the PaymentsController (IdempotencyService, ?). Please make sure that the argument TransactionsService at index [1] is available in the PaymentsModule context.
+
+Potential solutions:
+- Is PaymentsModule a valid NestJS module?
+- If TransactionsService is a provider, is it part of the current PaymentsModule?
+- If TransactionsService is exported from a separate @Module, is that module imported within PaymentsModule?
+  @Module({
+    imports: [ /* the Module containing TransactionsService */ ]
+  })
+
+    at Injector.lookupComponentInParentModules (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:262:19)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at Injector.resolveComponentInstance (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:215:33)
+    at resolveParam (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:129:38)
+    at async Promise.all (index 1)
+    at Injector.resolveConstructorParams (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:144:27)
+    at Injector.loadInstance (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:70:13)
+    at Injector.loadController (/home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/injector.js:89:9)
+    at /home/pipstitan/Nest/frontend/nest-app/node_modules/@nestjs/core/injector/instance-loader.js:68:13
+    at async Promise.all (index 0)
+
+  #  Node.js[31850]: void node::ResetStdio() at ../src/node.cc:751
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xcb3007 node::Assert(node::AssertionInfo const&) [node]
+ 2: 0xc5f924  [node]
+ 3: 0x77bb66440c71  [/usr/lib/libc.so.6]
+ 4: 0x77bb66440d4e  [/usr/lib/libc.so.6]
+ 5: 0xbbf62f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [node]
+ 6: 0xc1ef0f node::Environment::Exit(node::ExitCode) [node]
+ 7: 0xf4e54f v8::internal::FunctionCallbackArguments::Call(v8::internal::CallHandlerInfo) [node]
+ 8: 0xf4edbd  [node]
+ 9: 0xf4f285 v8::internal::Builtin_HandleApiCall(int, unsigned long*, v8::internal::Isolate*) [node]
+10: 0x1959df6  [node]
+
+  #  Node.js[31850]: void node::ResetStdio() at ../src/node.cc:751
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xcb3007 node::Assert(node::AssertionInfo const&) [node]
+ 2: 0xc5f924  [node]
+ 3: 0xc5ff3d node::TrapWebAssemblyOrContinue(int, siginfo_t*, void*) [node]
+ 4: 0x77bb6643e4d0  [/usr/lib/libc.so.6]
+ 5: 0x1589970 v8::internal::tracing::TraceEventHelper::GetTracingController() [node]
+ 6: 0x1060555 v8::internal::Isolate::CaptureDetailedStackTrace(int, v8::StackTrace::StackTraceOptions) [node]
+ 7: 0xeeee70 v8::StackTrace::CurrentStackTrace(v8::Isolate*, int, v8::StackTrace::StackTraceOptions) [node]
+ 8: 0xcb2f66 node::GetCurrentStackTrace(v8::Isolate*, int) [node]
+ 9: 0xbffbbb node::DumpJavaScriptBacktrace(_IO_FILE*) [node]
+10: 0xcb3013 node::Assert(node::AssertionInfo const&) [node]
+11: 0xc5f924  [node]
+12: 0x77bb66440c71  [/usr/lib/libc.so.6]
+13: 0x77bb66440d4e  [/usr/lib/libc.so.6]
+14: 0xbbf62f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [node]
+15: 0xc1ef0f node::Environment::Exit(node::ExitCode) [node]
+16: 0xf4e54f v8::internal::FunctionCallbackArguments::Call(v8::internal::CallHandlerInfo) [node]
+17: 0xf4edbd  [node]
+18: 0xf4f285 v8::internal::Builtin_HandleApiCall(int, unsigned long*, v8::internal::Isolate*) [node]
+19: 0x1959df6  [node]

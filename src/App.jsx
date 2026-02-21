@@ -71,6 +71,8 @@ import NestTransactionReceiptPDF from "./screens/NestTransactionReceiptPDF";
 import { generateReference } from "./helpers/reference";
 import { generateRecoveryPhrase } from "./helpers/generateRecoveryPhrase";
 import { useRef } from "react";
+import { debug } from './helpers/debug';
+import api from './helpers/apiClient';
 
 function App() {
   // ===== Core Navigation State =====
@@ -83,7 +85,7 @@ function App() {
     const saved = localStorage.getItem("user");
     const parsed = saved ? JSON.parse(saved) : null;
     if (parsed) {
-      console.log("📱 App init: Found saved user account with", parsed.email ? "email" : "phone", parsed.email || parsed.phone);
+      debug.log("📱 App init: Found saved user account with", parsed.email ? "email" : "phone", parsed.email || parsed.phone);
     }
     return parsed;
   });
@@ -186,40 +188,56 @@ function App() {
     }
     const u = localStorage.getItem("user");
     if (u) {
-      const parsed = JSON.parse(u);
-      setUser(parsed);
+      try {
+        const parsed = JSON.parse(u);
+        setUser(parsed);
+      } catch (e) {}
     }
     const savingsFlowScreenSaved = localStorage.getItem("savingsFlowScreen");
     const savingsPlanDataSaved = localStorage.getItem("savingsPlanData");
     if (savingsFlowScreenSaved) setSavingsFlowScreen(savingsFlowScreenSaved);
     if (savingsPlanDataSaved) setSavingsPlanData(JSON.parse(savingsPlanDataSaved));
+
+    // Attempt silent refresh on load and populate current user
+    (async () => {
+      try {
+        await api.refresh();
+        const me = await api.getMe();
+        if (me) {
+          setUser(me);
+          localStorage.setItem('user', JSON.stringify(me));
+        }
+      } catch (e) {
+        // ignore - remain unauthenticated
+      }
+    })();
   }, []);
 
   useEffect(() => {
     // Log on user login/logout
     if (user) {
-      console.log("👤 User authenticated:", user.email || user.phone);
+      debug.log("👤 User authenticated:", user.email || user.phone);
     } else {
-      console.log("👤 User logged out or not authenticated");
+      debug.log("👤 User logged out or not authenticated");
     }
   }, [user]);
 
   // Expose a test function to window for debugging
   React.useEffect(() => {
     window.debugLocalStorage = () => {
-      console.log("🔍 === LOCALSTORAGE DEBUG ===");
+      debug.log("🔍 === LOCALSTORAGE DEBUG ===");
       const user = localStorage.getItem("user");
-      console.log("user:", user ? JSON.parse(user) : null);
+      debug.log("user:", user ? JSON.parse(user) : null);
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         const value = localStorage.getItem(key);
         if (key !== "user") {
-          console.log(`${key}:`, value?.substring(0, 100) + (value?.length > 100 ? "..." : ""));
+          debug.log(`${key}:`, value?.substring(0, 100) + (value?.length > 100 ? "..." : ""));
         }
       }
-      console.log("🔍 === END DEBUG ===");
+      debug.log("🔍 === END DEBUG ===");
     };
-    console.log("💡 Tip: Run window.debugLocalStorage() in console to see all localStorage data");
+    debug.log("💡 Tip: Run window.debugLocalStorage() in console to see all localStorage data");
   }, []);
 
   useEffect(() => {
@@ -426,10 +444,12 @@ function App() {
   };
 
   const handleLogout = () => {
-    // Just logout the session - keep all user data in localStorage
-    // All transactions, balance, cards, accounts, everything remains
-    setUser(null);
-    setCurrentScreen("SignIn");
+    // Call backend to clear refresh token cookie, then clear client state
+    (async () => {
+      try { await api.logout(); } catch (e) { /* ignore */ }
+      setUser(null);
+      setCurrentScreen("SignIn");
+    })();
   };
 
   // ===== Transaction Helpers =====
@@ -570,60 +590,7 @@ function App() {
           />
         )}
 
-        {currentScreen === "SignUp" && (
-          <SignUpScreen
-            onSignUp={(u) => {
-              // store whichever contact user provided (email or phone)
-              const contactValue = u.email || u.phone || '';
-              setSignupEmail(contactValue);
-              const recoveryPhrase = generateRecoveryPhrase();
-              const userObj = {
-                fullName: u.fullName,
-                email: u.email || null,
-                phone: u.phone || null,
-                password: u.password,
-                savingsPlan: null,
-                recoveryPhrase,
-              };
-              // Clear any seeded/demo data for a fresh account
-              localStorage.removeItem("transactions");
-              localStorage.removeItem("userPin");
-              localStorage.removeItem("lastTransaction");
-              localStorage.removeItem("bankCards");
-              localStorage.removeItem("bankAccounts");
-              // Clear seeded profile image if present
-              localStorage.removeItem("profilePicture");
-              setTransactions([]);
-              setBalance(0);
-              setSavingsBalance(0);
-              setBankCards([]);
-              setBankAccounts([]);
-              setProfilePicture(null);
-
-              setUser(userObj);
-              const serialized = JSON.stringify(userObj);
-              localStorage.setItem("user", serialized);
-              
-              // Immediately verify localStorage persisted the data
-              const verifyRead = localStorage.getItem("user");
-              const canReadBack = verifyRead ? JSON.parse(verifyRead) : null;
-              console.log("✅ SignUp: User saved to localStorage");
-              console.log("   Email:", userObj.email || "(none)");
-              console.log("   Phone:", userObj.phone || "(none)");
-              console.log("🔐 Verification: Can read back?", canReadBack ? "YES ✓" : "NO ✗");
-              if (!canReadBack) {
-                console.error("⚠️ WARNING: localStorage.setItem appeared to fail or localStorage is unavailable!");
-              }
-              
-              setOpenedFrom("SignUp");
-              setCurrentScreen("OTPVerification");
-            }}
-            onNavigateToSignIn={() => {
-              setOpenedFrom("SignUp");
-              setCurrentScreen("SignIn");
-            }}
-          />
-        )}
+        
 
         {currentScreen === "OTPVerification" && (
           <OTPVerificationScreen
@@ -637,7 +604,7 @@ function App() {
               setOpenedFrom("OTPVerification");
               setCurrentScreen("RecoveryPhrase");
             }}
-            onResendOTP={() => console.log("OTP resent to", signupEmail)}
+            onResendOTP={() => debug.log("OTP resent to", signupEmail)}
           />
         )}
 
@@ -743,12 +710,12 @@ function App() {
                 const updatedUser = { ...base, password: newPassword };
                 setUser(updatedUser);
                 localStorage.setItem('user', JSON.stringify(updatedUser));
-                console.log('🔐 Password updated and saved to localStorage for', updatedUser.email || updatedUser.phone);
+                debug.log('🔐 Password updated and saved to localStorage for', updatedUser.email || updatedUser.phone);
               } catch (e) {
                 // fallback: set from user state if available
                 const updatedUser = { ...(user || {}), password: newPassword };
                 setUser(updatedUser);
-                try { localStorage.setItem('user', JSON.stringify(updatedUser)); console.log('🔐 Password updated and saved to localStorage (fallback)'); } catch (err) {}
+                try { localStorage.setItem('user', JSON.stringify(updatedUser)); debug.log('🔐 Password updated and saved to localStorage (fallback)'); } catch (err) {}
               }
               setOpenedFrom("CreateNewPassword");
               setCurrentScreen("PasswordResetSuccess");
@@ -794,63 +761,56 @@ function App() {
           />
         )}
 
-        {currentScreen === "ForgotTransactionPin" && (
-          <ForgotTransactionPinScreen
-            darkMode={darkMode}
-            userEmail={user?.email || ""}
-            userPhone={user?.phone || ""}
-            onBack={() => {
-              setOpenedFrom("ForgotTransactionPin");
-              setCurrentScreen("Pin");
+        {currentScreen === "SignUp" && (
+          <SignUpScreen
+            onSignUp={async (u) => {
+              // store whichever contact user provided (email or phone)
+              const contactValue = u.email || u.phone || '';
+              setSignupEmail(contactValue);
+              const recoveryPhrase = generateRecoveryPhrase();
+              const userObj = {
+                fullName: u.fullName,
+                email: u.email || null,
+                phone: u.phone || null,
+                password: u.password,
+                savingsPlan: null,
+                recoveryPhrase,
+              };
+              // Clear any seeded/demo data for a fresh account
+              localStorage.removeItem("transactions");
+              localStorage.removeItem("userPin");
+              localStorage.removeItem("lastTransaction");
+              localStorage.removeItem("bankCards");
+              localStorage.removeItem("bankAccounts");
+              // Clear seeded profile image if present
+              localStorage.removeItem("profilePicture");
+              setTransactions([]);
+              setBalance(0);
+              setSavingsBalance(0);
+              setBankCards([]);
+              setBankAccounts([]);
+              setProfilePicture(null);
+
+              setUser(userObj);
+              const serialized = JSON.stringify(userObj);
+              localStorage.setItem("user", serialized);
+
+              // Persist to backend as well (best-effort)
+              try {
+                await api.register(userObj);
+              } catch (e) {
+                // ignore - backend may be down during local dev
+              }
+
+              setOpenedFrom("SignUp");
+              setCurrentScreen("OTPVerification");
             }}
-            onPinReset={(newPin) => {
-              // Save PIN to localStorage
-              localStorage.setItem("userPin", newPin);
-              // Also save to user object for consistency
-              const updatedUser = { ...user, transactionPin: newPin };
-              setUser(updatedUser);
-              localStorage.setItem("user", JSON.stringify(updatedUser));
-              setCurrentScreen("Pin");
+            onNavigateToSignIn={() => {
+              setOpenedFrom("SignUp");
+              setCurrentScreen("SignIn");
             }}
           />
         )}
-
-        {/* ===== MAIN APP SCREENS ===== */}
-        {currentScreen === "Main" && (
-          <>
-            {activeTab === "home" && (
-              <HomeScreen
-                darkMode={darkMode}
-                toggleDarkMode={() => setDarkMode(d => !d)}
-                transactions={transactions}
-                user={user}
-                balance={balance}
-                savingsBalance={savingsBalance}
-                openScreen={openScreen}
-              />
-            )}
-
-            {activeTab === "savings" && (
-              <SavingsScreen
-                darkMode={darkMode}
-                savings={user?.savingsPlan && {
-                  total: savingsBalance,
-                  startDate: user.savingsPlan.startDate,
-                  withdrawDate: user.savingsPlan.withdrawalDate,
-                  isMatured: !user.savingsPlan.isActive,
-                  durationMonths: user.savingsPlan.durationMonths,
-                }}
-                openScreen={(action) => {
-                  if (action === "Deposit") openScreen("Deposit");
-                  if (action === "WithdrawSavings") setCurrentScreen("Withdraw");
-                }}
-                onViewSavingsDetails={() => {
-                  setOpenedFrom("Main");
-                  setCurrentScreen("SavingsDetail");
-                }}
-                onBack={goHome}
-              />
-            )}
 
             {activeTab === "profile" && !profileSection && !showSavedCards && !showSavedAccounts && !showCardDetails && (
               <ProfileScreen
@@ -951,6 +911,16 @@ function App() {
                 }}
               />
             )}
+
+        {activeTab !== "profile" && (
+          <>
+            <HomeScreen
+              user={user}
+              balance={balance}
+              savingsBalance={savingsBalance}
+              darkMode={darkMode}
+              openScreen={openScreen}
+            />
 
             <BottomNav
               active={activeTab}
@@ -1085,6 +1055,7 @@ function App() {
           <CardPaymentProcessingScreen
             darkMode={darkMode}
             card={pendingPayment.selectedCard}
+            user={user}
             amount={pendingPayment.amount}
             onBack={() => {
               setShowCardPaymentProcessing(false);

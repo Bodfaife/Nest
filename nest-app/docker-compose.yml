@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${DB_USER:-nest_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-supersecurepassword}
+      POSTGRES_DB: ${DB_NAME:-nestdb}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    working_dir: /usr/src/app
+    command: npm run dev
+    volumes:
+      - ./:/usr/src/app
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-nest_user}
+      - DB_PASSWORD=${DB_PASSWORD:-supersecurepassword}
+      - DB_NAME=${DB_NAME:-nestdb}
+      - JWT_ACCESS_TOKEN_SECRET=${JWT_ACCESS_TOKEN_SECRET}
+      - JWT_REFRESH_TOKEN_SECRET=${JWT_REFRESH_TOKEN_SECRET}
+      - NODE_ENV=development
+    ports:
+      - "3333:3333"
+    depends_on:
+      - db
+
+volumes:
+  db_data:

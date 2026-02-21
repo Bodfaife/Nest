@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { debug } from '../helpers/debug';
 import { ChevronLeft, Mail, AlertCircle } from 'lucide-react';
 
 export default function ForgotPasswordScreen({
@@ -13,25 +14,25 @@ export default function ForgotPasswordScreen({
 
   // Log when component mounts for debugging
   React.useEffect(() => {
-    console.log("🔐 ForgotPasswordScreen mounted");
+    debug.log("🔐 ForgotPasswordScreen mounted");
     const localStorageUser = localStorage.getItem("user");
-    console.log("💾 What's in localStorage.getItem('user'):", localStorageUser ? "(string with data)" : "null");
+    debug.log("💾 What's in localStorage.getItem('user'):", localStorageUser ? "(string with data)" : "null");
     if (localStorageUser) {
       try {
         const parsed = JSON.parse(localStorageUser);
-        console.log("   Parsed account email:", parsed.email || "(none)");
-        console.log("   Parsed account phone:", parsed.phone || "(none)");
+        debug.log("   Parsed account email:", parsed.email || "(none)");
+        debug.log("   Parsed account phone:", parsed.phone || "(none)");
       } catch (e) {
-        console.error("   ERROR parsing JSON:", e);
+        debug.error("   ERROR parsing JSON:", e);
       }
     } else {
-      console.error("   ⚠️ localStorage is empty or user was never saved!");
+      debug.error("   ⚠️ localStorage is empty or user was never saved!");
     }
   }, []);
 
   const handleVerifyEmail = () => {
-    console.log("🔍 ForgotPasswordScreen handleVerifyEmail called");
-    console.log("📝 Contact input:", contact);
+    debug.log("🔍 ForgotPasswordScreen handleVerifyEmail called");
+    debug.log("📝 Contact input:", contact);
     
     if (!contact) {
       setError('Please enter your registered email or phone');
@@ -51,22 +52,22 @@ export default function ForgotPasswordScreen({
     let saved = null;
     try {
       const storedUser = localStorage.getItem('user');
-      console.log("💾 Raw localStorage.getItem('user'):", storedUser);
+      debug.log("💾 Raw localStorage.getItem('user'):", storedUser);
       
       if (storedUser) {
         saved = JSON.parse(storedUser);
-        console.log("💾 Parsed user object from localStorage:", saved);
+        debug.log("💾 Parsed user object from localStorage:", saved);
       } else {
-        console.error("❌ localStorage.getItem('user') is null or empty");
+        debug.error("❌ localStorage.getItem('user') is null or empty");
       }
     } catch (err) {
-      console.error('❌ Error parsing saved user from localStorage:', err);
+      debug.error('❌ Error parsing saved user from localStorage:', err);
       setError('Error reading account data. Please try again.');
       return;
     }
 
     if (!saved) {
-      console.error("❌ No saved user found in localStorage");
+      debug.error("❌ No saved user found in localStorage");
       setError('No account found. Please sign up first.');
       return;
     }
@@ -78,15 +79,15 @@ export default function ForgotPasswordScreen({
     const savedEmailNormalized = (saved.email || '').toLowerCase().trim();
     const inputEmailNormalized = contact.toLowerCase().trim();
 
-    console.log("🔤 Email comparison:", { saved: savedEmailNormalized, input: inputEmailNormalized, match: savedEmailNormalized === inputEmailNormalized });
-    console.log("📱 Phone comparison:", { saved: savedPhoneNormalized, input: inputNormalized, match: inputNormalized === savedPhoneNormalized });
+    debug.log("🔤 Email comparison:", { saved: savedEmailNormalized, input: inputEmailNormalized, match: savedEmailNormalized === inputEmailNormalized });
+    debug.log("📱 Phone comparison:", { saved: savedPhoneNormalized, input: inputNormalized, match: inputNormalized === savedPhoneNormalized });
 
     // Check if contact matches either email or phone
     const matchesEmail = saved.email && savedEmailNormalized === inputEmailNormalized;
     const matchesPhone = saved.phone && savedPhoneNormalized && inputNormalized === savedPhoneNormalized;
     
     if (!matchesEmail && !matchesPhone) {
-      console.error("❌ Contact does not match email or phone in saved account");
+      debug.error("❌ Contact does not match email or phone in saved account");
       // If neither matched, provide helpful error
       // Check what contact info the account has
       const hasEmail = saved.email ? true : false;
@@ -104,7 +105,7 @@ export default function ForgotPasswordScreen({
       return;
     }
 
-    console.log("✅ Contact verified! Proceeding to recovery phrase verification");
+    debug.log("✅ Contact verified! Proceeding to recovery phrase verification");
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);

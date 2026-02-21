@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, CreditCard } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
+import api from '../helpers/apiClient';
+import { debug } from '../helpers/debug';
+import { Elements } from '@stripe/react-stripe-js';
+import stripePromise from '../helpers/stripeClient';
+import StripePaymentForm from '../components/StripePaymentForm';
 
 export default function CardPaymentProcessingScreen({
   darkMode = false,
@@ -9,15 +14,13 @@ export default function CardPaymentProcessingScreen({
   amount = 0,
   onPaymentComplete,
   mode = 'save' // 'save' or 'topup' or 'withdraw'
+  , user = null
 }) {
   const { formatAmount } = useCurrency();
   useEffect(() => {
-    // Simulate charging process and then complete
-    const timer = setTimeout(() => {
-      if (onPaymentComplete) onPaymentComplete();
-    }, 3000);
-
-    return () => clearTimeout(timer);
+    // previous behaviour simulated a charge; we now use Stripe Elements
+    // keep effect for potential side-effects in the future
+    return () => {};
   }, [onPaymentComplete]);
 
   const bgClass = darkMode ? 'bg-gray-900' : 'bg-white';
@@ -77,30 +80,26 @@ export default function CardPaymentProcessingScreen({
               </div>
             </div>
 
-            {/* Processing Info */}
-            <div className="space-y-4">
-              <h1 className={`text-3xl font-black ${textPrimary}`}>Processing Payment</h1>
-              <p className={textSecondary}>Charging {getCardBrand()}</p>
-
-              <div className={`p-6 rounded-2xl ${cardBg}`}>
-                <p className={`text-sm ${textSecondary} mb-2`}>Amount</p>
-                <p className="text-3xl font-black text-emerald-600">{formatAmount(amount)}</p>
-              </div>
-
-              {/* Status Dots */}
-              <div className="flex gap-2 justify-center mt-6">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className={`w-3 h-3 rounded-full animate-bounce ${
-                      darkMode ? 'bg-emerald-400' : 'bg-emerald-600'
-                    }`}
-                    style={{ animationDelay: `${i * 0.2}s` }}
+            {/* Processing / Stripe Form */}
+            <div className="space-y-4 w-full flex items-center justify-center">
+              <div className="w-full max-w-lg">
+                <h1 className={`text-2xl font-bold ${textPrimary} mb-4`}>Pay {formatAmount(amount)}</h1>
+                <Elements stripe={stripePromise}>
+                  <StripePaymentForm
+                    amount={Math.round(amount)}
+                    user={user}
+                    onSuccess={(paymentIntent) => {
+                      // notify backend or continue app flow
+                      debug.log('PaymentIntent succeeded', paymentIntent.id);
+                      if (onPaymentComplete) onPaymentComplete();
+                    }}
+                    onError={(err) => {
+                      debug.log('Payment error:', err);
+                      // fallback: complete flow after delay
+                    }}
                   />
-                ))}
+                </Elements>
               </div>
-
-              <p className={`text-sm ${textSecondary} mt-8`}>Please don't close the app</p>
             </div>
           
       </div>

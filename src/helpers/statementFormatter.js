@@ -2,6 +2,7 @@
  * Bank Statement Formatter
  * Generates professional PDF and CSV exports for bank statements
  */
+import { debug } from './debug';
 
 export const formatStatementAsCSV = (transactions, user, balance) => {
   const timestamp = new Date().toLocaleDateString('en-NG');
@@ -694,8 +695,8 @@ export const downloadPDF = async (html, filename = 'bank_statement.pdf') => {
     // Clean up
     document.body.removeChild(container);
   } catch (error) {
-    console.error('Error generating PDF:', error);
-    alert('Error generating PDF: ' + error.message);
+    debug.error('Error generating PDF:', error);
+    alert('Error generating PDF: ' + (error && error.message ? error.message : error));
   }
 };
 

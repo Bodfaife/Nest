@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { debug } from '../helpers/debug';
 import { ChevronLeft, AlertCircle, CheckCircle } from 'lucide-react';
 import PaymentProcessingScreen from './PaymentProcessingScreen';
 
@@ -9,13 +10,13 @@ export default function RecoveryPhraseVerificationScreen({
   onVerified,
 }) {
   React.useEffect(() => {
-    console.log('🔎 RecoveryPhraseVerificationScreen mounted');
-    console.log('   received recoveryPhrases prop:', recoveryPhrases);
+    debug.log('🔎 RecoveryPhraseVerificationScreen mounted');
+    debug.log('   received recoveryPhrases prop:', recoveryPhrases);
     try {
       const raw = localStorage.getItem('user');
-      console.log('   localStorage.user:', raw ? JSON.parse(raw).recoveryPhrase : null);
+      debug.log('   localStorage.user:', raw ? JSON.parse(raw).recoveryPhrase : null);
     } catch (e) {
-      console.error('   error reading localStorage user:', e);
+      debug.error('   error reading localStorage user:', e);
     }
   }, []);
   const [enteredPhrases, setEnteredPhrases] = useState(Array(recoveryPhrases.length).fill(''));
