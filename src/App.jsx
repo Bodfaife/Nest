@@ -127,12 +127,10 @@ function App() {
   const [currentScreen, setCurrentScreen] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const flow = params.get('flow');
-    
+
     // When returning from email verification, ensure user data is loaded first
     if (flow === 'signup-verify' || flow === 'password-reset-verify') {
-      // Force load from localStorage NOW before showing any screen
       const savedUser = localStorage.getItem('user');
-      const savedSavingsPlan = localStorage.getItem('savingsPlanData');
       if (savedUser) {
         try {
           const parsed = JSON.parse(savedUser);
@@ -141,17 +139,40 @@ function App() {
           console.error('Failed to parse saved user:', e);
         }
       }
-      return flow === 'signup-verify' ? 'RecoveryPhrase' : 'RecoveryPhraseVerification';
+      return flow === 'signup-verify' ? SCREENS.RecoveryPhrase : SCREENS.RecoveryPhraseVerification;
     }
-    
-    // Check if we have a saved screen from signup flow (persisted across reload)
+
+    // Attempt to restore a saved onboarding screen only if there's NO logged-in user
     const savedScreen = localStorage.getItem('currentSignupScreen');
-    if (savedScreen && ['CreateSavingsBio', 'CreateSavingsDetails', 'SavingsProcessing', 'RecoveryPhrase', 'OTPVerification', 'SignUp'].includes(savedScreen)) {
-      console.log('📱 Restoring signup flow screen:', savedScreen);
-      return savedScreen;
+    const validSignupScreens = [
+      SCREENS.SignUp,
+      SCREENS.OTPVerification,
+      SCREENS.CreateSavingsBio,
+      SCREENS.CreateSavingsDetails,
+      SCREENS.SavingsProcessing,
+      SCREENS.RecoveryPhrase
+    ];
+
+    // check for a saved user object too
+    let initialUser = null;
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) initialUser = JSON.parse(raw);
+    } catch (e) {
+      console.warn('Error parsing initial user during screen init', e);
     }
-    
-    return 'Splash';
+
+    if (savedScreen && validSignupScreens.includes(savedScreen)) {
+      if (!initialUser) {
+        console.log('📱 Restoring signup flow screen for new visitor:', savedScreen);
+        return savedScreen;
+      } else {
+        console.log('⚠️ Ignoring saved signup screen because user already exists:', savedScreen);
+        localStorage.removeItem('currentSignupScreen');
+      }
+    }
+
+    return SCREENS.Splash;
   });
     const [activeTab, setActiveTab] = useState("home");
 
