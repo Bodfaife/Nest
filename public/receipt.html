@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nest Savings Receipt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #f8fafc;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .receipt-container {
+      min-height: 100vh;
+      padding: 48px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .print-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #065e3b;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 16px;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(6,78,59,0.15);
+      margin-bottom: 24px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .print-btn:hover {
+      background: #047857;
+    }
+    .print-btn:active {
+      transform: scale(0.97);
+    }
+    .receipt {
+      width: 100%;
+      max-width: 620px;
+      background: #fff;
+      border-radius: 32px;
+      overflow: hidden;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 20px 60px -15px rgba(6,78,59,0.15);
+    }
+    .receipt-header {
+      position: relative;
+      padding: 48px 40px;
+      background: linear-gradient(135deg, #022c22 0%, #065e3b 60%, #10b981 100%);
+      color: #fff;
+    }
+    .receipt-header .success {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.2);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      margin-bottom: 16px;
+    }
+    .receipt-header h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+    .receipt-header .ref {
+      font-size: 12px;
+      margin-top: 8px;
+      color: rgba(255,255,255,0.7);
+      font-weight: 500;
+    }
+    .receipt-header .icon-box {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .receipt-body {
+      padding: 48px 40px;
+    }
+    .amount-section {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .amount-section .label {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+    .amount-section .amount {
+      font-size: 48px;
+      font-weight: 900;
+      color: #065e3b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .amount-section .type {
+      display: inline-flex;
+      margin-top: 16px;
+      padding: 4px 16px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #000;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .details-section {
+      margin-bottom: 40px;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .detail-row .label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #94a3b8;
+    }
+    .detail-row .value {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .balance-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      background: #f8fafc;
+      border-radius: 16px;
+      border: 1px solid #f1f5f9;
+    }
+    .balance-box .left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .balance-box .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #10b981;
+    }
+    .balance-box .label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #64748b;
+    }
+    .balance-box .value {
+      font-size: 20px;
+      font-weight: 900;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .verification-section {
+      padding-top: 32px;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .verification-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .verification-box .icon {
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 16px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .verification-box .text {
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #0f172a;
+    }
+    .verification-box .desc {
+      font-size: 9px;
+      color: #94a3b8;
+      margin-top: 4px;
+      line-height: 1.2;
+    }
+    .secured {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(0,0,0,0.4);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+    }
+    @media print {
+      body {
+        background: #fff !important;
+      }
+      .print-btn {
+        display: none !important;
+      }
+      .receipt {
+        box-shadow: none !important;
+        border: none !important;
+      }
+    }
+    .naira-sign {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      font-weight: bold;
+    }
+    .naira-sign .stroke {
+      position: absolute;
+      left: -1px;
+      right: -1px;
+      height: 1px;
+      background: currentColor;
+    }
+    .naira-sign .stroke1 {
+      top: 42%;
+    }
+    .naira-sign .stroke2 {
+      top: 58%;
+    }
+  </style>
+</head>
+<body>
+  <div class="receipt-container">
+    <div class="print-btn" onclick="window.print()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="6" y="9" width="12" height="7" rx="2"/><path d="M6 9V4h12v5"/><path d="M6 18v2h12v-2"/><path d="M9 13h6"/></svg>
+      Print Receipt
+    </div>
+    <div class="receipt">
+      <div class="receipt-header">
+        <div class="success">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2l4 -4"/></svg>
+          SUCCESSFUL
+        </div>
+        <h1>Nest Savings Receipt</h1>
+        <div class="ref" id="receipt-ref">Ref: </div>
+      </div>
+      <div class="receipt-body">
+        <div class="amount-section">
+          <div class="label" id="receipt-amount-label">Amount</div>
+          <div class="amount"><span class="naira-sign">N<span class="stroke stroke1"></span><span class="stroke stroke2"></span></span><span id="receipt-amount"></span></div>
+          <div class="type" id="receipt-type-label">Transaction</div>
+        </div>
+        <div class="details-section">
+          <div class="detail-row"><span class="label">Reference</span><span class="value" id="receipt-reference"></span></div>
+          <div class="detail-row"><span class="label">Recipient</span><span class="value" id="receipt-account">Nest Savings Wallet</span></div>
+          <div class="detail-row"><span class="label">Type</span><span class="value" id="receipt-type"></span></div>
+          <div class="detail-row"><span class="label">Status</span><span class="value" id="receipt-status"></span></div>
+          <div class="detail-row"><span class="label">Date</span><span class="value" id="receipt-date"></span></div>
+          <!-- New balance section removed for privacy -->
+        </div>
+        <div class="verification-section">
+          <div class="verification-box">
+            <div class="icon">
+              <svg width="42" height="42" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </div>
+            <div>
+              <div class="text">Transaction Verification</div>
+              <div class="desc">Scan to verify this receipt on<br>the Nest secure ledger</div>
+            </div>
+          </div>
+          <div class="secured">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V7a8 8 0 0 0-16 0v5c0 6 8 10 8 10z"/><path d="M12 11v3"/><path d="M12 7h.01"/></svg>
+            Secured by Nest
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Transaction data injection
+    function getTransaction() {
+      // Try to get transaction from URL or localStorage
+      const params = new URLSearchParams(window.location.search);
+      let transaction = null;
+      if (params.has('data')) {
+        try {
+          transaction = JSON.parse(decodeURIComponent(params.get('data')));
+        } catch {}
+      } else if (localStorage.getItem('lastTransaction')) {
+        try {
+          transaction = JSON.parse(localStorage.getItem('lastTransaction'));
+        } catch {}
+      }
+      return transaction;
+    }
+    const transaction = getTransaction();
+    if (transaction) {
+      document.getElementById('receipt-ref').textContent = 'Ref: ' + (transaction.reference || transaction.id || '—');
+      document.getElementById('receipt-amount').textContent = transaction.amount ? Number(transaction.amount).toLocaleString() : '—';
+      document.getElementById('receipt-date').textContent = transaction.date ? new Date(transaction.date).toLocaleString() : '—';
+      document.getElementById('receipt-reference').textContent = transaction.reference || transaction.id || '—';
+      document.getElementById('receipt-type').textContent = transaction.type ? transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) : '—';
+      document.getElementById('receipt-status').textContent = (typeof transaction.status === 'string' && transaction.status.length > 0) ? transaction.status : 'Successful';
+      // Optionally set account/source if available
+      if (transaction.account) document.getElementById('receipt-account').textContent = transaction.account;
+      if (transaction.source) document.getElementById('receipt-source').textContent = transaction.source;
+
+      // Dynamic labels for deposit/topup/withdrawal
+      let typeLabel = 'Transaction';
+      let amountLabel = 'Amount';
+      if (transaction.type) {
+        const t = transaction.type.toLowerCase();
+        if (t === 'deposit' || t === 'topup') {
+          typeLabel = 'Savings Deposit';
+          amountLabel = 'Amount Saved';
+        } else if (t === 'withdrawal' || t === 'withdraw') {
+          typeLabel = 'Withdrawal';
+          amountLabel = 'Amount Withdrawn';
+        }
+      }
+      document.getElementById('receipt-type-label').textContent = typeLabel;
+      document.getElementById('receipt-amount-label').textContent = amountLabel;
+    }
+  </script>
+</body>
+</html>
