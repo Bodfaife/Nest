@@ -28,6 +28,7 @@ export default function SignUpScreen({ onSignUp, onNavigateToSignIn, onProceedTo
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [touched, setTouched] = useState(false);
+  // loading used only to disable button briefly, not to indicate account creation
   const [loading, setLoading] = useState(false);
 
   const passwordWarning = touched ? validatePassword(password) : '';
@@ -37,59 +38,34 @@ export default function SignUpScreen({ onSignUp, onNavigateToSignIn, onProceedTo
       : '';
   const phoneWarning = touched ? validatePhone(phone) : '';
 
-  async function handleSignUp() {
+  function handleSignUp() {
     setTouched(true);
 
     if (!fullName || !contact || !phone || !password || !confirmPassword) return;
     if (passwordWarning || confirmWarning || phoneWarning) return;
 
     setLoading(true);
-
+    // quickly store interim data and move to part 2
     const email = contact.trim().toLowerCase();
     const cleanPhone = phone.replace(/\s/g, '');
 
-    // Store signup intent in localStorage so we can resume after email confirmation
     localStorage.setItem('signupPending', JSON.stringify({
       fullName,
       email,
       phone: cleanPhone,
+      password,
       createdAt: Date.now()
     }));
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        // Redirect back to app (not a separate page) after email confirmation
-        emailRedirectTo: `${window.location.origin}?flow=signup-verify`,
-        data: { full_name: fullName }
+    // small timeout so loading spinner is visible briefly
+    setTimeout(() => {
+      setLoading(false);
+      if (onProceedToLocation) {
+        onProceedToLocation({ fullName, email, phone: cleanPhone });
+      } else if (onSignUp) {
+        onSignUp({ fullName, email });
       }
-    });
-
-    setLoading(false);
-
-    if (error) {
-      const { showAppAlert } = await import('../lib/appAlert');
-      showAppAlert({
-        type: 'error',
-        message: error.message || 'Signup failed'
-      });
-      return;
-    }
-
-    const { showAppAlert } = await import('../lib/appAlert');
-    showAppAlert({
-      type: 'success',
-      message:
-        'Signup successful! Check your email to confirm and continue to Nest.'
-    });
-
-    // Pass data to app handler which will proceed to location screen
-    if (onProceedToLocation) {
-      onProceedToLocation({ fullName, email, phone: cleanPhone });
-    } else if (onSignUp) {
-      onSignUp({ fullName, email });
-    }
+    }, 200);
   }
 
   return (
@@ -228,7 +204,7 @@ export default function SignUpScreen({ onSignUp, onNavigateToSignIn, onProceedTo
           disabled={loading}
           className="w-full py-4 rounded-2xl font-bold text-white bg-[#00875A] shadow-lg shadow-emerald-100 active:scale-[0.98] transition-all disabled:opacity-60"
         >
-          {loading ? 'Creating account...' : 'Continue'}
+          Continue
         </button>
 
         <p className="text-center mt-6 text-sm text-gray-500">

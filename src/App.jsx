@@ -30,6 +30,8 @@ import SplashScreen from "./screens/SplashScreen";
 import SignInScreen from "./screens/SignInScreen";
 import SignUpScreen from "./screens/SignUpScreen";
 import SignUpLocationScreen from "./screens/SignUpLocationScreen";
+import EmailSentScreen from "./screens/EmailSentScreen";
+import VerifyAccountScreen from "./screens/VerifyAccountScreen";
 import OTPVerificationScreen from "./screens/OTPVerificationScreen";
 import RecoveryPhraseScreen from "./screens/RecoveryPhraseScreen";
 import RegistrationSplashScreen from "./screens/RegistrationSplashScreen";
@@ -38,6 +40,8 @@ import CreateSavingsPromptScreen from "./screens/CreateSavingsPromptScreen";
 import CreateSavingsFormBioScreen from "./screens/CreateSavingsFormBioScreen";
 import CreateSavingsFormSavingsScreen from "./screens/CreateSavingsFormSavingsScreen";
 import SavingsProcessingScreen from "./screens/SavingsProcessingScreen";
+import AccountCreationProcessingScreen from "./screens/AccountCreationProcessingScreen";
+import AccountCreatedSuccessScreen from "./screens/AccountCreatedSuccessScreen";
 import AppLaunchPinScreen from "./screens/AppLaunchPinScreen";
 import ForgotAppLaunchPinScreen from "./screens/ForgotAppLaunchPinScreen";
 
@@ -150,7 +154,9 @@ function App() {
       SCREENS.CreateSavingsBio,
       SCREENS.CreateSavingsDetails,
       SCREENS.SavingsProcessing,
-      SCREENS.RecoveryPhrase
+      SCREENS.RecoveryPhrase,
+      SCREENS.AccountCreationProcessing,
+      SCREENS.AccountCreatedSuccess
     ];
 
     // check for a saved user object too
@@ -1178,7 +1184,7 @@ function App() {
               const email = signupData.email;
               const fullName = signupData.fullName;
               
-              // Set email for potential OTP verification
+              // record signup email for later steps
               setSignupEmail(email);
               setOtpContext('signup');
 
@@ -1257,7 +1263,60 @@ function App() {
 
               setOpenedFrom("SignUp");
               setSignupPart(1); // Reset for next time
-              setCurrentScreen("OTPVerification");
+
+              // After account creation, show processing screen
+              setCurrentScreen(SCREENS.AccountCreationProcessing);
+            }}
+          />
+        )}
+
+        {currentScreen === SCREENS.AccountCreationProcessing && (
+          <AccountCreationProcessingScreen
+            userName={user?.fullName || 'User'}
+            onComplete={() => setCurrentScreen(SCREENS.AccountCreatedSuccess)}
+          />
+        )}
+
+        {currentScreen === SCREENS.AccountCreatedSuccess && (
+          <AccountCreatedSuccessScreen
+            userName={user?.fullName || 'User'}
+            onContinue={() => setCurrentScreen(SCREENS.EmailSent)}
+          />
+        )}
+
+        {currentScreen === SCREENS.EmailSent && (
+          <EmailSentScreen
+            onContinue={() => setCurrentScreen(SCREENS.VerifyAccount)}
+          />
+        )}
+
+        {currentScreen === SCREENS.VerifyAccount && (
+          <VerifyAccountScreen
+            onVerify={() => setCurrentScreen(SCREENS.VerifyAccountProcessing)}
+          />
+        )}
+
+        {currentScreen === SCREENS.VerifyAccountProcessing && (
+          <PaymentProcessingScreen
+            message="Verifying account..."
+            onComplete={async () => {
+              try {
+                const { data, error } = await supabase.auth.getUser();
+                if (error) throw error;
+                if (data?.email_confirmed_at) {
+                  setCurrentScreen(SCREENS.RecoveryPhrase);
+                } else {
+                  const { showAppAlert } = await import('./lib/appAlert');
+                  showAppAlert({
+                    type: 'error',
+                    message: 'Email not confirmed yet, please check your inbox.'
+                  });
+                  setCurrentScreen(SCREENS.VerifyAccount);
+                }
+              } catch (e) {
+                console.error('verification check failed', e);
+                setCurrentScreen(SCREENS.VerifyAccount);
+              }
             }}
           />
         )}

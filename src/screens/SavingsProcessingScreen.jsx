@@ -93,20 +93,6 @@ export default function SavingsProcessingScreen({
           ></div>
         ))}
       </div>
-
-      {/* Summary (shows when complete) */}
-      {isComplete && (
-        <div className="mt-12 max-w-sm p-6 rounded-2xl transition-all duration-700 animate-in fade-in slide-in-from-bottom-4 bg-white border border-emerald-100 shadow-lg shadow-emerald-100/50">
-          <h3 className="font-bold mb-2 text-emerald-900">
-            Savings Plan Details
-          </h3>
-          <div className="space-y-2 text-sm text-gray-600">
-            <p><span className="font-semibold">Goal:</span> {savingsPlanData.goal || 'N/A'}</p>
-            <p><span className="font-semibold">Target:</span> ₦{parseFloat(savingsPlanData.targetAmount || 0).toLocaleString()}</p>
-            <p><span className="font-semibold">Frequency:</span> {savingsPlanData.frequency || 'N/A'}</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -60,5 +60,12 @@ export const SCREENS = {
   ResetPassword: "ResetPassword",
 
   ForgotAppLaunchPin: "ForgotAppLaunchPin",
+
+  // email verification flow
+  EmailSent: "EmailSent",
+  VerifyAccount: "VerifyAccount",
+  VerifyAccountProcessing: "VerifyAccountProcessing",
+  AccountCreationProcessing: "AccountCreationProcessing",
+  AccountCreatedSuccess: "AccountCreatedSuccess",
   // ... add new screen names as needed
 };
