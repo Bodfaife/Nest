@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, Phone } from 'lucide-react';
-import { supabase } from "../lib/supabase";
+
 
 function validatePassword(pw) {
   if (!pw) return '';

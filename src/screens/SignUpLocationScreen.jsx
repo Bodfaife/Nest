@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Globe, MapPin, Home } from 'lucide-react';
+import { supabase } from "../lib/supabase";
 
 // State/province lists per country
 const STATES_BY_COUNTRY = {
