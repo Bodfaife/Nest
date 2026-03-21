@@ -2,11 +2,11 @@ import React from 'react';
 import { ChevronLeft, ArrowDownLeft, ArrowUpRight, Search, Download } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 
-export default function TransactionHistoryScreen({ transactions = [], onBack, openScreen, darkMode, onDownloadStatement }) {
+export default function TransactionHistoryScreen({ transactions = [], onBack, openScreen, onDownloadStatement }) {
   const { formatAmount } = useCurrency();
   const [search, setSearch] = React.useState("");
-  const container = darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900';
-  const cardBg = darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-50';
+  const container = 'bg-gray-50 text-gray-900';
+  const cardBg = 'bg-white border-gray-50';
   const textSecondary = "text-gray-500";
   const filtered = transactions.filter(tx => {
     if (!search) return true;

@@ -9,13 +9,13 @@ const DownloadStatementScreen = ({ transactions = [], onBack, user = {}, savings
   const [statementFormat, setStatementFormat] = useState('pdf'); // pdf | csv
   const { formatAmount } = useCurrency();
 
-  const bgClass = darkMode ? 'bg-gray-900' : 'bg-white';
+  const bgClass = 'bg-white';
   const textPrimary = "text-gray-900";
   const textSecondary = "text-gray-500";
-  const inputBg = darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-100';
-  const cardBg = darkMode ? 'bg-gray-800' : 'bg-gray-50';
-  const buttonBg = darkMode ? 'bg-[#00FF9D] text-gray-900' : 'bg-[#00875A] text-white';
-  const borderColor = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const inputBg = 'bg-gray-50 border-gray-100';
+  const cardBg = 'bg-gray-50';
+  const buttonBg = 'bg-[#00875A] text-white';
+  const borderColor = 'border-gray-200';
 
   // Filter transactions by date range
   const filteredTransactions = transactions.filter(tx => {

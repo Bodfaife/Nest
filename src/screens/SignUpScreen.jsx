@@ -65,7 +65,7 @@ export default function SignUpScreen({ onSignUp, onNavigateToSignIn, onProceedTo
       } else if (onSignUp) {
         onSignUp({ fullName, email });
       }
-    }, 200);
+    }, 100);
   }
 
   return (

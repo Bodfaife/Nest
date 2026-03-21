@@ -8,13 +8,13 @@ const SecurityPrivacyScreen = ({ onBack, onViewPrivacyPolicy, onResetPin, onClos
     sessionTimeout: true,
   });
 
-  const bgClass = darkMode ? 'bg-gray-900' : 'bg-white';
+  const bgClass = 'bg-white';
   const textPrimary = "text-gray-900";
   const textSecondary = "text-gray-500";
-  const cardBg = darkMode ? 'bg-gray-800' : 'bg-gray-50';
-  const borderColor = darkMode ? 'border-gray-700' : 'border-gray-200';
-  const toggleBg = darkMode ? 'bg-gray-700' : 'bg-gray-200';
-  const dangerBg = darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200';
+  const cardBg = 'bg-gray-50';
+  const borderColor = 'border-gray-200';
+  const toggleBg = 'bg-gray-200';
+  const dangerBg = 'bg-red-50 border-red-200';
 
   const toggleSecurity = (key) => {
     setSecurity({ ...security, [key]: !security[key] });

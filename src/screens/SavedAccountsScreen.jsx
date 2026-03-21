@@ -11,12 +11,12 @@ export default function SavedAccountsScreen({
 }) {
   const [deletingId, setDeletingId] = useState(null);
 
-  const bgClass = darkMode ? 'bg-gray-900' : 'bg-white';
+  const bgClass = 'bg-white';
   const textPrimary = "text-gray-900";
   const textSecondary = "text-gray-500";
-  const cardBg = darkMode ? 'bg-gray-800' : 'bg-gray-50';
-  const borderColor = darkMode ? 'border-gray-700' : 'border-gray-100';
-  const buttonBg = darkMode ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-emerald-600 hover:bg-emerald-700';
+  const cardBg = 'bg-gray-50';
+  const borderColor = 'border-gray-100';
+  const buttonBg = 'bg-emerald-600 hover:bg-emerald-700';
 
   return (
     <div className={`min-h-screen flex flex-col ${bgClass} animate-in slide-in-from-right`}>

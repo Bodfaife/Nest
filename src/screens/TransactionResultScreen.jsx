@@ -20,34 +20,12 @@ const TransactionResultScreen = ({
     return t.charAt(0).toUpperCase() + t.slice(1);
   };
 
-  // Dynamic classes based on dark mode
-  const bgClass = darkMode
-    ? isSuccess
-      ? 'bg-black'
-      : 'bg-red-900'
-    : isSuccess
-      ? 'bg-white'
-      : 'bg-red-50';
-
-  const textPrimary = darkMode
-    ? isSuccess
-      ? 'text-white'
-      : 'text-red-200'
-    : isSuccess
-      ? 'text-gray-900'
-      : 'text-red-500';
-
-  const textSecondary = darkMode
-    ? 'text-gray-400'
-    : 'text-gray-400';
-
-  const cardBg = darkMode
-    ? 'bg-gray-800'
-    : 'bg-gray-50';
-
-  const cardText = darkMode
-    ? 'text-white'
-    : 'text-gray-900';
+  // Dynamic classes based on light mode
+  const bgClass = isSuccess ? 'bg-white' : 'bg-red-50';
+  const textPrimary = isSuccess ? 'text-gray-900' : 'text-red-500';
+  const textSecondary = 'text-gray-400';
+  const cardBg = 'bg-gray-50';
+  const cardText = 'text-gray-900';
 
   const buttonPrimaryBg = darkMode
     ? isSuccess

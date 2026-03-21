@@ -15,13 +15,13 @@ const PersonalInformationScreen = ({ user, onBack, onUserChange }) => {
     country: false,
   });
 
-  const bgClass = darkMode ? 'bg-gray-900' : 'bg-white';
+  const bgClass = 'bg-white';
   const textPrimary = "text-gray-900";
   const textSecondary = "text-gray-500";
-  const cardBg = darkMode ? 'bg-gray-800' : 'bg-gray-50';
-  const inputBg = darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-100';
-  const borderColor = darkMode ? 'border-gray-700' : 'border-gray-200';
-  const buttonBg = darkMode ? 'bg-[#00FF9D] text-gray-900' : 'bg-[#00875A] text-white';
+  const cardBg = 'bg-gray-50';
+  const inputBg = 'bg-gray-50 border-gray-100';
+  const borderColor = 'border-gray-200';
+  const buttonBg = 'bg-[#00875A] text-white';
 
   const handleChange = (key, value) => {
     setFormData({ ...formData, [key]: value });

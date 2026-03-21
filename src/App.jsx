@@ -143,7 +143,7 @@ function App() {
           console.error('Failed to parse saved user:', e);
         }
       }
-      return flow === 'signup-verify' ? SCREENS.RecoveryPhrase : SCREENS.RecoveryPhraseVerification;
+      return flow === 'signup-verify' ? SCREENS.VerifyAccount : SCREENS.RecoveryPhraseVerification;
     }
 
     // Attempt to restore a saved onboarding screen only if there's NO logged-in user
@@ -180,7 +180,10 @@ function App() {
 
     return SCREENS.Splash;
   });
-    const [activeTab, setActiveTab] = useState("home");
+
+  const [accountCreatedNextScreen, setAccountCreatedNextScreen] = useState(SCREENS.EmailSent);
+
+  const [activeTab, setActiveTab] = useState("home");
 
   // ===== User & Authentication =====
   const [user, setUser] = useState(() => {
@@ -1280,7 +1283,9 @@ function App() {
         {currentScreen === SCREENS.AccountCreatedSuccess && (
           <AccountCreatedSuccessScreen
             userName={user?.fullName || 'User'}
-            onContinue={() => setCurrentScreen(SCREENS.EmailSent)}
+            accountNumber={user?.accountNumber}
+            onContinue={(next) => setCurrentScreen(next)}
+            nextScreen={accountCreatedNextScreen}
           />
         )}
 
@@ -1304,7 +1309,8 @@ function App() {
                 const { data, error } = await supabase.auth.getUser();
                 if (error) throw error;
                 if (data?.email_confirmed_at) {
-                  setCurrentScreen(SCREENS.RecoveryPhrase);
+                  setAccountCreatedNextScreen(SCREENS.RecoveryPhrase);
+                  setCurrentScreen(SCREENS.AccountCreatedSuccess);
                 } else {
                   const { showAppAlert } = await import('./lib/appAlert');
                   showAppAlert({
@@ -1405,7 +1411,7 @@ function App() {
                 const updatedUser = { ...(user || {}), transactionPin: newPin };
                 setUser(updatedUser);
                 try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
-                setCurrentScreen('RegistrationSplash');
+                setCurrentScreen('Main');
               } catch (e) {
                 console.error('PIN creation error:', e);
                 showAlert({ type: 'error', title: 'Error', message: 'Failed to save PIN. Please try again.' });
@@ -1611,6 +1617,7 @@ function App() {
                 openScreen={openScreen}
                 profilePicture={profilePicture}
                 onProfilePictureChange={setProfilePicture}
+                setProfileSection={setProfileSection}
               />
             )}
 
@@ -1699,7 +1706,6 @@ function App() {
                     }
                   }
                 }}
-
               />
             )}
 
