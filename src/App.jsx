@@ -211,9 +211,29 @@ function App() {
     return parsed;
   });
 
-  const [transactions, setTransactions] = useState(() => safeParse(localStorage.getItem("transactions"), []));
-  const [savingsBalance, setSavingsBalance] = useState(() => { const num = parseFloat(localStorage.getItem("savingsBalance")); return !isNaN(num) ? num : 0; });
-  const [goals, setGoals] = useState(() => safeParse(localStorage.getItem("goals"), []));
+  const [transactions, setTransactions] = useState(() => {
+    const initialUser = safeParse(localStorage.getItem("user"), null);
+    if (initialUser?.email) {
+      return safeParse(localStorage.getItem(getUserKey("transactions", initialUser)), []);
+    }
+    return safeParse(localStorage.getItem("transactions"), []);
+  });
+  const [savingsBalance, setSavingsBalance] = useState(() => {
+    const initialUser = safeParse(localStorage.getItem("user"), null);
+    if (initialUser?.email) {
+      const val = localStorage.getItem(getUserKey("savingsBalance", initialUser));
+      return val ? parseFloat(val) : 0;
+    }
+    const num = parseFloat(localStorage.getItem("savingsBalance"));
+    return !isNaN(num) ? num : 0;
+  });
+  const [goals, setGoals] = useState(() => {
+    const initialUser = safeParse(localStorage.getItem("user"), null);
+    if (initialUser?.email) {
+      return safeParse(localStorage.getItem(getUserKey("goals", initialUser)), []);
+    }
+    return safeParse(localStorage.getItem("goals"), []);
+  });
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [appAlert, setAppAlert] = useState(null);
   const [pendingPayment, setPendingPayment] = useState(null);
@@ -221,10 +241,22 @@ function App() {
   const [requirePin, setRequirePin] = useState(false);
   const [transactionResult, setTransactionResult] = useState(null);
   const [depositMode, setDepositMode] = useState("start");
-  const [bankCards, setBankCards] = useState(() => safeParse(localStorage.getItem("bankCards"), []));
+  const [bankCards, setBankCards] = useState(() => {
+    const initialUser = safeParse(localStorage.getItem("user"), null);
+    if (initialUser?.email) {
+      return safeParse(localStorage.getItem(getUserKey("bankCards", initialUser)), []);
+    }
+    return safeParse(localStorage.getItem("bankCards"), []);
+  });
   const [cardBeingLinked, setCardBeingLinked] = useState(null);
   const [cardLinkingStep, setCardLinkingStep] = useState("add");
-  const [bankAccounts, setBankAccounts] = useState(() => safeParse(localStorage.getItem("bankAccounts"), []));
+  const [bankAccounts, setBankAccounts] = useState(() => {
+    const initialUser = safeParse(localStorage.getItem("user"), null);
+    if (initialUser?.email) {
+      return safeParse(localStorage.getItem(getUserKey("bankAccounts", initialUser)), []);
+    }
+    return safeParse(localStorage.getItem("bankAccounts"), []);
+  });
   const [swRegistration, setSwRegistration] = useState(null);
   const reminderTimerRef = useRef(null);
   const [savingsPlanData, setSavingsPlanData] = useState(null);
@@ -1479,6 +1511,16 @@ function App() {
           />
         )}
 
+        {currentScreen === "CreateSavingsFormBioScreen" && (
+          <CreateSavingsFormBioScreen
+            onNext={(bioData) => {
+              // Save bio data and move to savings details
+              localStorage.setItem("savedBioForm", JSON.stringify(bioData));
+              setCurrentScreen("CreateSavingsDetails");
+            }}
+          />
+        )}
+
         {currentScreen === "CreateSavingsDetails" && (
           <CreateSavingsFormSavingsScreen 
             onSubmit={(formData) => {
@@ -2168,6 +2210,26 @@ function App() {
                 setOpenedFrom(null);
                 setCurrentScreen("Main");
               }
+            }}
+          />
+        )}
+
+        {currentScreen === "BankAccountSuccess" && newBankAccountData && (
+          <BankAccountSuccessScreen
+            accountData={newBankAccountData}
+            onContinue={() => {
+              // If we were adding the account from a payment flow (e.g. ConfirmPayment for withdrawals),
+              // attach the new account to the pending payment and return to confirmation so the flow continues.
+              if (openedFrom === 'ConfirmPayment') {
+                setPendingPayment(prev => ({ ...(prev || {}), paymentMethod: 'bank', selectedAccount: newBankAccountData }));
+                setOpenedFrom(null);
+                setCurrentScreen('ConfirmPayment');
+              } else {
+                setShowSavedAccounts(true);
+                setOpenedFrom(null);
+                setCurrentScreen("Main");
+              }
+              setNewBankAccountData(null);
             }}
           />
         )}

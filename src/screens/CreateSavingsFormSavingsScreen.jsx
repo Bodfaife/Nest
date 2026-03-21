@@ -136,10 +136,9 @@ export default function CreateSavingsFormSavingsScreen({ onSubmit, user }) {
 
               <div className="space-y-1">
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
                   Target amount
                 </label>
-                <input type="number" name="targetAmount" value={form.targetAmount} onChange={handleChange} placeholder="How much do you want to save?" className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300" />
+                <input type="number" name="targetAmount" value={form.targetAmount} onChange={handleChange} placeholder="0.00" className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300" />
               </div>
 
               <div className="space-y-1">
@@ -158,10 +157,9 @@ export default function CreateSavingsFormSavingsScreen({ onSubmit, user }) {
 
               <div className="space-y-1">
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
                   Amount per {form.frequency || 'period'}
                 </label>
-                <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder={`Amount you&apos;ll save ${form.frequency || 'each time'}`} className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300" />
+                <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder={`0.00`} className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300" />
               </div>
             </>
           )}
@@ -184,10 +182,9 @@ export default function CreateSavingsFormSavingsScreen({ onSubmit, user }) {
 
               <div className="space-y-1">
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
                   Amount per {form.frequency || 'period'}
                 </label>
-                <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder={`Amount you&apos;ll save ${form.frequency || 'each time'}`} className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300" />
+                <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder={`0.00`} className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300" />
               </div>
 
               <div className="space-y-1">
@@ -212,7 +209,6 @@ export default function CreateSavingsFormSavingsScreen({ onSubmit, user }) {
 
               <div className="space-y-1">
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
                   Proposed total amount
                 </label>
                 <input type="number" name="targetAmount" value={form.targetAmount} onChange={handleChange} placeholder="Target you&apos;d like to reach" className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300" />

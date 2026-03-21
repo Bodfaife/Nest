@@ -12,7 +12,7 @@ export default function SavingsProcessingScreen({
   const messages = [
     { text: "Setting up your savings plan...", icon: "⚙️" },
     { text: "Securing your savings goal...", icon: "🔒" },
-    { text: "Savings plan created successfully! 🎉", icon: "✅" },
+    { text: "Savings plan created successfully!", icon: "✅" },
     { text: "Ready to make your first deposit?", icon: "🚀" }
   ];
 
@@ -24,7 +24,7 @@ export default function SavingsProcessingScreen({
       // Fade out before switching message
       const fadeTimer = setTimeout(() => {
         setFadeOut(true);
-      }, 2500);
+      }, 2000);
 
       // Move to next message
       const nextMsgTimer = setTimeout(() => {

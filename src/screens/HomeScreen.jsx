@@ -27,9 +27,6 @@ export default function HomeScreen({
         <h1 className="text-2xl font-bold">
           Hello, {user?.fullName ? user.fullName.split(" ")[0] : "User"} 👋
         </h1>
-        <button onClick={toggleDarkMode}>
-          {darkMode ? <Sun size={22} /> : <Moon size={22} />}
-        </button>
       </div>
 
       {/* Savings Status Card */}
