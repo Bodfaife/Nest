@@ -8,3 +8,8 @@ export const getGreeting = () => {
   if (hour < 18) return "Good afternoon";
   return "Good evening";
 };
+
+export const getUserStorageKey = (user, key) => {
+  const userIdentifier = (user?.email || user?.accountNumber || user?.phone || "guest").toString().trim().toLowerCase();
+  return `${key}:${userIdentifier}`;
+};

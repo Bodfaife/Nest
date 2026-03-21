@@ -19,11 +19,18 @@ import {
   updateGoal,
   deleteGoal
 } from "./lib/supabase";
+import { getUserStorageKey } from "./helpers/helpers";
 import { generateRecoveryPhrase } from "./helpers/generateRecoveryPhrase";
 import { generateReference } from "./helpers/reference";
 import { requestNotificationPermission, sendTransactionNotification } from "./lib/deviceNotifications";
 import { CurrencyProvider } from "./context/CurrencyContext";
 import { SCREENS } from "./constants/screens";
+
+// Helper function for user-specific localStorage keys
+const getUserKey = (key, user) => {
+  if (!user?.email) return key; // fallback for non-user data
+  return `${key}_${user.email}`;
+};
 
 // Onboarding Screens
 import SplashScreen from "./screens/SplashScreen";
@@ -151,7 +158,6 @@ function App() {
     const validSignupScreens = [
       SCREENS.SignUp,
       SCREENS.OTPVerification,
-      SCREENS.CreateSavingsBio,
       SCREENS.CreateSavingsDetails,
       SCREENS.SavingsProcessing,
       SCREENS.RecoveryPhrase,
@@ -175,6 +181,16 @@ function App() {
       } else {
         console.log('⚠️ Ignoring saved signup screen because user already exists:', savedScreen);
         localStorage.removeItem('currentSignupScreen');
+      }
+    }
+
+    // Check if user is signed in and has app launch PIN - if so, require PIN verification
+    if (initialUser?.email) {
+      const userKey = `${'appLaunchPin'}_${initialUser.email}`;
+      const hasPin = localStorage.getItem(userKey);
+      if (hasPin) {
+        console.log('🔐 User has app launch PIN, showing PIN screen');
+        return SCREENS.AppLaunchPin;
       }
     }
 
@@ -615,17 +631,19 @@ function App() {
 
   useEffect(() => {
     if (user) localStorage.setItem("user", JSON.stringify(user));
-    localStorage.setItem("transactions", JSON.stringify(transactions));
-    localStorage.setItem("bankCards", JSON.stringify(bankCards));
-    localStorage.setItem("bankAccounts", JSON.stringify(bankAccounts));
-    localStorage.setItem("savingsBalance", String(savingsBalance));
-    localStorage.setItem("goals", JSON.stringify(goals));
-    if (savingsFlowScreen) localStorage.setItem("savingsFlowScreen", savingsFlowScreen);
-    if (savingsPlanData) localStorage.setItem("savingsPlanData", JSON.stringify(savingsPlanData));
-    if (profilePicture) localStorage.setItem("profilePicture", profilePicture);
+    if (user?.email) {
+      localStorage.setItem(getUserKey("transactions", user), JSON.stringify(transactions));
+      localStorage.setItem(getUserKey("bankCards", user), JSON.stringify(bankCards));
+      localStorage.setItem(getUserKey("bankAccounts", user), JSON.stringify(bankAccounts));
+      localStorage.setItem(getUserKey("savingsBalance", user), String(savingsBalance));
+      localStorage.setItem(getUserKey("goals", user), JSON.stringify(goals));
+      if (savingsFlowScreen) localStorage.setItem(getUserKey("savingsFlowScreen", user), savingsFlowScreen);
+      if (savingsPlanData) localStorage.setItem(getUserKey("savingsPlanData", user), JSON.stringify(savingsPlanData));
+      if (profilePicture) localStorage.setItem(getUserKey("profilePicture", user), profilePicture);
+    }
     
     // Persist current screen during signup/onboarding flow so app can resume if closed
-    const isSignupFlow = ['SignUp', 'OTPVerification', 'CreateSavingsBio', 'CreateSavingsDetails', 'SavingsProcessing', 'RecoveryPhrase'].includes(currentScreen);
+    const isSignupFlow = ['SignUp', 'OTPVerification', 'CreateSavingsDetails', 'SavingsProcessing', 'RecoveryPhrase'].includes(currentScreen);
     if (isSignupFlow) {
       localStorage.setItem('currentSignupScreen', currentScreen);
       console.log('💾 Saved signup screen:', currentScreen);
@@ -634,6 +652,29 @@ function App() {
       localStorage.removeItem('currentSignupScreen');
     }
   }, [user, transactions, bankCards, bankAccounts, profilePicture, savingsBalance, savingsFlowScreen, savingsPlanData, goals, currentScreen]);
+
+  // Load user-specific data when user changes
+  useEffect(() => {
+    if (user?.email) {
+      const userTransactions = safeParse(localStorage.getItem(getUserKey("transactions", user)), []);
+      const userSavingsBalance = parseFloat(localStorage.getItem(getUserKey("savingsBalance", user))) || 0;
+      const userGoals = safeParse(localStorage.getItem(getUserKey("goals", user)), []);
+      const userBankCards = safeParse(localStorage.getItem(getUserKey("bankCards", user)), []);
+      const userBankAccounts = safeParse(localStorage.getItem(getUserKey("bankAccounts", user)), []);
+      const userSavingsFlowScreen = localStorage.getItem(getUserKey("savingsFlowScreen", user)) || null;
+      const userSavingsPlanData = safeParse(localStorage.getItem(getUserKey("savingsPlanData", user)), null);
+      const userProfilePicture = localStorage.getItem(getUserKey("profilePicture", user)) || null;
+
+      setTransactions(userTransactions);
+      setSavingsBalance(userSavingsBalance);
+      setGoals(userGoals);
+      setBankCards(userBankCards);
+      setBankAccounts(userBankAccounts);
+      setSavingsFlowScreen(userSavingsFlowScreen);
+      setSavingsPlanData(userSavingsPlanData);
+      setProfilePicture(userProfilePicture);
+    }
+  }, [user?.email]);
 
   // push/replace history entries so back button works across most screens
   useEffect(() => {
@@ -1407,7 +1448,7 @@ function App() {
             onPinCreated={async (newPin) => {
               try {
                 // directly finalize PIN without any email/OTP step
-                try { localStorage.setItem('userPin', newPin); } catch (e) {}
+                try { localStorage.setItem(getUserKey("userPin", user), newPin); } catch (e) {}
                 const updatedUser = { ...(user || {}), transactionPin: newPin };
                 setUser(updatedUser);
                 try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
@@ -1432,14 +1473,10 @@ function App() {
 
         {currentScreen === "CreateSavingsPrompt" && (
           <CreateSavingsPromptScreen 
-            onCreate={() => setCurrentScreen("CreateSavingsBio")}
-            onStart={() => setCurrentScreen("CreateSavingsBio")}
+            onCreate={() => setCurrentScreen("CreateSavingsDetails")}
+            onStart={() => setCurrentScreen("CreateSavingsDetails")}
             onSkip={() => goHome()}
           />
-        )}
-
-        {currentScreen === "CreateSavingsBio" && (
-          <CreateSavingsFormBioScreen onNext={() => setCurrentScreen("CreateSavingsDetails")} />
         )}
 
         {currentScreen === "CreateSavingsDetails" && (
@@ -1566,7 +1603,7 @@ function App() {
             }}
             onPinReset={(newPin) => {
               // Save PIN to localStorage
-              localStorage.setItem("userPin", newPin);
+              localStorage.setItem(getUserKey("userPin", user), newPin);
               // Also save to user object for consistency
               const updatedUser = { ...user, transactionPin: newPin };
               setUser(updatedUser);
@@ -1644,7 +1681,7 @@ function App() {
                 onBack={() => setDangerZoneAction(null)}
                 onResetPin={(newPin) => {
                   // Save PIN to localStorage
-                  localStorage.setItem("userPin", newPin);
+                  localStorage.setItem(getUserKey("userPin", user), newPin);
                   // Also save to user object for consistency
                   const updatedUser = { ...user, transactionPin: newPin };
                   setUser(updatedUser);

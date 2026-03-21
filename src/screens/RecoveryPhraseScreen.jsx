@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Copy, Check, Eye, EyeOff, Lock } from "lucide-react";
+import { Copy, Check, Eye, EyeOff, Shield, AlertTriangle } from "lucide-react";
 import { generateRecoveryPhrase } from "../helpers/generateRecoveryPhrase";
 
 export default function RecoveryPhraseScreen({ onContinue, phrases = [], userName = "" }) {
@@ -75,96 +75,124 @@ export default function RecoveryPhraseScreen({ onContinue, phrases = [], userNam
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col px-6 py-12 font-['Plus_Jakarta_Sans',_sans-serif]">
-      {/* Header Section */}
-      <div className="text-center mb-12">
-        <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/30">
-          <Lock size={32} className="text-white" />
-        </div>
-        <h1 className="text-3xl font-black text-emerald-900 mb-2">Recovery Phrase</h1>
-        <p className="text-gray-600 text-base">Your 12-word backup to recover your account anytime</p>
-      </div>
-
-      {loading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-12 h-12 rounded-full border-4 border-emerald-100 border-t-emerald-600 animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600 font-medium">Generating your recovery phrase...</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
+      <div className="bg-white px-6 py-8 shadow-sm">
+        <div className="flex items-center justify-center mb-4">
+          <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+            <Shield className="w-6 h-6 text-blue-600" />
           </div>
         </div>
-      ) : (
-        <>
-          {/* Phrases Display */}
-          <div className="flex-1 flex flex-col items-center justify-center mb-8">
+        <h1 className="text-2xl font-bold text-center text-gray-900 mb-2">
+          Recovery Phrase
+        </h1>
+        <p className="text-gray-600 text-center text-sm leading-relaxed">
+          These 12 words are your backup key to recover your account. Keep them safe and never share them.
+        </p>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 px-6 py-8">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-8 h-8 rounded-full border-2 border-blue-100 border-t-blue-600 animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600 font-medium">Generating your recovery phrase...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-md mx-auto">
+            {/* Security Notice */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-semibold text-amber-800 mb-1">Important Security Notice</h3>
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    Write these words down in order and store them securely. You'll need them to recover your account if you lose access.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Phrase Display */}
             {!showPhrases ? (
-              <div className="w-full max-w-sm bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-3xl p-12 text-center text-white shadow-2xl">
-                <Eye size={48} className="text-white/50 mx-auto mb-6" />
-                <p className="text-white/90 text-sm font-medium mb-6">Tap to reveal your 12-word recovery phrase</p>
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center shadow-sm">
+                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                  <Eye className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Your Recovery Phrase</h3>
+                <p className="text-gray-600 text-sm mb-6">Tap the button below to reveal your 12-word recovery phrase</p>
                 <button
                   onClick={() => setShowPhrases(true)}
-                  className="px-8 py-3 bg-white text-emerald-600 rounded-xl font-bold hover:bg-emerald-50 transition-all active:scale-95"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                 >
-                  Show My Phrase
+                  Reveal Phrase
                 </button>
               </div>
             ) : (
-              <div className="w-full max-w-md">
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  {recoveryPhrases.map((word, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl hover:border-emerald-400 transition-all"
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">Your Recovery Words</h3>
+                    <button
+                      onClick={() => setShowPhrases(false)}
+                      className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
                     >
-                      <span className="w-5 h-5 rounded-full bg-emerald-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">
-                        {idx + 1}
-                      </span>
-                      <span className="font-mono text-sm font-semibold text-emerald-900">{word}</span>
-                    </div>
-                  ))}
+                      <EyeOff className="w-4 h-4" />
+                      <span className="text-sm">Hide</span>
+                    </button>
+                  </div>
                 </div>
-
-                <button
-                  onClick={() => setShowPhrases(false)}
-                  className="w-full flex items-center justify-center gap-2 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors"
-                >
-                  <EyeOff size={16} /> Hide Phrase
-                </button>
+                <div className="p-6">
+                  <div className="grid grid-cols-3 gap-3 mb-6">
+                    {recoveryPhrases.map((word, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200"
+                      >
+                        <span className="text-xs font-medium text-gray-500 w-4 flex-shrink-0">
+                          {idx + 1}
+                        </span>
+                        <span className="font-mono text-sm font-medium text-gray-900 truncate">
+                          {word}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={handleCopyPhrases}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        Copied to clipboard
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        Copy all words
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
           </div>
+        )}
+      </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-3 w-full">
-            <button
-              onClick={handleCopyPhrases}
-              disabled={!showPhrases}
-              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${
-                showPhrases
-                  ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              {copied ? (
-                <>
-                  <Check size={20} />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy size={20} />
-                  Copy Phrase
-                </>
-              )}
-            </button>
-
-            <button
-              onClick={onContinue}
-              className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all active:scale-95"
-            >
-              Continue
-            </button>
-          </div>
-        </>
+      {/* Footer Actions */}
+      {!loading && (
+        <div className="bg-white px-6 py-6 border-t border-gray-200">
+          <button
+            onClick={onContinue}
+            className="w-full py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          >
+            I've Saved My Recovery Phrase
+          </button>
+        </div>
       )}
     </div>
   );

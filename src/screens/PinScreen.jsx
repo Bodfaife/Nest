@@ -12,6 +12,22 @@ const TransactionPinScreen = ({
   onForgotPin,
   transactionType = "Transaction",
 }) => {
+  // Get current user for user-specific storage
+  const getCurrentUser = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const getUserKey = (key) => {
+    const user = getCurrentUser();
+    if (!user?.email) return key;
+    return `${key}_${user.email}`;
+  };
+
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
   const pinLength = 4;
@@ -32,7 +48,7 @@ const TransactionPinScreen = ({
   useEffect(() => {
     if (pin.length === pinLength) {
       const timer = setTimeout(() => {
-        const storedPin = localStorage.getItem('userPin');
+        const storedPin = localStorage.getItem(getUserKey('userPin'));
         if (storedPin && pin === storedPin) {
           onSuccess();
         } else {

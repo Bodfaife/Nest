@@ -2,9 +2,25 @@ import React, { useState } from 'react';
 import { Lock, Trash2 } from 'lucide-react';
 
 export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgotPin, forceResetMode = false }) {
+  // Get current user for user-specific storage
+  const getCurrentUser = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const getUserKey = (key) => {
+    const user = getCurrentUser();
+    if (!user?.email) return key;
+    return `${key}_${user.email}`;
+  };
+
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
-  const [isSetupMode, setIsSetupMode] = useState(forceResetMode || !localStorage.getItem('appLaunchPin'));
+  const [isSetupMode, setIsSetupMode] = useState(forceResetMode || !localStorage.getItem(getUserKey('appLaunchPin')));
   const [confirmPin, setConfirmPin] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -14,7 +30,7 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
 
   // Check if locked due to attempts
   const getLockStatus = () => {
-    const lockData = localStorage.getItem('pinLockData');
+    const lockData = localStorage.getItem(getUserKey('pinLockData'));
     if (!lockData) return null;
     
     const { timestamp, locked } = JSON.parse(lockData);
@@ -25,7 +41,7 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
     }
     
     if (now >= timestamp + LOCK_TIME) {
-      localStorage.removeItem('pinLockData');
+      localStorage.removeItem(getUserKey('pinLockData'));
       return null;
     }
     
@@ -33,12 +49,12 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
   };
 
   const incrementFailedAttempts = () => {
-    let attempts = parseInt(localStorage.getItem('pinFailedAttempts') || '0');
+    let attempts = parseInt(localStorage.getItem(getUserKey('pinFailedAttempts')) || '0');
     attempts += 1;
-    localStorage.setItem('pinFailedAttempts', attempts.toString());
+    localStorage.setItem(getUserKey('pinFailedAttempts'), attempts.toString());
     
     if (attempts >= MAX_ATTEMPTS) {
-      localStorage.setItem('pinLockData', JSON.stringify({
+      localStorage.setItem(getUserKey('pinLockData'), JSON.stringify({
         timestamp: Date.now(),
         locked: true
       }));
@@ -48,8 +64,8 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
   };
 
   const resetFailedAttempts = () => {
-    localStorage.removeItem('pinFailedAttempts');
-    localStorage.removeItem('pinLockData');
+    localStorage.removeItem(getUserKey('pinFailedAttempts'));
+    localStorage.removeItem(getUserKey('pinLockData'));
   };
 
   const handleNumberClick = (num) => {
@@ -105,7 +121,7 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
     // Simulate verification delay
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    const storedPin = localStorage.getItem('appLaunchPin');
+    const storedPin = localStorage.getItem(getUserKey('appLaunchPin'));
     
     if (storedPin === pin) {
       resetFailedAttempts();
@@ -143,7 +159,7 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
     setLoading(true);
     
     // Store PIN in localStorage
-    localStorage.setItem('appLaunchPin', pin);
+    localStorage.setItem(getUserKey('appLaunchPin'), pin);
     
     await new Promise(resolve => setTimeout(resolve, 300));
     setLoading(false);
@@ -277,7 +293,7 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
       </button>
 
       {/* Forgot PIN Button */}
-      {!isSetupMode && localStorage.getItem('appLaunchPin') && (
+      {!isSetupMode && localStorage.getItem(getUserKey('appLaunchPin')) && (
         <button
           onClick={onForgotPin}
           className="mt-4 text-center text-sm text-gray-500 font-bold hover:text-gray-700 transition-all"
@@ -287,7 +303,7 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
       )}
 
       {/* Setup/Verify Toggle */}
-      {!isSetupMode && !localStorage.getItem('appLaunchPin') && (
+      {!isSetupMode && !localStorage.getItem(getUserKey('appLaunchPin')) && (
         <button
           onClick={() => {
             setIsSetupMode(true);
