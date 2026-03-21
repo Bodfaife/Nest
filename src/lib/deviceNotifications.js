@@ -39,7 +39,7 @@ export async function sendDeviceNotification(options = {}) {
     icon = '/Nest logo.png',
     badge = '/Nest logo.png',
     autoClose = true,
-    timeout = 8000,
+    timeout = 0 //stays until user interacts if autoClose is false, otherwise defaults to 0 (no auto-close) unless specified
   } = options;
 
   if (Notification.permission !== 'granted') {
