@@ -748,24 +748,55 @@ function App() {
   const openScreen = (screen, data = null, fromScreen = null) => {
     const previousScreen = fromScreen || currentScreen;
     
+    // Main tab screens
+    if (screen === "Home" || screen === "Main") {
+      setActiveTab("home");
+      setProfileSection(null);
+      setShowSavedCards(false);
+      setShowSavedAccounts(false);
+      setCurrentScreen("Main");
+      return;
+    }
+    if (screen === "Savings") {
+      setActiveTab("savings");
+      setProfileSection(null);
+      setShowSavedCards(false);
+      setShowSavedAccounts(false);
+      setCurrentScreen("Main");
+      return;
+    }
+    if (screen === "Profile") {
+      setActiveTab("profile");
+      setProfileSection(null);
+      setShowSavedCards(false);
+      setShowSavedAccounts(false);
+      setCurrentScreen("Main");
+      return;
+    }
+
     if (screen === "Notifications") {
       setProfileSection("notifications");
+      setActiveTab("profile");
       return;
     }
     if (screen === "SecurityPrivacy") {
       setProfileSection("security");
+      setActiveTab("profile");
       return;
     }
     if (screen === "PersonalInformation") {
       setProfileSection("personal");
+      setActiveTab("profile");
       return;
     }
     if (screen === "SavedCards") {
       setShowSavedCards(true);
+      setActiveTab("profile");
       return;
     }
     if (screen === "SavedAccounts") {
       setShowSavedAccounts(true);
+      setActiveTab("profile");
       return;
     }
     if (screen === "TransactionHistory") {

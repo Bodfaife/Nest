@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User, History, LogOut, Bell, Shield, Wallet, Download, Building2, Camera } from "lucide-react";
+import { User, History, LogOut, Bell, Shield, Wallet, Download, Building2, Camera, ChevronRight } from "lucide-react";
 
 const defaultProfileData = {
   dob: '',
@@ -63,10 +63,10 @@ export default function ProfileScreen({
     { icon: User, label: "Personal Information", color: "bg-emerald-50 text-emerald-600", action: () => setProfileSection("personal") },
     { icon: Bell, label: "Notifications", color: "bg-blue-50 text-blue-600", action: () => setProfileSection("notifications") },
     { icon: Shield, label: "Security & Privacy", color: "bg-purple-50 text-purple-600", action: () => setProfileSection("security") },
-    { icon: Wallet, label: "Saved Cards", color: "bg-orange-50 text-orange-600", action: () => setProfileSection("cards") },
-    { icon: Building2, label: "Bank Accounts", color: "bg-pink-50 text-pink-600", action: () => setProfileSection("accounts") },
-    { icon: History, label: "Transaction History", color: "bg-gray-100 text-gray-600", action: () => setProfileSection("history") },
-    { icon: Download, label: "Download Statement", color: "bg-indigo-50 text-indigo-600", action: () => setProfileSection("statement") },
+    { icon: Wallet, label: "Saved Cards", color: "bg-orange-50 text-orange-600", action: () => openScreen("SavedCards") },
+    { icon: Building2, label: "Bank Accounts", color: "bg-pink-50 text-pink-600", action: () => openScreen("SavedAccounts") },
+    { icon: History, label: "Transaction History", color: "bg-gray-100 text-gray-600", action: () => openScreen("TransactionHistory") },
+    { icon: Download, label: "Download Statement", color: "bg-indigo-50 text-indigo-600", action: () => openScreen("DownloadStatement") },
   ];
 
   const handleSaveProfile = () => {
