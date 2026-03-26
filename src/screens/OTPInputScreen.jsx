@@ -9,7 +9,7 @@ export default function OTPInputScreen({
   onVerifySuccess,
   onResendOTP,
   title = 'Enter OTP',
-  description = 'Enter the 6-digit code sent to your device\'s notification center',
+  description = 'Enter the 6-digit code sent to your device to proceed',
 }) {
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
@@ -81,7 +81,7 @@ export default function OTPInputScreen({
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <h2 className="text-2xl font-bold text-center mb-3">{title}</h2>
         <p className={`text-center mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{description}</p>
-        <p className={`text-sm text-center mb-6 ${"text-gray-500"}`}>Check your device\'s notification center for the OTP code</p>
+        <p className={`text-sm text-center mb-6 ${"text-gray-500"}`}>Check your device's notification center for the OTP code</p>
 
         {/* OTP Input */}
         <div className="w-full max-w-md mb-6">

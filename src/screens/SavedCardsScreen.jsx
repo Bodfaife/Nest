@@ -7,7 +7,7 @@ export default function SavedCardsScreen({
   cards = [],
   onAddCard,
   onDeleteCard,
-  onSelectCard
+  onSetDefaultCard
 }) {
   const [deletingId, setDeletingId] = useState(null);
 
@@ -94,10 +94,10 @@ export default function SavedCardsScreen({
 
                 <div className="flex gap-3">
                   <button
-                    onClick={() => onSelectCard && onSelectCard(card)}
+                    onClick={() => onSetDefaultCard && onSetDefaultCard(card)}
                     className="flex-1 py-3 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all"
                   >
-                    Use Card
+                    {card.isDefault ? 'Default Card' : 'Set as default'}
                   </button>
                   {deletingId === idx && (
                     <>

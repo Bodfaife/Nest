@@ -42,7 +42,7 @@ import VerifyAccountScreen from "./screens/VerifyAccountScreen";
 import OTPVerificationScreen from "./screens/OTPVerificationScreen";
 import RecoveryPhraseScreen from "./screens/RecoveryPhraseScreen";
 import RegistrationSplashScreen from "./screens/RegistrationSplashScreen";
-import CreateTransactionPinScreen from "./screens/CreateTransactionPinScreen";
+import CreateAppPinScreen from "./screens/CreateAppPinScreen";
 import CreateSavingsPromptScreen from "./screens/CreateSavingsPromptScreen";
 import CreateSavingsFormBioScreen from "./screens/CreateSavingsFormBioScreen";
 import CreateSavingsFormSavingsScreen from "./screens/CreateSavingsFormSavingsScreen";
@@ -58,6 +58,7 @@ import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import SavingsScreen from "./screens/SavingsScreen";
 import DepositScreen from "./screens/DepositScreen";
+import CompleteProfileScreen from "./screens/CompleteProfileScreen";
 import WithdrawScreen from "./screens/WithdrawScreen";
 import ConfirmPaymentScreen from "./screens/ConfirmPaymentScreen";
 import PinScreen from "./screens/PinScreen";
@@ -89,6 +90,7 @@ import BankTransferInstructionsScreen from "./screens/BankTransferInstructionsSc
 // Bank Account Screens
 import AddBankAccountScreen from "./screens/AddBankAccountScreen";
 import BankAccountVerificationScreen from "./screens/BankAccountVerificationScreen";
+import BankAccountSuccessScreen from "./screens/BankAccountSuccessScreen";
 
 
 // Success Screens
@@ -150,7 +152,8 @@ function App() {
           console.error('Failed to parse saved user:', e);
         }
       }
-      return flow === 'signup-verify' ? SCREENS.VerifyAccount : SCREENS.RecoveryPhraseVerification;
+      // Direct users immediately to recovery phrase entry after clicking email verification link
+      return flow === 'signup-verify' ? SCREENS.RecoveryPhrase : SCREENS.RecoveryPhraseVerification;
     }
 
     // Attempt to restore a saved onboarding screen only if there's NO logged-in user
@@ -799,6 +802,14 @@ function App() {
       setActiveTab("profile");
       return;
     }
+    if (screen === "CreateSavingsPrompt" || screen === "CreateSavingsFormBioScreen" || screen === "CreateSavingsFormSavingsScreen" || screen === "SavingsProcessing") {
+      setCurrentScreen(screen === "CreateSavingsPrompt" ? "CreateSavingsPrompt" : screen === "CreateSavingsFormBioScreen" ? "CreateSavingsFormBioScreen" : screen === "CreateSavingsFormSavingsScreen" ? "CreateSavingsDetails" : "SavingsProcessing");
+      return;
+    }
+    if (screen === "Deposit") {
+      setCurrentScreen("Deposit");
+      return;
+    }
     if (screen === "TransactionHistory") {
       setOpenedFrom(previousScreen);
       setCurrentScreen("TransactionHistory");
@@ -818,6 +829,11 @@ function App() {
     if (screen === "AddBankAccount") {
       setOpenedFrom(previousScreen);
       setCurrentScreen("AddBankAccount");
+      return;
+    }
+    if (screen === "CompleteProfileScreen") {
+      setOpenedFrom(previousScreen);
+      setCurrentScreen("CompleteProfileScreen");
       return;
     }
     if (screen === "TransactionReceipt") {
@@ -1500,12 +1516,12 @@ function App() {
                   }
                 }
               }
-              setCurrentScreen("CreatePin");
+              setCurrentScreen("CreateTransactionPin");
             }} 
           />
         )}
 
-        {currentScreen === "CreatePin" && (
+        {currentScreen === "CreateTransactionPin" && (
           <CreateTransactionPinScreen
             onBack={() => setCurrentScreen("RecoveryPhrase")}
             onPinCreated={async (newPin) => {
@@ -1515,10 +1531,28 @@ function App() {
                 const updatedUser = { ...(user || {}), transactionPin: newPin };
                 setUser(updatedUser);
                 try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
-                setCurrentScreen('Main');
+                setCurrentScreen('CreateAppPin');
               } catch (e) {
                 console.error('PIN creation error:', e);
                 showAlert({ type: 'error', title: 'Error', message: 'Failed to save PIN. Please try again.' });
+              }
+            }}
+          />
+        )}
+
+        {currentScreen === "CreateAppPin" && (
+          <CreateAppPinScreen
+            onBack={() => setCurrentScreen("CreateTransactionPin")}
+            onPinCreated={async (newPin) => {
+              try {
+                try { localStorage.setItem(getUserKey("appPin", user), newPin); } catch (e) {}
+                const updatedUser = { ...(user || {}), appPin: newPin };
+                setUser(updatedUser);
+                try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
+                setCurrentScreen('RegistrationSplash');
+              } catch (e) {
+                console.error('App PIN creation error:', e);
+                showAlert({ type: 'error', title: 'Error', message: 'Failed to save app PIN. Please try again.' });
               }
             }}
           />
@@ -1556,7 +1590,17 @@ function App() {
           <CreateSavingsFormSavingsScreen 
             onSubmit={(formData) => {
               setSavingsPlanData(formData);
-              // Navigate to processing screen - it will handle goal creation and show sequential messages
+              setDepositMode("start");
+              // persist plan in user profile to support deposit later
+              const pendingPlan = {
+                ...formData,
+                isActive: false,
+                balance: 0,
+                startDate: new Date().toISOString(),
+                withdrawalDate: formData.duration ? new Date(new Date().setMonth(new Date().getMonth() + Number(formData.duration))).toISOString() : null,
+              };
+              setUser((prev) => ({ ...prev, savingsPlan: pendingPlan }));
+
               setCurrentScreen("SavingsProcessing");
             }} 
           />
@@ -1566,10 +1610,15 @@ function App() {
           <SavingsProcessingScreen
             savingsPlanData={savingsPlanData}
             onComplete={() => {
-              // Goal sync already happened, now create reminder and go to deposit
               try { scheduleSavingsReminder(savingsPlanData); } catch (e) {}
               setOpenedFrom("SavingsProcessing");
               setCurrentScreen("Deposit");
+            }}
+            onSkip={() => {
+              try { scheduleSavingsReminder(savingsPlanData); } catch (e) {}
+              setOpenedFrom("SavingsProcessing");
+              setActiveTab("savings");
+              setCurrentScreen("Main");
             }}
           />
         )}
@@ -1711,6 +1760,7 @@ function App() {
                 openScreen={(action) => {
                   if (action === "Deposit") openScreen("Deposit");
                   if (action === "WithdrawSavings") setCurrentScreen("Withdraw");
+                  if (action === "CreateSavingsPrompt") openScreen("CreateSavingsPrompt");
                 }}
                 onViewSavingsDetails={() => {
                   setOpenedFrom("Main");
@@ -1794,6 +1844,7 @@ function App() {
                   }
                 }}
                 onBack={() => setProfileSection(null)}
+                openScreen={openScreen}
               />
             )}
 
@@ -1814,6 +1865,20 @@ function App() {
                     } catch (e) {
                       console.warn('failed delete card on server', e);
                     }
+                  }
+                }}
+                onSetDefaultCard={(cardToDefault) => {
+                  setBankCards(prev => prev.map(card => ({
+                    ...card,
+                    isDefault: card === cardToDefault,
+                  })));
+                  if (user?.email) {
+                    try {
+                      localStorage.setItem(getUserKey('bankCards', user), JSON.stringify(bankCards.map(card => ({
+                        ...card,
+                        isDefault: card === cardToDefault,
+                      }))));
+                    } catch (e) {}
                   }
                 }}
               />
@@ -1901,6 +1966,14 @@ function App() {
               setPendingAction(() => () => setCurrentScreen("PaymentProcessing"));
               setCurrentScreen("ConfirmPayment");
             }}
+          />
+        )}
+
+        {currentScreen === "CompleteProfileScreen" && (
+          <CompleteProfileScreen
+            user={user}
+            onBack={handleBack}
+            onUserChange={setUser}
           />
         )}
 

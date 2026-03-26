@@ -3,6 +3,7 @@ import { ChevronLeft, CreditCard, Lock } from "lucide-react";
 
 const AddPaymentSourceScreen = ({ user, onBack, onSave, darkMode }) => {
   const [cardNumber, setCardNumber] = useState("");
+  const [cardHolder, setCardHolder] = useState(user?.name || "");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
 
@@ -45,22 +46,22 @@ const AddPaymentSourceScreen = ({ user, onBack, onSave, darkMode }) => {
 
       {/* Card Preview */}
       <div className="p-8 flex-1">
-        <div className="w-full aspect-[1.6/1] bg-gradient-to-br from-gray-800 to-gray-950 rounded-[2rem] p-8 text-white relative overflow-hidden mb-10 shadow-2xl">
+        <div className="w-full aspect-[1.6/1] bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 rounded-[2rem] p-8 text-white relative overflow-hidden mb-10 shadow-2xl">
           <div className="flex justify-between items-start">
-            <div className="w-12 h-8 bg-white/20 rounded-md" />
+            <span className="rounded-full px-3 py-1 bg-white/20 text-xs font-black uppercase tracking-widest">{cardNumber.startsWith('4') ? 'VISA' : cardNumber.startsWith('5') ? 'Mastercard' : cardNumber.startsWith('6304') ? 'Verve' : 'Nest Card'}</span>
             <CreditCard className="opacity-40" />
           </div>
           <div className="mt-12">
-            <p className="text-xl tracking-[0.3em] font-mono opacity-50">
-              {cardNumber ? cardNumber.replace(/\d{4}(?=.)/g, "**** ") : "**** **** **** ****"}
+            <p className="text-xl tracking-[0.3em] font-mono opacity-90">
+              {cardNumber ? cardNumber.replace(/(\d{4})(?!$)/g, "$1 ") : "0000 0000 0000 0000"}
             </p>
           </div>
           <div className="absolute bottom-8 left-8">
-            <p className="text-[8px] uppercase tracking-widest opacity-40 mb-1">
+            <p className="text-[8px] uppercase tracking-widest opacity-70 mb-1">
               Card Holder
             </p>
             <p className="text-sm font-bold uppercase tracking-widest">
-              {user?.name || "User"}
+              {cardHolder || user?.name || 'Card Holder'}
             </p>
           </div>
         </div>
@@ -81,6 +82,26 @@ const AddPaymentSourceScreen = ({ user, onBack, onSave, darkMode }) => {
                 value={cardNumber}
                 onChange={handleCardNumberChange}
                 maxLength="16"
+                className={`w-full p-5 rounded-2xl font-bold outline-none focus:border-[#00875A] ${
+                  darkMode
+                    ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                    : "bg-gray-50 border-gray-100 text-gray-900 placeholder-gray-400"
+                }`}
+              />
+            </div>
+            <div className="space-y-2">
+              <label
+                className={`text-[10px] font-black uppercase tracking-widest ml-1 ${
+                  darkMode ? "text-gray-400" : "text-gray-400"
+                }`}
+              >
+                Card Holder Name
+              </label>
+              <input
+                type="text"
+                placeholder="John Doe"
+                value={cardHolder}
+                onChange={(e) => setCardHolder(e.target.value)}
                 className={`w-full p-5 rounded-2xl font-bold outline-none focus:border-[#00875A] ${
                   darkMode
                     ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
@@ -145,7 +166,7 @@ const AddPaymentSourceScreen = ({ user, onBack, onSave, darkMode }) => {
         </div>
         <button
           onClick={() => {
-            onSave({ cardNumber, expiry, cvv });
+            onSave({ cardNumber, expiry, cvv, cardHolder, cardNetwork: cardNumber.startsWith('4') ? 'Visa' : cardNumber.startsWith('5') ? 'Mastercard' : cardNumber.startsWith('6304') ? 'Verve' : 'Nest' });
           }}
           className="w-full py-5 bg-[#00875A] text-white rounded-[2rem] font-black shadow-emerald-100"
         >

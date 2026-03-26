@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, User, Mail, Phone, MapPin } from 'lucide-react';
 
-const PersonalInformationScreen = ({ user, onBack, onUserChange }) => {
+const PersonalInformationScreen = ({ user, onBack, onUserChange, openScreen }) => {
+  const userKey = (user?.email || user?.accountNumber || user?.phone || 'guest').toString().trim().toLowerCase();
+  const profileCompletedKey = `profileCompleted:${userKey}`;
+  const profileDataKey = `profileData:${userKey}`;
+
   const [formData, setFormData] = useState({
     fullName: user?.fullName || '',
     email: user?.email || '',
@@ -14,6 +18,13 @@ const PersonalInformationScreen = ({ user, onBack, onUserChange }) => {
     phone: false,
     country: false,
   });
+
+  const [profileCompleted, setProfileCompleted] = useState(false);
+
+  useEffect(() => {
+    const completed = localStorage.getItem(profileCompletedKey) === 'true';
+    setProfileCompleted(completed);
+  }, [profileCompletedKey]);
 
   const bgClass = 'bg-white';
   const textPrimary = "text-gray-900";
@@ -48,6 +59,21 @@ const PersonalInformationScreen = ({ user, onBack, onUserChange }) => {
           <ChevronLeft className={textPrimary} size={24} />
         </button>
         <h1 className={`text-xl font-black ${textPrimary}`}>Personal Information</h1>
+      </div>
+
+      {/* Complete Profile CTA */}
+      <div className="px-6 pt-4">
+        {!profileCompleted && (
+          <div className="p-4 rounded-2xl border border-emerald-100 bg-emerald-50 mb-4">
+            <p className="text-sm text-emerald-700 font-semibold mb-2">Complete your profile for a better Nest experience.</p>
+            <button
+              className="w-full py-3 rounded-xl font-bold bg-emerald-600 text-white transition hover:bg-emerald-700"
+              onClick={() => openScreen && openScreen("CompleteProfileScreen")}
+            >
+              Complete Profile
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -104,7 +130,7 @@ const PersonalInformationScreen = ({ user, onBack, onUserChange }) => {
               </label>
               <button
                 onClick={() => handleEditToggle('phone')}
-                className={`text-[10px] font-bold ${darkMode ? 'text-[#00FF9D]' : 'text-emerald-600'}`}
+                className={`text-[10px] font-bold text-emerald-600`}
               >
                 {isEditing.phone ? 'Done' : 'Edit'}
               </button>
@@ -127,7 +153,7 @@ const PersonalInformationScreen = ({ user, onBack, onUserChange }) => {
               </label>
               <button
                 onClick={() => handleEditToggle('country')}
-                className={`text-[10px] font-bold ${darkMode ? 'text-[#00FF9D]' : 'text-emerald-600'}`}
+                className={`text-[10px] font-bold text-emerald-600`}
               >
                 {isEditing.country ? 'Done' : 'Edit'}
               </button>

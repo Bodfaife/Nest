@@ -43,13 +43,10 @@ export default function ProfileScreen({
   const profileDataKey = `profileData:${userKey}`;
   const profileCompletedKey = `profileCompleted:${userKey}`;
 
-  const [showCompleteProfile, setShowCompleteProfile] = useState(true);
+  // Profile completion moved to Personal Information section
   const [profileData, setProfileData] = useState(defaultProfileData);
 
   useEffect(() => {
-    const storedCompleted = localStorage.getItem(profileCompletedKey);
-    setShowCompleteProfile(storedCompleted !== 'true');
-
     const storedProfile = localStorage.getItem(profileDataKey);
     const parsed = safeParse(storedProfile, null);
     if (parsed) {
@@ -57,7 +54,7 @@ export default function ProfileScreen({
     } else {
       setProfileData(defaultProfileData);
     }
-  }, [profileDataKey, profileCompletedKey]);
+  }, [profileDataKey]);
 
   const menuItems = [
     { icon: User, label: "Personal Information", color: "bg-emerald-50 text-emerald-600", action: () => setProfileSection("personal") },
@@ -122,127 +119,6 @@ export default function ProfileScreen({
         {user?.accountNumber && <p className="text-xs font-mono mt-2 text-gray-500">Account: {user.accountNumber}</p>}
       </div>
 
-      {showCompleteProfile && (
-        <div className="p-6 rounded-2xl mb-6 bg-white border border-gray-100">
-          <h3 className="text-lg font-black mb-4 text-gray-900">Complete Your Profile</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Date of Birth</label>
-              <input type="date" value={profileData.dob} onChange={(e) => setProfileData({ ...profileData, dob: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Gender</label>
-              <select value={profileData.gender} onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50">
-                <option value="">Select</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Occupation</label>
-              <input type="text" value={profileData.occupation} onChange={(e) => setProfileData({ ...profileData, occupation: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" placeholder="e.g. Student, Engineer" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Address</label>
-              <input type="text" value={profileData.address} onChange={(e) => setProfileData({ ...profileData, address: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" placeholder="Your address" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Next of Kin</label>
-              <input type="text" value={profileData.nextOfKin} onChange={(e) => setProfileData({ ...profileData, nextOfKin: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Bank Verification Number</label>
-              <input type="text" value={profileData.bvn} onChange={(e) => setProfileData({ ...profileData, bvn: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">National Identification Number</label>
-              <input type="text" value={profileData.nationalId} onChange={(e) => setProfileData({ ...profileData, nationalId: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div className="flex items-center gap-3">
-              <input type="checkbox" checked={profileData.enable2FA} onChange={(e) => setProfileData({ ...profileData, enable2FA: e.target.checked })} className="w-5 h-5" />
-              <label className="text-sm font-bold">Enable Two-Factor Authentication</label>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Username</label>
-              <input type="text" value={profileData.username} onChange={(e) => setProfileData({ ...profileData, username: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" placeholder="Display name" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">State</label>
-              <input type="text" value={profileData.state} onChange={(e) => setProfileData({ ...profileData, state: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Local Government Area</label>
-              <input type="text" value={profileData.lga} onChange={(e) => setProfileData({ ...profileData, lga: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Religion</label>
-              <input type="text" value={profileData.religion} onChange={(e) => setProfileData({ ...profileData, religion: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Relationship Status</label>
-              <select value={profileData.relationshipStatus} onChange={(e) => setProfileData({ ...profileData, relationshipStatus: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50">
-                <option value="">Select</option>
-                <option value="single">Single</option>
-                <option value="married">Married</option>
-                <option value="divorced">Divorced</option>
-                <option value="widowed">Widowed</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Number of Children</label>
-              <input type="number" value={profileData.numberOfChildren} onChange={(e) => setProfileData({ ...profileData, numberOfChildren: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Country of Residence</label>
-              <input type="text" value={profileData.countryOfResidence} onChange={(e) => setProfileData({ ...profileData, countryOfResidence: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Street Address of Residence</label>
-              <input type="text" value={profileData.streetAddress} onChange={(e) => setProfileData({ ...profileData, streetAddress: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">City of Residence</label>
-              <input type="text" value={profileData.cityOfResidence} onChange={(e) => setProfileData({ ...profileData, cityOfResidence: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Level of Education</label>
-              <select value={profileData.levelOfEducation} onChange={(e) => setProfileData({ ...profileData, levelOfEducation: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50">
-                <option value="">Select</option>
-                <option value="primary">Primary</option>
-                <option value="secondary">Secondary</option>
-                <option value="tertiary">Tertiary</option>
-                <option value="postgraduate">Postgraduate</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Employment Status</label>
-              <select value={profileData.employmentStatus} onChange={(e) => setProfileData({ ...profileData, employmentStatus: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50">
-                <option value="">Select</option>
-                <option value="employed">Employed</option>
-                <option value="self-employed">Self-Employed</option>
-                <option value="unemployed">Unemployed</option>
-                <option value="student">Student</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Source of Funds</label>
-              <input type="text" value={profileData.sourceOfFunds} onChange={(e) => setProfileData({ ...profileData, sourceOfFunds: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Interests</label>
-              <textarea value={profileData.interests} onChange={(e) => setProfileData({ ...profileData, interests: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50" placeholder="What do you enjoy?" rows="3" />
-            </div>
-          </div>
-
-          <button
-            onClick={handleSaveProfile}
-            className="w-full mt-6 py-3 rounded-2xl font-bold text-white bg-[#00875A] shadow-lg shadow-emerald-100 active:scale-[0.98] transition-all"
-          >
-            Complete Profile
-          </button>
-        </div>
-      )}
 
       <div className="space-y-2 mb-8">
         {menuItems.map((item, idx) => (

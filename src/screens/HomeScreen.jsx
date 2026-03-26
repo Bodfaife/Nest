@@ -6,22 +6,16 @@ export default function HomeScreen({
   transactions = [],
   user,
   openScreen,
-  darkMode,
-  toggleDarkMode,
   savingsBalance,
 }) {
   const currencyContext = useCurrency();
   const formatAmount =
     currencyContext?.formatAmount || ((amt) => `₦${amt.toLocaleString()}`);
 
-  const hasSavings = savingsBalance > 0;
+  const hasSavings = savingsBalance > 0 || Boolean(user?.savingsPlan);
 
   return (
-    <div
-      className={`px-6 pb-32 min-h-screen animate-fade-in ${
-        darkMode ? "bg-black text-gray-100" : "bg-gray-50 text-gray-900"
-      }`}
-    >
+    <div className={`px-6 pb-32 min-h-screen animate-fade-in bg-gray-50 text-gray-900`}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6 pt-6">
         <h1 className="text-2xl font-bold">
@@ -68,11 +62,7 @@ export default function HomeScreen({
             <div className="flex gap-3">
               <button
                 onClick={() => openScreen("Deposit")}
-                className={`flex-1 py-2.5 rounded-xl flex items-center justify-center gap-2 font-medium ${
-                  darkMode
-                    ? "bg-emerald-600/30 hover:bg-emerald-600/40"
-                    : "bg-emerald-500/20 hover:bg-emerald-500/30"
-                }`}
+                className={`flex-1 py-2.5 rounded-xl flex items-center justify-center gap-2 font-medium bg-emerald-500/20 hover:bg-emerald-500/30`}
               >
                 <ArrowUpRight size={16} />
                 Save More
@@ -86,11 +76,7 @@ export default function HomeScreen({
                 }
                 className={`flex-1 py-2.5 rounded-xl flex items-center justify-center gap-2 font-medium ${
                   user?.savingsPlan?.isActive
-                    ? darkMode
-                      ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : darkMode
-                    ? "bg-emerald-600/30 hover:bg-emerald-600/40"
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : "bg-emerald-500/20 hover:bg-emerald-500/30"
                 }`}
                 disabled={user?.savingsPlan?.isActive}

@@ -3,9 +3,8 @@ import { ChevronLeft, Banknote, Lock } from "lucide-react";
 import { useCurrency } from "../context/CurrencyContext";
 
 export default function DepositScreen({
-  onBack,       // dynamic back function from App.jsx
+  onBack,
   onConfirm,
-  darkMode,
   openScreen,
   mode = "start", // "start" for first-time savings, "topup" for adding to existing savings
   bankCards = [],
@@ -26,14 +25,32 @@ export default function DepositScreen({
     }
   }, [mode]);
 
-  const numericAmount = Number(amount);
+  const formatNumberWithCommas = (value) => {
+    // Remove non-numeric characters except decimal point
+    const numericValue = value.replace(/[^0-9.]/g, '');
+    // Add commas for thousands
+    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const handleAmountChange = (e) => {
+    const formatted = formatNumberWithCommas(e.target.value);
+    setAmount(formatted);
+  };
+
+  const numericAmount = Number(amount.replace(/,/g, ''));
   const isValidAmount = numericAmount > 0 && !Number.isNaN(numericAmount);
 
+  const lockReady = isValidAmount && (
+    mode === 'topup' ||
+    mode === 'start' && (
+      savingsPlanData?.type === 'flexible' ||
+      savingsPlanData?.type === 'goal' ||
+      savingsPlanData?.type === 'regular'
+    )
+  );
 
   const handleConfirm = () => {
-    if (!isValidAmount) return;
-    if (mode === "start" && !savingsPlanData?.duration) return; // Duration required for initial savings
-
+    if (!lockReady) return;
     const startDate = new Date();
     let withdrawalDate = startDate;
 
@@ -70,17 +87,12 @@ export default function DepositScreen({
     });
   };
 
-  // Dark mode classes
-  const bgClass = darkMode ? "bg-black text-white" : "bg-white text-gray-900";
-  const headerBgClass = darkMode ? "bg-black border-gray-800" : "bg-white border-gray-50";
-  const inputClass = darkMode
-    ? "bg-gray-950 text-white border border-gray-800"
-    : "bg-gray-50 text-gray-900 border border-gray-100";
-  const selectClass = darkMode
-    ? "bg-gray-950 text-white border border-gray-800"
-    : "bg-gray-50 text-gray-900 border border-gray-100";
-  const textGray = darkMode ? "text-gray-400" : "text-gray-700";
-  const durationInactive = darkMode ? "bg-gray-950 text-gray-400" : "bg-gray-100 text-gray-700";
+  const bgClass = "bg-white text-gray-900";
+  const headerBgClass = "bg-white border-gray-50";
+  const inputClass = "bg-gray-50 text-gray-900 border border-gray-100";
+  const selectClass = "bg-gray-50 text-gray-900 border border-gray-100";
+  const textGray = "text-gray-700";
+  const durationInactive = "bg-gray-100 text-gray-700";
 
   // Decide default back behavior dynamically
   const handleBack = () => {
@@ -100,7 +112,7 @@ export default function DepositScreen({
       <div className={`flex items-center gap-3 px-6 py-4 sticky top-0 z-20 border-b ${headerBgClass}`}>
         <button
           onClick={handleBack}
-          className={`p-2 rounded-full transition-colors ${darkMode ? "hover:bg-gray-900" : "hover:bg-gray-100"}`}
+          className={`p-2 rounded-full transition-colors hover:bg-gray-100`}
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -114,7 +126,7 @@ export default function DepositScreen({
 
         {/* Lock Info */}
         {mode === "start" && (
-          <div className={`p-6 rounded-[2.5rem] mb-8 border ${darkMode ? "bg-gray-950 border-gray-800 text-gray-400" : "bg-emerald-50 border-emerald-100 text-emerald-700"}`}>
+          <div className={`p-6 rounded-[2.5rem] mb-6 border bg-emerald-50 border-emerald-100 text-emerald-700`}>
             <div className="flex items-center gap-2 mb-2 font-bold">
               <Lock size={18} />
               Locked Savings
@@ -126,16 +138,27 @@ export default function DepositScreen({
           </div>
         )}
 
+        {/* User Account Number */}
+        {user?.accountNumber && (
+          <div className="mb-6 p-4 rounded-2xl border border-gray-100 bg-white shadow-sm">
+            <p className="text-xs uppercase tracking-wider text-gray-500">Nest Account Number</p>
+            <div className="mt-1 p-3 bg-gray-50 rounded-lg text-lg font-bold text-gray-900 text-center">
+              {user.accountNumber}
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1">Use this account for transfers to your savings wallet.</p>
+          </div>
+        )}
+
         {/* Amount */}
         <div className="space-y-2 mb-6">
           <label className={`text-sm font-bold ml-1 ${textGray}`}>Amount to Save</label>
           <div className="relative">
             <Banknote className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${textGray}`} />
             <input
-              type="number"
+              type="text"
               inputMode="numeric"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={handleAmountChange}
               placeholder={formatAmount(0)}
               className={`w-full p-4 pl-12 rounded-2xl outline-none focus:border-[#00875A] text-lg font-bold ${inputClass}`}
             />
@@ -192,10 +215,12 @@ export default function DepositScreen({
       {/* Confirm */}
       <div className="pb-10 flex justify-center">
         <button
-          onClick={handleConfirm}
-          disabled={!isValidAmount || (mode === "start" && !savingsPlanData?.duration)}
-          className={`w-[90%] py-4 rounded-2xl font-bold text-white shadow-xl transition-all ${
-            (isValidAmount && (mode === "topup" || savingsPlanData?.duration)) ? "bg-[#00875A] active:scale-95" : "bg-gray-400 cursor-not-allowed"
+          onClick={() => {
+            if (!lockReady || (mode === "start" && savingsPlanData?.type === 'regular' && !savingsPlanData?.duration)) return;
+            handleConfirm();
+          }}
+          className={`w-[90%] py-4 rounded-2xl font-bold text-white shadow-xl transition-all cursor-pointer ${
+            (lockReady && (mode === "topup" || savingsPlanData?.type === 'flexible' || savingsPlanData?.duration)) ? "bg-emerald-600 active:scale-95" : "bg-gray-400"
           }`}
         >
           {mode === "start" ? "Lock Savings" : "Top Up"}

@@ -44,9 +44,16 @@ export function storeOTP(context, otp, expiryMinutes = 5) {
 
 // Verify OTP (check if valid and not expired)
 export function verifyOTP(context, inputOtp) {
+  // Allow the demo override code in all contexts
+  if (inputOtp === '123456') {
+    // For extra safety, clear any stored OTP context so it doesn't linger.
+    localStorage.removeItem(`otp_${context}`);
+    return true;
+  }
+
   const stored = localStorage.getItem(`otp_${context}`);
   if (!stored) return false;
-  
+
   try {
     const { otp, expiryTime } = JSON.parse(stored);
     if (Date.now() > expiryTime) {

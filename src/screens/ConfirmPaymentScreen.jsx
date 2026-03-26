@@ -29,7 +29,7 @@ const ConfirmPaymentScreen = ({
     <div className={`h-full flex flex-col animate-in slide-in-from-right duration-300 ${bgClass} ${textClass}`}>
       
       {/* Header */}
-      <div className={`p-6 flex items-center gap-3 border-b ${darkMode ? "border-gray-800" : "border-gray-50"}`}>>
+      <div className={`p-6 flex items-center gap-3 border-b ${darkMode ? "border-gray-800" : "border-gray-50"}`}>
         <button
           onClick={onBack}
           className={`p-2 rounded-full transition-colors ${darkMode ? "bg-gray-950 hover:bg-gray-800" : "bg-gray-50 hover:bg-gray-100"}`}
@@ -83,20 +83,20 @@ const ConfirmPaymentScreen = ({
 
           <div className={`rounded-[2rem] overflow-hidden border ${cardBorderClass} ${cardBgClass}`}>
             <div className={`p-5 flex justify-between items-center`}>
-              <span className={`text-sm font-bold ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Amount</span>
+              <span className={`text-sm font-bold text-gray-500`}>Amount</span>
               <span className="font-black">{formatAmount(numericAmount)}</span>
             </div>
 
             <div className={`p-5 flex justify-between items-center border-t ${cardBorderClass} ${darkMode ? "bg-gray-800/50" : "bg-gray-50/50"}`}>
-              <span className={`text-sm font-bold ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Transaction Fee</span>
-              <span className="font-black text-emerald-600">
+              <span className={`text-sm font-bold text-gray-500`}>Transaction Fee</span>
+              <span className="font-black">
                 {numericFee === 0 ? "FREE" : formatAmount(numericFee)}
               </span>
             </div>
 
             <div className={`p-5 flex justify-between items-center border-t ${cardBorderClass}`}>
-              <span className={`text-sm font-bold ${textClass}`}>Final Total</span>
-              <span className="text-lg font-black text-[#00875A]">{formatAmount(total)}</span>
+              <span className={`text-sm font-bold text-gray-500`}>Final Total</span>
+              <span className="text-lg font-black">{formatAmount(total)}</span>
             </div>
           </div>
         </div>

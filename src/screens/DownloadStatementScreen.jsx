@@ -140,7 +140,7 @@ const DownloadStatementScreen = ({ transactions = [], onBack, user = {}, savings
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className={textSecondary}>Total Deposits</span>
-                <span className={`font-bold ${darkMode ? 'text-[#00FF9D]' : 'text-emerald-600'}`}>{formatAmount(summary.deposits)}</span>
+                <span className={`font-bold text-emerald-600`}>{formatAmount(summary.deposits)}</span>
               </div>
               <div className="flex justify-between">
                 <span className={textSecondary}>Total Withdrawals</span>
@@ -170,9 +170,7 @@ const DownloadStatementScreen = ({ transactions = [], onBack, user = {}, savings
           className={`w-full py-5 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 ${
             isValidDate
               ? `${buttonBg}`
-              : darkMode
-                ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
         >
           <Download size={20} />

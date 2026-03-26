@@ -89,7 +89,7 @@ const TransactionPinScreen = ({
 
         <h1 className={`text-2xl font-black mb-2 text-center ${textPrimary}`}>Enter PIN</h1>
         <p className={`font-bold text-center text-sm mb-12 ${textSecondary}`}>
-          Confirm authorize for this <span className={textPrimary}>{transactionType}</span>
+          Confirm authorization for this Transaction
         </p>
 
         {/* PIN Dots Display */}

@@ -22,7 +22,7 @@ export default function TransactionHistoryScreen({ transactions = [], onBack, op
   return (
     <div className={`flex flex-col animate-in slide-in-from-right duration-300 min-h-screen ${container}`}>
       {/* Header */}
-      <div className={`px-6 py-4 sticky top-0 z-10 ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+      <div className="px-6 py-4 sticky top-0 z-10 bg-white">
         <div className="flex items-center gap-3 mb-4">
           <button onClick={onBack} className="p-1 hover:bg-gray-100 rounded-full">
             <ChevronLeft size={24} />
@@ -38,9 +38,7 @@ export default function TransactionHistoryScreen({ transactions = [], onBack, op
             placeholder="Search transactions..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className={`w-full p-3 pl-12 rounded-xl border outline-none ${
-              darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-100 text-gray-900'
-            } focus:border-[#00875A]`}
+            className="w-full p-3 pl-12 rounded-xl border border-gray-100 bg-gray-50 text-gray-900 outline-none focus:border-[#00875A]"
           />
         </div>
       </div>
@@ -58,11 +56,7 @@ export default function TransactionHistoryScreen({ transactions = [], onBack, op
               <div
                 key={tx.id}
                 onClick={() => openScreen && typeof openScreen === 'function' && openScreen('TransactionReceipt', tx)}
-                className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
-                  darkMode
-                    ? 'bg-gray-800 border-gray-700 hover:bg-gray-700'
-                    : 'bg-white border-gray-50 hover:bg-emerald-50'
-                }`}
+                className="flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all bg-white border-gray-50 hover:bg-emerald-50"
               >
                 <div className="flex items-center gap-4">
                   <div
@@ -73,7 +67,7 @@ export default function TransactionHistoryScreen({ transactions = [], onBack, op
                     {isDeposit ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
                   </div>
                   <div>
-                    <p className={`font-black text-sm ${darkMode ? 'text-white' : 'text-gray-800'}`}>{title}</p>
+                    <p className="font-black text-sm text-gray-800">{title}</p>
                     <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${textSecondary}`}>{dateStr}</p>
                   </div>
                 </div>

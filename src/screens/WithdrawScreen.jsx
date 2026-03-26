@@ -8,7 +8,6 @@ export default function WithdrawalScreen({
   savingsBalance = 0,
   bankAccounts = [],
   openScreen,
-  darkMode,
 }) {
   const { formatAmount } =
     useCurrency() || { formatAmount: (amt) => `₦${amt.toLocaleString()}` };
@@ -57,26 +56,26 @@ export default function WithdrawalScreen({
   };
 
   return (
-    <div className={`flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-white'} animate-in slide-in-from-right duration-300`}>
+    <div className={`flex flex-col bg-white animate-in slide-in-from-right duration-300`}>
       {/* Header */}
-      <div className={`flex items-center gap-3 px-6 py-4 sticky top-0 ${darkMode ? 'bg-gray-900' : 'bg-white'} z-10`}>
+      <div className={`flex items-center gap-3 px-6 py-4 sticky top-0 bg-white z-10`}>
         <button
           onClick={onBack}
-          className={`p-2 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
+          className={`p-2 rounded-full transition-colors hover:bg-gray-100`}
         >
-          <ChevronLeft className={`w-6 h-6 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`} />
+          <ChevronLeft className={`w-6 h-6 text-gray-800`} />
         </button>
-        <h1 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Withdraw Funds</h1>
+        <h1 className={`text-xl font-bold text-gray-900`}>Withdraw Funds</h1>
       </div>
 
       {/* Main Content */}
       <div className="p-6 flex-1">
         {/* Available Balance */}
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-100'} p-6 rounded-[2.5rem] mb-8 text-center border`}>
-          <p className={`${darkMode ? 'text-gray-400' : 'text-gray-400'} text-sm font-bold uppercase tracking-widest mb-1`}>
+        <div className={`bg-gray-50 border-gray-100 p-6 rounded-[2.5rem] mb-8 text-center border`}>
+          <p className={`text-gray-400 text-sm font-bold uppercase tracking-widest mb-1`}>
             Available to Withdraw
           </p>
-            <h2 className={`text-3xl font-black ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+            <h2 className={`text-3xl font-black text-gray-900`}>
             {formatAmount(savingsBalance)}
           </h2>
         </div>
@@ -85,7 +84,7 @@ export default function WithdrawalScreen({
         <div className="space-y-6">
           {/* Amount */}
           <div className="space-y-2">
-            <label className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} ml-1`}>
+            <label className={`text-sm font-bold text-gray-700 ml-1`}>
               Amount
             </label>
             <input
@@ -96,7 +95,7 @@ export default function WithdrawalScreen({
                 setAmount(e.target.value);
                 setError('');
               }}
-              className={`w-full p-4 rounded-2xl ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : 'bg-gray-50 border-gray-100 text-gray-900'} border outline-none focus:border-[#00875A] text-lg font-bold`}
+              className={`w-full p-4 rounded-2xl bg-gray-50 border-gray-100 text-gray-900 border outline-none focus:border-[#00875A] text-lg font-bold`}
             />
 
             {error && (
@@ -108,14 +107,14 @@ export default function WithdrawalScreen({
 
           {/* Destination Bank */}
           <div className="space-y-2">
-            <label className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} ml-1`}>
+            <label className={`text-sm font-bold text-gray-700 ml-1`}>
               Destination Bank
             </label>
             <div className="space-y-2">
               {selectedAccount ? (
-                <div className={`p-4 rounded-2xl ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-100'} border flex justify-between items-center`}>
+                <div className={`p-4 rounded-2xl bg-gray-50 border-gray-100 border flex justify-between items-center`}>
                   <div>
-                    <p className={`font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{selectedAccount.bankName}</p>
+                    <p className={`font-bold text-gray-900`}>{selectedAccount.bankName}</p>
                     <p className={`text-xs font-medium ${"text-gray-500"}`}>
                       {selectedAccount.accountNumber?.slice(-4) ? `...${selectedAccount.accountNumber.slice(-4)}` : 'Account'}
                     </p>
@@ -136,7 +135,7 @@ export default function WithdrawalScreen({
                       openScreen('SavedAccounts');
                     }
                   }}
-                  className={`w-full p-4 rounded-2xl ${darkMode ? 'bg-emerald-900 border-emerald-700 hover:bg-emerald-800' : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'} border flex justify-between items-center transition-colors`}
+                  className={`w-full p-4 rounded-2xl bg-emerald-50 border-emerald-200 hover:bg-emerald-100 border flex justify-between items-center transition-colors`}
                 >
                   <span className="font-bold text-[#00875A]">
                     {bankAccounts.length > 0 ? 'Select Bank Account' : '+ Add Bank Account'}
@@ -156,7 +155,7 @@ export default function WithdrawalScreen({
           className={`w-[90%] py-4 rounded-2xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2
             ${
               isDisabled
-                ? `${darkMode ? 'bg-gray-700 cursor-not-allowed' : 'bg-gray-300 cursor-not-allowed'}`
+                ? 'bg-gray-300 cursor-not-allowed'
                 : 'bg-emerald-600 active:scale-[0.98]'
             }`}
         >
@@ -174,8 +173,8 @@ export default function WithdrawalScreen({
           />
           
           {/* Modal */}
-          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-3xl p-6 max-h-[70vh] overflow-y-auto`}>
-            <h2 className={`text-xl font-black ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-6`}>Select Bank Account</h2>
+          <div className={`bg-white rounded-t-3xl p-6 max-h-[70vh] overflow-y-auto`}>
+            <h2 className={`text-xl font-black text-gray-900 mb-6`}>Select Bank Account</h2>
             
             <div className="space-y-3">
               {bankAccounts.map((account, idx) => (
@@ -187,15 +186,15 @@ export default function WithdrawalScreen({
                   }}
                   className={`w-full p-4 rounded-2xl border-2 flex justify-between items-center transition-all ${
                     idx === selectedAccountIndex
-                      ? `${darkMode ? 'border-emerald-500 bg-emerald-900' : 'border-emerald-600 bg-emerald-50'}`
-                      : `${darkMode ? 'border-gray-700 bg-gray-700 hover:border-gray-600' : 'border-gray-200 bg-white hover:border-gray-300'}`
+                      ? 'border-emerald-600 bg-emerald-50'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
                   }`}
                 >
                   <div className="text-left">
-                    <p className={`font-bold ${idx === selectedAccountIndex ? 'text-emerald-400' : darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    <p className={`font-bold text-emerald-400`}>
                       {account.bankName}
                     </p>
-                    <p className={`text-xs font-medium ${"text-gray-500"}`}>
+                    <p className={`text-xs font-medium text-gray-500`}>
                       {account.accountNumber?.slice(-4) ? `...${account.accountNumber.slice(-4)}` : 'Account'}
                     </p>
                   </div>

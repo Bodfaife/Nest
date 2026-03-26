@@ -109,11 +109,12 @@ export default function SavingsScreen({
             <Banknote className="w-10 h-10 text-emerald-500" />
             <p className="text-lg font-semibold">No Active Savings Yet</p>
             <p className={`text-sm ${secondaryText}`}>Start saving today and lock your funds securely.</p>
-            <button
-              onClick={() => openScreen("CreateSavingsFormBioScreen")} // Start create-savings flow directly
-              className="mt-4 w-full py-4 rounded-2xl font-bold bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
+             <button
+            onClick={() => openScreen("CreateSavingsPrompt")}
+            className="w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 transition"
             >
-              Start Saving
+            <ArrowUpRight size={18} />
+            Start Saving
             </button>
           </div>
         </>

@@ -3,6 +3,7 @@ import { CheckCircle } from 'lucide-react';
 
 export default function SavingsProcessingScreen({ 
   onComplete, 
+  onSkip,
   savingsPlanData = {} 
 }) {
   const [messageIndex, setMessageIndex] = useState(0);
@@ -10,10 +11,9 @@ export default function SavingsProcessingScreen({
   const [isComplete, setIsComplete] = useState(false);
 
   const messages = [
-    { text: "Setting up your savings plan...", icon: "⚙️" },
-    { text: "Securing your savings goal...", icon: "🔒" },
-    { text: "Savings plan created successfully!", icon: "✅" },
-    { text: "Ready to make your first deposit?", icon: "🚀" }
+    { text: "Creating new savings...", icon: "⚙️" },
+    { text: "Savings created successfully!", icon: "✅" },
+    { text: "All done!", icon: "✅" }
   ];
 
   // Sequence messages
@@ -26,14 +26,13 @@ export default function SavingsProcessingScreen({
         setFadeOut(true);
       }, 2000);
 
-      // Move to next message
+      // Move to next message or complete
       const nextMsgTimer = setTimeout(() => {
         if (messageIndex < messages.length - 1) {
           setMessageIndex(messageIndex + 1);
         } else {
-          // Last message shown, mark complete and proceed
+          // Final message displayed, show actions
           setIsComplete(true);
-          setTimeout(onComplete, 1000);
         }
       }, 3000);
 
@@ -42,7 +41,7 @@ export default function SavingsProcessingScreen({
         clearTimeout(nextMsgTimer);
       };
     }
-  }, [messageIndex, onComplete, messages.length]);
+  }, [messageIndex, messages.length]);
 
   const currentMessage = messages[messageIndex];
 
@@ -52,18 +51,11 @@ export default function SavingsProcessingScreen({
       <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl -z-10"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-300/10 rounded-full blur-3xl -z-10"></div>
 
-      {/* Spinner or Success Icon */}
+      {/* Bouncing Checkmark */}
       <div className="mb-12">
-        <div className={`w-20 h-20 rounded-full border-4 border-emerald-100 border-t-emerald-600 animate-spin transition-all ${isComplete ? 'opacity-0 scale-0' : 'opacity-100 scale-100'}`}></div>
-        
-        {/* Success checkmark - appears on completion */}
-        {isComplete && (
-          <div className="absolute w-20 h-20 flex items-center justify-center animate-in scale-in duration-500">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-2xl shadow-emerald-500/40">
-              <CheckCircle size={48} className="text-white" />
-            </div>
-          </div>
-        )}
+        <div className={`w-20 h-20 rounded-full bg-emerald-600 flex items-center justify-center animate-bounce transition-all`}>
+          <CheckCircle className="w-10 h-10 text-white" />
+        </div>
       </div>
 
       {/* Message Container */}
@@ -79,7 +71,7 @@ export default function SavingsProcessingScreen({
       </div>
 
       {/* Progress Dots */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 mb-6">
         {messages.map((_, idx) => (
           <div
             key={idx}
@@ -93,6 +85,23 @@ export default function SavingsProcessingScreen({
           ></div>
         ))}
       </div>
+
+      {isComplete && (
+        <div className="w-full max-w-xs space-y-3">
+          <button
+            onClick={onComplete}
+            className="w-full py-3 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700"
+          >
+            Make First Deposit
+          </button>
+          <button
+            onClick={onSkip}
+            className="w-full py-3 rounded-xl font-bold border border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+          >
+            Do This Later
+          </button>
+        </div>
+      )}
     </div>
   );
 }
