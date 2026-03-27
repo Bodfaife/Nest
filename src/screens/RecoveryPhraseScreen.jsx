@@ -80,7 +80,7 @@ export default function RecoveryPhraseScreen({ onContinue, phrases = [], userNam
       <div className="bg-white px-6 py-8 shadow-sm">
         <div className="flex items-center justify-center mb-4">
           <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-            <Shield className="w-6 h-6 text-blue-600" />
+            <Shield className="w-6 h-6 text-emerald-600" />
           </div>
         </div>
         <h1 className="text-2xl font-bold text-center text-gray-900 mb-2">
@@ -96,7 +96,7 @@ export default function RecoveryPhraseScreen({ onContinue, phrases = [], userNam
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="w-8 h-8 rounded-full border-2 border-blue-100 border-t-blue-600 animate-spin mx-auto mb-4"></div>
+              <div className="w-8 h-8 rounded-full border-2 border-emerald-100 border-t-emerald-600 animate-spin mx-auto mb-4"></div>
               <p className="text-gray-600 font-medium">Generating your recovery phrase...</p>
             </div>
           </div>
@@ -105,10 +105,10 @@ export default function RecoveryPhraseScreen({ onContinue, phrases = [], userNam
             {/* Security Notice */}
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="text-sm font-semibold text-amber-800 mb-1">Important Security Notice</h3>
-                  <p className="text-xs text-amber-700 leading-relaxed">
+                  <h3 className="text-sm font-semibold text-emerald-800 mb-1">Important Security Notice</h3>
+                  <p className="text-xs text-emerald-700 leading-relaxed">
                     Write these words down in order and store them securely. You'll need them to recover your account if you lose access.
                   </p>
                 </div>
@@ -125,7 +125,7 @@ export default function RecoveryPhraseScreen({ onContinue, phrases = [], userNam
                 <p className="text-gray-600 text-sm mb-6">Tap the button below to reveal your 12-word recovery phrase</p>
                 <button
                   onClick={() => setShowPhrases(true)}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                  className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
                 >
                   Reveal Phrase
                 </button>
@@ -188,7 +188,7 @@ export default function RecoveryPhraseScreen({ onContinue, phrases = [], userNam
         <div className="bg-white px-6 py-6 border-t border-gray-200">
           <button
             onClick={onContinue}
-            className="w-full py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            className="w-full py-4 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
           >
             I've Saved My Recovery Phrase
           </button>

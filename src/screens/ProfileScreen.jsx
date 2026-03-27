@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User, History, LogOut, Bell, Shield, Wallet, Download, Building2, Camera, ChevronRight } from "lucide-react";
+import { User, History, LogOut, Bell, Shield, Wallet, Download, Building2, Camera, Key, ChevronRight } from "lucide-react";
 
 const defaultProfileData = {
   dob: '',
@@ -37,6 +37,7 @@ export default function ProfileScreen({
   profilePicture,
   onProfilePictureChange,
   setProfileSection,
+  onRecoveryPhraseRequest,
   onProfileSave
 }) {
   const userKey = (user?.email || user?.accountNumber || user?.phone || "guest").toString().trim().toLowerCase();
@@ -64,6 +65,7 @@ export default function ProfileScreen({
     { icon: Building2, label: "Bank Accounts", color: "bg-pink-50 text-pink-600", action: () => openScreen("SavedAccounts") },
     { icon: History, label: "Transaction History", color: "bg-gray-100 text-gray-600", action: () => openScreen("TransactionHistory") },
     { icon: Download, label: "Download Statement", color: "bg-indigo-50 text-indigo-600", action: () => openScreen("DownloadStatement") },
+    { icon: Key, label: "Recovery Phrase", color: "bg-amber-50 text-amber-600", action: () => onRecoveryPhraseRequest && onRecoveryPhraseRequest() },
   ];
 
   const handleSaveProfile = () => {

@@ -45,7 +45,7 @@ const SaveCardDetailsScreen = ({ card, onConfirm, onBack }) => {
       {/* Content */}
       <div className="flex-1 p-6 overflow-auto">
         {/* Card Preview */}
-        <div className="w-full aspect-[1.6/1] bg-gradient-to-br from-gray-800 to-gray-950 rounded-[2rem] p-8 text-white relative overflow-hidden mb-10 shadow-2xl">
+        <div className="w-full aspect-[1] bg-gradient-to-br from-gray-800 to-gray-950 rounded-[2rem] p-8 text-white relative overflow-hidden mb-10 shadow-2xl">
           <div className="flex justify-between items-start">
             <div className="w-12 h-8 bg-white/20 rounded-md" />
             <CreditCard className="opacity-40" size={28} />

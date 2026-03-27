@@ -847,6 +847,15 @@ function App() {
     setCurrentScreen(screen);
   };
 
+  const requestRecoveryPhraseAccess = () => {
+    setOpenedFrom(currentScreen);
+    setPendingAction(() => {
+      setCurrentScreen("RecoveryPhrase");
+    });
+    setRequirePin(true);
+    setCurrentScreen("Pin");
+  };
+
   const goHome = () => {
     setCurrentScreen("Main");
     setActiveTab("home");
@@ -1778,6 +1787,7 @@ function App() {
                 profilePicture={profilePicture}
                 onProfilePictureChange={setProfilePicture}
                 setProfileSection={setProfileSection}
+                onRecoveryPhraseRequest={requestRecoveryPhraseAccess}
               />
             )}
 
