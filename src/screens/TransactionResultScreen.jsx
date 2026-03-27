@@ -8,6 +8,7 @@ const TransactionResultScreen = ({
   type,
   onDone,
   paymentDestination,
+  darkMode = false,
 }) => {
   const isSuccess = status === 'success';
   const { formatAmount } = useCurrency();

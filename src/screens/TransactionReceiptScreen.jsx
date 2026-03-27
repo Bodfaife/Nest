@@ -8,16 +8,17 @@ export default function TransactionReceiptScreen({
   onDone,
   onShare,
   onDownload,
+  darkMode = false,
   onBack
 }) {
   const { formatAmount } = useCurrency();
-  if (!transaction) return <p className={`p-6 ${"text-gray-900"}`}>No transaction selected</p>;
+  if (!transaction) return <p className={`p-6 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>No transaction selected</p>;
 
   const isSuccess = status === 'success';
   const bgPage = darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900';
   const bgCard = darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900';
-  const textPrimary = "text-gray-900";
-  const textSecondary = "text-gray-500";
+  const textPrimary = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const textSecondary = darkMode ? 'text-gray-400' : 'text-gray-500';
   const topBarColor = isSuccess 
     ? darkMode ? 'bg-[#00FF9D]' : 'bg-[#00875A]' 
     : darkMode ? 'bg-red-600' : 'bg-red-500';

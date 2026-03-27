@@ -17,7 +17,18 @@ export default function WithdrawalScreen({
   const [error, setError] = useState('');
   const [showAccountModal, setShowAccountModal] = useState(false);
 
-  const numericAmount = Number(amount);
+  const formatNumberWithCommas = (value) => {
+    const numericValue = value.replace(/[^0-9.]/g, '');
+    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const handleAmountChange = (e) => {
+    const formatted = formatNumberWithCommas(e.target.value);
+    setAmount(formatted);
+    setError('');
+  };
+
+  const numericAmount = Number(amount.replace(/,/g, ''));
   const selectedAccount = bankAccounts[selectedAccountIndex];
   const destinationBank = selectedAccount 
     ? `${selectedAccount.bankName} ...${selectedAccount.accountNumber?.slice(-4)}` 
@@ -88,13 +99,11 @@ export default function WithdrawalScreen({
               Amount
             </label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               placeholder="0.00"
               value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value);
-                setError('');
-              }}
+              onChange={handleAmountChange}
               className={`w-full p-4 rounded-2xl bg-gray-50 border-gray-100 text-gray-900 border outline-none focus:border-[#00875A] text-lg font-bold`}
             />
 
@@ -112,27 +121,25 @@ export default function WithdrawalScreen({
             </label>
             <div className="space-y-2">
               {selectedAccount ? (
-                <div className={`p-4 rounded-2xl bg-gray-50 border-gray-100 border flex justify-between items-center`}>
-                  <div>
+                <button
+                  onClick={() => setShowAccountModal(true)}
+                  className={`w-full p-4 rounded-2xl bg-gray-50 border-gray-100 border flex justify-between items-center transition-colors hover:bg-gray-100`}
+                >
+                  <div className="text-left">
                     <p className={`font-bold text-gray-900`}>{selectedAccount.bankName}</p>
-                    <p className={`text-xs font-medium ${"text-gray-500"}`}>
+                    <p className={`text-xs font-medium text-gray-500`}>
                       {selectedAccount.accountNumber?.slice(-4) ? `...${selectedAccount.accountNumber.slice(-4)}` : 'Account'}
                     </p>
                   </div>
-                  <button
-                    onClick={() => setShowAccountModal(true)}
-                    className="text-xs font-black text-[#00875A] hover:opacity-70 transition-opacity"
-                  >
-                    CHANGE
-                  </button>
-                </div>
+                  <span className="text-xs font-black text-[#00875A]">CHANGE</span>
+                </button>
               ) : (
                 <button
                   onClick={() => {
                     if (bankAccounts.length > 0) {
                       setShowAccountModal(true);
                     } else {
-                      openScreen('SavedAccounts');
+                      openScreen('AddBankAccount');
                     }
                   }}
                   className={`w-full p-4 rounded-2xl bg-emerald-50 border-emerald-200 hover:bg-emerald-100 border flex justify-between items-center transition-colors`}
@@ -208,7 +215,7 @@ export default function WithdrawalScreen({
             {/* Close Button */}
             <button
               onClick={() => setShowAccountModal(false)}
-              className={`w-full mt-6 py-3 rounded-xl font-bold ${darkMode ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' : 'text-gray-700 bg-gray-50 hover:bg-gray-100'} transition-colors`}
+              className="w-full mt-6 py-3 rounded-xl font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 transition-colors"
             >
               Done
             </button>

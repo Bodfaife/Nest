@@ -7,6 +7,7 @@ export default function HomeScreen({
   user,
   openScreen,
   savingsBalance,
+  darkMode = false,
 }) {
   const currencyContext = useCurrency();
   const formatAmount =

@@ -135,11 +135,11 @@ export default function ForgotTransactionPinScreen({
             <div
               className={`p-4 rounded-xl mb-8 ${
                 darkMode
-                  ? 'bg-blue-900/30 border border-blue-800'
-                  : 'bg-blue-50 border border-blue-200'
+                  ? 'bg-emerald-900/30 border border-emerald-800'
+                  : 'bg-emerald-50 border border-emerald-200'
               }`}
             >
-              <p className={`text-sm ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+              <p className={`text-sm ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
                 📧 Email: {userEmail || 'your@email.com'}
                 <br />
                 📱 Phone: {userPhone || '+1 XXX XXX XXXX'}
@@ -284,14 +284,14 @@ export default function ForgotTransactionPinScreen({
             <div
               className={`p-4 rounded-xl ${
                 darkMode
-                  ? 'bg-blue-900/30 border border-blue-800'
-                  : 'bg-blue-50 border border-blue-200'
+                  ? 'bg-emerald-900/30 border border-emerald-800'
+                  : 'bg-emerald-50 border border-emerald-200'
               }`}
             >
-              <p className={`text-sm font-semibold mb-2 ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+              <p className={`text-sm font-semibold mb-2 ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
                 PIN Requirements:
               </p>
-              <ul className={`text-xs space-y-1 ${darkMode ? 'text-blue-200' : 'text-blue-600'}`}>
+              <ul className={`text-xs space-y-1 ${darkMode ? 'text-emerald-200' : 'text-emerald-600'}`}>
                 <li>✓ Must be 4 digits</li>
                 <li>✓ PINs must match</li>
                 <li>✓ Don't use obvious numbers (1111, 1234, etc.)</li>

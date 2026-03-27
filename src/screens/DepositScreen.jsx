@@ -220,7 +220,7 @@ export default function DepositScreen({
             handleConfirm();
           }}
           className={`w-[90%] py-4 rounded-2xl font-bold text-white shadow-xl transition-all cursor-pointer ${
-            (lockReady && (mode === "topup" || savingsPlanData?.type === 'flexible' || savingsPlanData?.duration)) ? "bg-emerald-600 active:scale-95" : "bg-gray-400"
+            (lockReady && (mode === "topup" || savingsPlanData?.type === 'flexible' || savingsPlanData?.duration)) ? "bg-emerald-600 active:scale-95" : " bg-emerald-600 hover:bg-emerald-700"
           }`}
         >
           {mode === "start" ? "Lock Savings" : "Top Up"}

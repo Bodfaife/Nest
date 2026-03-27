@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronLeft, Zap, TrendingUp, Calendar, Wallet } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 
-const SavingsDetailScreen = ({ savings, transactions = [], onBack }) => {
+const SavingsDetailScreen = ({ savings, transactions = [], onBack, darkMode = false }) => {
   const { formatAmount } = useCurrency();
 
   if (!savings) {
@@ -13,13 +13,13 @@ const SavingsDetailScreen = ({ savings, transactions = [], onBack }) => {
     );
   }
 
-  const bgClass = 'bg-white';
-  const textPrimary = "text-gray-900";
-  const textSecondary = "text-gray-500";
-  const cardBg = 'bg-gray-50';
-  const borderColor = 'border-gray-200';
-  const statBg = 'bg-emerald-50';
-  const statText = 'text-emerald-600';
+  const bgClass = darkMode ? 'bg-gray-900' : 'bg-white';
+  const textPrimary = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const textSecondary = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const cardBg = darkMode ? 'bg-gray-800' : 'bg-gray-50';
+  const borderColor = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const statBg = darkMode ? 'bg-emerald-950/40' : 'bg-emerald-50';
+  const statText = darkMode ? 'text-emerald-400' : 'text-emerald-600';
 
   // Calculate savings progress
   const savingsTransactions = transactions.filter(tx => tx.type === 'save' || tx.type === 'topup');
