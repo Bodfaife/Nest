@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
-export default function AccountCreationProcessingScreen({ onComplete, userName }) {
+export default function AccountCreationProcessingScreen({ onComplete, userName, accountNumber }) {
   const [messageIndex, setMessageIndex] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
 
@@ -9,31 +9,32 @@ export default function AccountCreationProcessingScreen({ onComplete, userName }
     { text: "Creating your account...", icon: "⚙️" },
     { text: "Validating account details...", icon: "🔍" },
     { text: "Setting up your profile...", icon: "👤" },
-    { text: `Welcome to Nest, ${userName}!`, icon: "🎉" }
+    { text: `Welcome to Nest, ${userName}! Your account number is ${accountNumber || 'XXXXXX'}.`, icon: "🎉" }
   ];
 
   useEffect(() => {
     if (messageIndex < messages.length) {
       setFadeOut(false);
 
+      const duration = messageIndex === messages.length - 1 ? 5000 : 3000;
       const fadeTimer = setTimeout(() => {
         setFadeOut(true);
-      }, 2500);
+      }, Math.max(duration - 500, 500));
 
       const nextMsgTimer = setTimeout(() => {
         if (messageIndex < messages.length - 1) {
           setMessageIndex(messageIndex + 1);
         } else {
-          setTimeout(onComplete, 1000);
+          onComplete();
         }
-      }, 3000);
+      }, duration);
 
       return () => {
         clearTimeout(fadeTimer);
         clearTimeout(nextMsgTimer);
       };
     }
-  }, [messageIndex, onComplete, messages.length, userName]);
+  }, [messageIndex, onComplete, messages.length]);
 
   const currentMessage = messages[messageIndex];
 

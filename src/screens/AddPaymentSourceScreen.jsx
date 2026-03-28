@@ -46,23 +46,45 @@ const AddPaymentSourceScreen = ({ user, onBack, onSave, darkMode }) => {
 
       {/* Card Preview */}
       <div className="p-8 flex-1">
-        <div className="w-full aspect-[1.6/1] bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 rounded-[2rem] p-8 text-white relative overflow-hidden mb-10 shadow-2xl">
-          <div className="flex justify-between items-start">
-            <span className="rounded-full px-3 py-1 bg-white/20 text-xs font-black uppercase tracking-widest">{cardNumber.startsWith('4') ? 'VISA' : cardNumber.startsWith('5') ? 'Mastercard' : cardNumber.startsWith('6304') ? 'Verve' : 'Nest Card'}</span>
-            <CreditCard className="opacity-40" />
-          </div>
-          <div className="mt-12">
-            <p className="text-xl tracking-[0.3em] font-mono opacity-90">
-              {cardNumber ? cardNumber.replace(/(\d{4})(?!$)/g, "$1 ") : "0000 0000 0000 0000"}
-            </p>
-          </div>
-          <div className="absolute bottom-8 left-8">
-            <p className="text-[8px] uppercase tracking-widest opacity-70 mb-1">
-              Card Holder
-            </p>
-            <p className="text-sm font-bold uppercase tracking-widest">
-              {cardHolder || user?.name || 'Card Holder'}
-            </p>
+        <div className="mx-auto w-full max-w-sm">
+          <div className="relative w-full min-h-[240px] aspect-[1.58/1] rounded-[28px] shadow-2xl overflow-hidden mb-10">
+            <div className="absolute inset-0 rounded-[28px] bg-gradient-to-br from-emerald-500 via-slate-800 to-slate-900 p-5 text-white flex flex-col">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.16),_transparent_32%)]" />
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[12px] uppercase tracking-[0.3em] text-slate-200">Nest Bank</p>
+                  <p className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-200">Debit</p>
+                </div>
+                <div className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-white/90">
+                  {cardNumber.startsWith('4') ? 'Visa' : cardNumber.startsWith('5') ? 'Mastercard' : cardNumber.startsWith('6304') ? 'Verve' : 'Nest'}
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center gap-3">
+                <div className="h-12 w-14 rounded-2xl border border-white/20 bg-white/5" />
+              </div>
+
+              <div className="mt-3">
+                <p className="text-[14px] font-semibold tracking-[0.22em] text-white">
+                  {cardNumber ? cardNumber.replace(/(\d{4})(?!$)/g, "$1 ") : "0000 0000 0000 0000"}
+                </p>
+              </div>
+
+              <div className="mt-auto flex items-end justify-between gap-4 text-sm text-slate-300">
+                <div className="min-w-0">
+                  <p className="text-[9px] uppercase tracking-[0.3em] text-slate-400">Card holder</p>
+                  <p className="mt-2 text-[15px] font-semibold uppercase tracking-[0.12em] text-white truncate">
+                    {cardHolder || user?.name || 'CARD HOLDER'}
+                  </p>
+                </div>
+                <div className="w-20 text-right flex-shrink-0">
+                  <p className="text-[9px] uppercase tracking-[0.3em] text-slate-400">Expires</p>
+                  <p className="mt-2 text-sm font-semibold uppercase tracking-[0.12em] text-white">
+                    {expiry || 'MM/YY'}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

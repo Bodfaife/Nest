@@ -8,6 +8,7 @@ const ConfirmPaymentScreen = ({
   source = "Nest Balance",
   destination = "Savings Vault",
   fee = 0,
+  selectedCard,
   onBack,
   darkMode,
   onConfirm,
@@ -17,6 +18,10 @@ const ConfirmPaymentScreen = ({
   const numericAmount = Number(amount) || 0;
   const numericFee = Number(fee) || 0;
   const total = numericAmount + numericFee;
+
+  const sourceLabel = selectedCard?.cardNumber
+    ? `**${selectedCard.cardNumber.slice(-4)}`
+    : source;
 
   // Helper classes for dark mode
   const bgClass = "bg-white";
@@ -60,7 +65,7 @@ const ConfirmPaymentScreen = ({
                 <Wallet size={24} />
               )}
             </div>
-            <span className="text-[10px] font-black uppercase text-center">{source}</span>
+            <span className="text-[10px] font-black uppercase text-center">{sourceLabel}</span>
           </div>
 
           <div className="px-4 text-[#00875A] animate-pulse">

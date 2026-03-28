@@ -18,9 +18,15 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
     return `${key}_${user.email}`;
   };
 
+  const getStoredAppPin = () => {
+    const appLaunchPin = localStorage.getItem(getUserKey('appLaunchPin'));
+    const appPin = localStorage.getItem(getUserKey('appPin'));
+    return appLaunchPin || appPin || null;
+  };
+
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
-  const [isSetupMode, setIsSetupMode] = useState(forceResetMode || !localStorage.getItem(getUserKey('appLaunchPin')));
+  const [isSetupMode, setIsSetupMode] = useState(forceResetMode || !getStoredAppPin());
   const [confirmPin, setConfirmPin] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -121,7 +127,7 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
     // Simulate verification delay
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    const storedPin = localStorage.getItem(getUserKey('appLaunchPin'));
+    const storedPin = getStoredAppPin();
     
     if (storedPin === pin) {
       resetFailedAttempts();
@@ -158,8 +164,13 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
 
     setLoading(true);
     
-    // Store PIN in localStorage
-    localStorage.setItem(getUserKey('appLaunchPin'), pin);
+    // Store PIN in localStorage under both legacy and current app PIN keys.
+    try {
+      localStorage.setItem(getUserKey('appLaunchPin'), pin);
+      localStorage.setItem(getUserKey('appPin'), pin);
+    } catch (e) {
+      console.error('Unable to save app PIN', e);
+    }
     
     await new Promise(resolve => setTimeout(resolve, 300));
     setLoading(false);

@@ -32,6 +32,9 @@ const getUserKey = (key, user) => {
   return `${key}_${user.email}`;
 };
 
+const generateAccountNumber = () =>
+  Array.from({ length: 10 }, () => Math.floor(Math.random() * 10)).join("");
+
 // Onboarding Screens
 import SplashScreen from "./screens/SplashScreen";
 import SignInScreen from "./screens/SignInScreen";
@@ -43,14 +46,16 @@ import OTPVerificationScreen from "./screens/OTPVerificationScreen";
 import RecoveryPhraseScreen from "./screens/RecoveryPhraseScreen";
 import RegistrationSplashScreen from "./screens/RegistrationSplashScreen";
 import CreateAppPinScreen from "./screens/CreateAppPinScreen";
+import CreateTransactionPinScreen from "./screens/CreateTransactionPinScreen";
 import CreateSavingsPromptScreen from "./screens/CreateSavingsPromptScreen";
 import CreateSavingsFormBioScreen from "./screens/CreateSavingsFormBioScreen";
 import CreateSavingsFormSavingsScreen from "./screens/CreateSavingsFormSavingsScreen";
 import SavingsProcessingScreen from "./screens/SavingsProcessingScreen";
 import AccountCreationProcessingScreen from "./screens/AccountCreationProcessingScreen";
-import AccountCreatedSuccessScreen from "./screens/AccountCreatedSuccessScreen";
 import AppLaunchPinScreen from "./screens/AppLaunchPinScreen";
 import ForgotAppLaunchPinScreen from "./screens/ForgotAppLaunchPinScreen";
+import PinSelectionScreen from "./screens/PinSelectionScreen";
+import RecoveryPhrasePinRequiredScreen from "./screens/RecoveryPhrasePinRequiredScreen";
 
 // Main App Screens
 import BottomNav from "./components/BottomNav";
@@ -114,6 +119,7 @@ import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 // Receipt & Utilities
 import NestTransactionReceiptPDF from "./screens/NestTransactionReceiptPDF";
 import OTPInputScreen from "./screens/OTPInputScreen";
+import PinSuccessScreen from "./screens/PinSuccessScreen";
 import { generateOTP, storeOTP, notifyOTP } from './lib/otpGenerator';
 import { onAppAlert } from './lib/appAlert';
 import AppAlert from './components/AppAlert';
@@ -164,8 +170,7 @@ function App() {
       SCREENS.CreateSavingsDetails,
       SCREENS.SavingsProcessing,
       SCREENS.RecoveryPhrase,
-      SCREENS.AccountCreationProcessing,
-      SCREENS.AccountCreatedSuccess
+      SCREENS.AccountCreationProcessing
     ];
 
     // check for a saved user object too
@@ -199,8 +204,6 @@ function App() {
 
     return SCREENS.Splash;
   });
-
-  const [accountCreatedNextScreen, setAccountCreatedNextScreen] = useState(SCREENS.EmailSent);
 
   const [activeTab, setActiveTab] = useState("home");
 
@@ -287,10 +290,14 @@ function App() {
   // we no longer hold pendingPin since PIN creation is immediate
   const [pendingAddCard, setPendingAddCard] = useState(null);
   const [pendingBankAccount, setPendingBankAccount] = useState(null);
+  const [pinFlow, setPinFlow] = useState(null);
+  const [pendingNewPin, setPendingNewPin] = useState(null);
+  const [pinSuccessMessage, setPinSuccessMessage] = useState('');
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [showForgotAppLaunchPin, setShowForgotAppLaunchPin] = useState(false);
   const [showResetAppLaunchPin, setShowResetAppLaunchPin] = useState(false);
+  const [pendingScreenAfterPin, setPendingScreenAfterPin] = useState(null);
 
   // hydrate data from Supabase when a user signs in
   const hydrateFromServer = async (u) => {
@@ -540,7 +547,9 @@ function App() {
             }
             
             // Route to recovery phrase (continue after email verification)
+            setOpenedFrom('SignUp');
             setCurrentScreen('RecoveryPhrase');
+            window.history.replaceState({}, document.title, window.location.pathname);
           } catch (e) {
             console.error('Error handling signup verification:', e);
           }
@@ -750,6 +759,8 @@ function App() {
   // ===== Navigation Helpers =====
   const openScreen = (screen, data = null, fromScreen = null) => {
     const previousScreen = fromScreen || currentScreen;
+    const profileOrigin = activeTab === "profile";
+    const originScreen = profileOrigin ? "Profile" : previousScreen;
     
     // Main tab screens
     if (screen === "Home" || screen === "Main") {
@@ -811,33 +822,47 @@ function App() {
       return;
     }
     if (screen === "TransactionHistory") {
-      setOpenedFrom(previousScreen);
+      setOpenedFrom(originScreen);
       setCurrentScreen("TransactionHistory");
       return;
     }
     if (screen === "DownloadStatement") {
-      setOpenedFrom(previousScreen);
+      setOpenedFrom(originScreen);
       setCurrentScreen("DownloadStatement");
       return;
     }
+    if (screen === "RecoveryPhraseSecure") {
+      setOpenedFrom(originScreen);
+      const hasAppPin = Boolean(
+        localStorage.getItem(getUserKey("appLaunchPin", user)) ||
+        localStorage.getItem(getUserKey("appPin", user))
+      );
+      if (hasAppPin) {
+        setPendingScreenAfterPin("RecoveryPhrase");
+        setCurrentScreen("AppLaunchPin");
+      } else {
+        setCurrentScreen("RecoveryPhrasePinRequired");
+      }
+      return;
+    }
     if (screen === "Deposit") {
-      setOpenedFrom(previousScreen);
+      setOpenedFrom(originScreen);
       setDepositMode(hasActiveSavings ? "topup" : "start");
       setCurrentScreen("Deposit");
       return;
     }
     if (screen === "AddBankAccount") {
-      setOpenedFrom(previousScreen);
+      setOpenedFrom(originScreen);
       setCurrentScreen("AddBankAccount");
       return;
     }
     if (screen === "CompleteProfileScreen") {
-      setOpenedFrom(previousScreen);
+      setOpenedFrom(originScreen);
       setCurrentScreen("CompleteProfileScreen");
       return;
     }
     if (screen === "TransactionReceipt") {
-      setOpenedFrom(previousScreen);
+      setOpenedFrom(originScreen);
       setSelectedTransaction(data);
       setCurrentScreen("TransactionReceipt");
       return;
@@ -845,15 +870,6 @@ function App() {
     // Default: set openedFrom for all other screens
     setOpenedFrom(previousScreen);
     setCurrentScreen(screen);
-  };
-
-  const requestRecoveryPhraseAccess = () => {
-    setOpenedFrom(currentScreen);
-    setPendingAction(() => {
-      setCurrentScreen("RecoveryPhrase");
-    });
-    setRequirePin(true);
-    setCurrentScreen("Pin");
   };
 
   const goHome = () => {
@@ -890,6 +906,16 @@ function App() {
       setCurrentScreen("Main");
       setShowSavedAccounts(true);
       setReturnToProfileSubScreen(null);
+      setOpenedFrom(null);
+      return;
+    }
+
+    if (openedFrom === "Profile") {
+      setCurrentScreen("Main");
+      setActiveTab("profile");
+      setProfileSection(null);
+      setShowSavedCards(false);
+      setShowSavedAccounts(false);
       setOpenedFrom(null);
       return;
     }
@@ -1045,6 +1071,7 @@ function App() {
           },
         };
       });
+      setDepositMode("topup");
       try { scheduleSavingsReminder(pendingPayment); } catch (e) {}
       localStorage.removeItem("savedBioForm");
       localStorage.removeItem("savedSavingsForm");
@@ -1211,13 +1238,23 @@ function App() {
               sessionStorage.setItem('appLaunchPinVerified', 'true');
               setShowResetAppLaunchPin(false);
               setShowForgotAppLaunchPin(false);
-              setCurrentScreen(user ? "Main" : "SignIn");
+              if (pendingScreenAfterPin) {
+                setCurrentScreen(pendingScreenAfterPin);
+                setPendingScreenAfterPin(null);
+              } else {
+                setCurrentScreen(user ? "Main" : "SignIn");
+              }
             }}
             onSetupPin={() => {
               sessionStorage.setItem('appLaunchPinVerified', 'true');
               setShowResetAppLaunchPin(false);
               setShowForgotAppLaunchPin(false);
-              setCurrentScreen(user ? "Main" : "SignIn");
+              if (pendingScreenAfterPin) {
+                setCurrentScreen(pendingScreenAfterPin);
+                setPendingScreenAfterPin(null);
+              } else {
+                setCurrentScreen(user ? "Main" : "SignIn");
+              }
             }}
             onForgotPin={() => {
               setShowResetAppLaunchPin(false);
@@ -1230,11 +1267,21 @@ function App() {
           <AppLaunchPinScreen
             onPinVerified={() => {
               sessionStorage.setItem('appLaunchPinVerified', 'true');
-              setCurrentScreen(user ? "Main" : "SignIn");
+              if (pendingScreenAfterPin) {
+                setCurrentScreen(pendingScreenAfterPin);
+                setPendingScreenAfterPin(null);
+              } else {
+                setCurrentScreen(user ? "Main" : "SignIn");
+              }
             }}
             onSetupPin={() => {
               sessionStorage.setItem('appLaunchPinVerified', 'true');
-              setCurrentScreen(user ? "Main" : "SignIn");
+              if (pendingScreenAfterPin) {
+                setCurrentScreen(pendingScreenAfterPin);
+                setPendingScreenAfterPin(null);
+              } else {
+                setCurrentScreen(user ? "Main" : "SignIn");
+              }
             }}
             onForgotPin={() => {
               setShowForgotAppLaunchPin(true);
@@ -1383,8 +1430,10 @@ function App() {
               setBankAccounts([]);
               setProfilePicture(null);
 
-              setUser(userObj);
-              const serialized = JSON.stringify(userObj);
+              const accountNumber = generateAccountNumber();
+              const updatedUserObj = { ...userObj, accountNumber };
+              setUser(updatedUserObj);
+              const serialized = JSON.stringify(updatedUserObj);
               localStorage.setItem("user", serialized);
               
               console.log("✅ SignUp (Part 2): User saved with location data");
@@ -1392,6 +1441,7 @@ function App() {
               console.log("   FullName:", fullName);
               console.log("   Country:", country);
               console.log("   State:", state);
+              console.log("   AccountNumber:", accountNumber);
 
               setOpenedFrom("SignUp");
               setSignupPart(1); // Reset for next time
@@ -1405,16 +1455,45 @@ function App() {
         {currentScreen === SCREENS.AccountCreationProcessing && (
           <AccountCreationProcessingScreen
             userName={user?.fullName || 'User'}
-            onComplete={() => setCurrentScreen(SCREENS.AccountCreatedSuccess)}
+            accountNumber={user?.accountNumber}
+            onComplete={() => setCurrentScreen(SCREENS.CreateSavingsPrompt)}
           />
         )}
 
-        {currentScreen === SCREENS.AccountCreatedSuccess && (
-          <AccountCreatedSuccessScreen
-            userName={user?.fullName || 'User'}
-            accountNumber={user?.accountNumber}
-            onContinue={(next) => setCurrentScreen(next)}
-            nextScreen={accountCreatedNextScreen}
+        {currentScreen === SCREENS.PinSelection && (
+          <PinSelectionScreen
+            onBack={() => {
+              setCurrentScreen("Main");
+              setActiveTab("profile");
+              setProfileSection("security");
+            }}
+            onSelectAppPin={() => {
+              const existingAppPin = Boolean(
+                localStorage.getItem(getUserKey("appLaunchPin", user)) ||
+                localStorage.getItem(getUserKey("appPin", user))
+              );
+              setPinFlow(existingAppPin ? "changeAppPin" : "createAppPin");
+              setCurrentScreen("CreateAppPin");
+            }}
+            onSelectTransactionPin={() => {
+              const existingTransactionPin = Boolean(localStorage.getItem(getUserKey("userPin", user)));
+              setPinFlow(existingTransactionPin ? "changeTransactionPin" : "createTransactionPin");
+              setCurrentScreen("CreateTransactionPin");
+            }}
+          />
+        )}
+
+        {currentScreen === "RecoveryPhrasePinRequired" && (
+          <RecoveryPhrasePinRequiredScreen
+            onBack={() => {
+              setCurrentScreen("Main");
+              setActiveTab("profile");
+              setProfileSection("security");
+            }}
+            onCreateAppPin={() => {
+              setPinFlow("createAppPinForRecoveryPhrase");
+              setCurrentScreen("CreateAppPin");
+            }}
           />
         )}
 
@@ -1438,8 +1517,7 @@ function App() {
                 const { data, error } = await supabase.auth.getUser();
                 if (error) throw error;
                 if (data?.email_confirmed_at) {
-                  setAccountCreatedNextScreen(SCREENS.RecoveryPhrase);
-                  setCurrentScreen(SCREENS.AccountCreatedSuccess);
+                  setCurrentScreen(SCREENS.RecoveryPhrase);
                 } else {
                   const { showAppAlert } = await import('./lib/appAlert');
                   showAppAlert({
@@ -1513,34 +1591,66 @@ function App() {
             phrases={user?.recoveryPhrase || []}
             email={user?.email || ''}
             userName={user?.fullName || ''}
+            onBack={() => {
+              if (openedFrom === 'Profile') {
+                setCurrentScreen('Main');
+                setActiveTab('profile');
+                setProfileSection('security');
+              } else {
+                setCurrentScreen('VerifyAccount');
+              }
+            }}
             onContinue={() => {
-              // Ensure user has fullName before proceeding
-              if (!user?.fullName) {
-                console.warn('⚠️ User missing fullName during signup! Saving from recovery data...');
-                const stored = localStorage.getItem('signupPending');
-                if (stored) {
-                  const pending = JSON.parse(stored);
-                  if (pending.fullName) {
-                    setUser(prev => ({ ...prev, fullName: pending.fullName }));
+              if (openedFrom === 'Profile') {
+                setCurrentScreen('Main');
+                setActiveTab('profile');
+                setProfileSection('security');
+              } else {
+                // Ensure user has fullName before proceeding
+                if (!user?.fullName) {
+                  console.warn('⚠️ User missing fullName during signup! Saving from recovery data...');
+                  const stored = localStorage.getItem('signupPending');
+                  if (stored) {
+                    const pending = JSON.parse(stored);
+                    if (pending.fullName) {
+                      setUser(prev => ({ ...prev, fullName: pending.fullName }));
+                    }
                   }
                 }
+                setPinFlow("createAppPin");
+                setCurrentScreen("CreateAppPin");
               }
-              setCurrentScreen("CreateTransactionPin");
             }} 
           />
         )}
 
         {currentScreen === "CreateTransactionPin" && (
           <CreateTransactionPinScreen
-            onBack={() => setCurrentScreen("RecoveryPhrase")}
+            onBack={() => {
+              if (openedFrom !== 'Profile' && pinFlow === "createTransactionPin") {
+                setCurrentScreen("CreateAppPin");
+              } else {
+                setCurrentScreen("PinSelection");
+              }
+            }}
             onPinCreated={async (newPin) => {
               try {
-                // directly finalize PIN without any email/OTP step
-                try { localStorage.setItem(getUserKey("userPin", user), newPin); } catch (e) {}
-                const updatedUser = { ...(user || {}), transactionPin: newPin };
-                setUser(updatedUser);
-                try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
-                setCurrentScreen('CreateAppPin');
+                if (pinFlow === "createTransactionPin") {
+                  try { localStorage.setItem(getUserKey("userPin", user), newPin); } catch (e) {}
+                  const updatedUser = { ...(user || {}), transactionPin: newPin };
+                  setUser(updatedUser);
+                  try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
+                  setPinSuccessMessage('Your transaction PIN has been created successfully.');
+                  setPinFlow(null);
+                  setCurrentScreen('PinSuccess');
+                } else if (pinFlow === "changeTransactionPin") {
+                  setPendingNewPin(newPin);
+                  const otp = generateOTP(6);
+                  storeOTP('changeTransactionPin', otp, 5);
+                  await notifyOTP(otp, 'changeTransactionPin');
+                  setOtpContext('changeTransactionPin');
+                  setCurrentScreen('OTPInput');
+                }
               } catch (e) {
                 console.error('PIN creation error:', e);
                 showAlert({ type: 'error', title: 'Error', message: 'Failed to save PIN. Please try again.' });
@@ -1551,18 +1661,54 @@ function App() {
 
         {currentScreen === "CreateAppPin" && (
           <CreateAppPinScreen
-            onBack={() => setCurrentScreen("CreateTransactionPin")}
+            onBack={() => {
+              if (pinFlow === "createAppPinForRecoveryPhrase") {
+                setCurrentScreen("RecoveryPhrasePinRequired");
+              } else if (openedFrom !== 'Profile' && pinFlow === "createAppPin") {
+                setCurrentScreen("RecoveryPhrase");
+              } else {
+                setCurrentScreen("PinSelection");
+              }
+            }}
             onPinCreated={async (newPin) => {
               try {
-                try { localStorage.setItem(getUserKey("appPin", user), newPin); } catch (e) {}
-                const updatedUser = { ...(user || {}), appPin: newPin };
-                setUser(updatedUser);
-                try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
-                setCurrentScreen('RegistrationSplash');
+                if (pinFlow === "createAppPin" || pinFlow === "createAppPinForRecoveryPhrase") {
+                  try { localStorage.setItem(getUserKey("appPin", user), newPin); } catch (e) {}
+                  try { localStorage.setItem(getUserKey("appLaunchPin", user), newPin); } catch (e) {}
+                  const updatedUser = { ...(user || {}), appPin: newPin };
+                  setUser(updatedUser);
+                  try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
+
+                  if (pinFlow === "createAppPinForRecoveryPhrase") {
+                    setPinFlow(null);
+                    setCurrentScreen('RecoveryPhrase');
+                  } else {
+                    setPinFlow(null);
+                    setCurrentScreen('CreateTransactionPin');
+                  }
+                } else if (pinFlow === "changeAppPin") {
+                  setPendingNewPin(newPin);
+                  const otp = generateOTP(6);
+                  storeOTP('changeAppPin', otp, 5);
+                  await notifyOTP(otp, 'changeAppPin');
+                  setOtpContext('changeAppPin');
+                  setCurrentScreen('OTPInput');
+                }
               } catch (e) {
                 console.error('App PIN creation error:', e);
                 showAlert({ type: 'error', title: 'Error', message: 'Failed to save app PIN. Please try again.' });
               }
+            }}
+          />
+        )}
+
+        {currentScreen === "PinSuccess" && (
+          <PinSuccessScreen
+            message={pinSuccessMessage}
+            onBack={() => {
+              setCurrentScreen("Main");
+              setActiveTab("profile");
+              setProfileSection("security");
             }}
           />
         )}
@@ -1787,7 +1933,6 @@ function App() {
                 profilePicture={profilePicture}
                 onProfilePictureChange={setProfilePicture}
                 setProfileSection={setProfileSection}
-                onRecoveryPhraseRequest={requestRecoveryPhraseAccess}
               />
             )}
 
@@ -1801,6 +1946,7 @@ function App() {
                 onViewPrivacyPolicy={() => setShowPrivacyPolicy(true)}
                 onResetPin={() => setDangerZoneAction("resetPin")}
                 onCloseAccount={() => setDangerZoneAction("closeAccount")}
+                onManagePins={() => setCurrentScreen(SCREENS.PinSelection)}
               />
             )}
 
@@ -2038,6 +2184,36 @@ function App() {
                   handleBack();
                 }
                 setOtpContext(null);
+              } else if (otpContext === 'changeAppPin') {
+                try {
+                  if (pendingNewPin) {
+                    try { localStorage.setItem(getUserKey('appPin', user), pendingNewPin); } catch (e) {}
+                    const updatedUser = { ...(user || {}), appPin: pendingNewPin };
+                    setUser(updatedUser);
+                    try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
+                    setPinSuccessMessage('Your app PIN has been updated successfully.');
+                    setCurrentScreen('PinSuccess');
+                  }
+                } finally {
+                  setPendingNewPin(null);
+                  setPinFlow(null);
+                  setOtpContext(null);
+                }
+              } else if (otpContext === 'changeTransactionPin') {
+                try {
+                  if (pendingNewPin) {
+                    try { localStorage.setItem(getUserKey('userPin', user), pendingNewPin); } catch (e) {}
+                    const updatedUser = { ...(user || {}), transactionPin: pendingNewPin };
+                    setUser(updatedUser);
+                    try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
+                    setPinSuccessMessage('Your transaction PIN has been updated successfully.');
+                    setCurrentScreen('PinSuccess');
+                  }
+                } finally {
+                  setPendingNewPin(null);
+                  setPinFlow(null);
+                  setOtpContext(null);
+                }
               } else {
                 setOtpContext(null);
                 handleBack();

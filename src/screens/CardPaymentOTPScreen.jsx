@@ -83,7 +83,6 @@ export default function CardPaymentOTPScreen({
 
   return (
     <div className={`min-h-screen flex flex-col ${bgClass} p-6 overflow-hidden animate-in fade-in slide-in-from-right duration-300`}>
-      {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         {!isVerifying && (
           <button
@@ -95,14 +94,22 @@ export default function CardPaymentOTPScreen({
             <ChevronLeft size={24} />
           </button>
         )}
-        <h1 className="text-2xl font-black">Verify Your Card</h1>
       </div>
+
+      {/* Header */}
+      {!isVerifying && (
+        <div className="mb-6">
+          <h1 className="text-3xl font-black mb-2">Verify Card</h1>
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 pb-64 flex flex-col justify-center">
-        <p className={`text-sm mb-8 ${"text-gray-500"}`}>
-          We've sent a 6-digit code to your registered phone number. {!isVerifying && 'Please enter it below.'}
-        </p>
+        {!isVerifying && (
+          <p className={`text-sm mb-8 ${"text-gray-500"}`}>
+            We've sent a 6-digit code to your registered phone number. Please enter it below.
+          </p>
+        )}
 
         {!isVerifying ? (
           <>

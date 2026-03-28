@@ -157,7 +157,7 @@ export default function PrivacyPolicyScreen({ darkMode = false, onBack }) {
             </p>
             <div className={`mt-4 p-4 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
               <p className="font-bold mb-2">Nest Savings</p>
-              <p className={textSecondary}>Email: privacy@nestsavings.com</p>
+              <p className={textSecondary}>Email: noreply.nestapp@gmail.com</p>
               <p className={textSecondary}>Phone: +1 (555) 000-0000</p>
               <p className={textSecondary}>Address: 123 Savings Street, Financial Hub, 12345</p>
             </div>

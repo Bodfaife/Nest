@@ -143,7 +143,7 @@ export default function BankTransferInstructionsScreen({
             </div>
 
             {/* Important Note */}
-            <div className={`p-5 rounded-2xl border-2 ${darkMode ? 'bg-yellow-900/20 border-yellow-800 text-yellow-200' : 'bg-yellow-50 border-yellow-200 text-yellow-800'}`}>
+            <div className={`p-5 rounded-2xl border-2 ${darkMode ? 'bg-emerald-900/20 border-emerald-800 text-emerald-200' : 'bg-emerald-50 border-emerald-200 text-emerald-800'}`}>
               <p className="text-sm font-bold mb-2">⚠️ Important:</p>
               <p className="text-xs">
                 Ensure the amount matches exactly. Bank transfers may take 1-3 business days to process. 

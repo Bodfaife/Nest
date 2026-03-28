@@ -66,6 +66,7 @@ export const SCREENS = {
   VerifyAccount: "VerifyAccount",
   VerifyAccountProcessing: "VerifyAccountProcessing",
   AccountCreationProcessing: "AccountCreationProcessing",
-  AccountCreatedSuccess: "AccountCreatedSuccess",
+  PinSelection: "PinSelection",
+  RecoveryPhrasePinRequired: "RecoveryPhrasePinRequired",
   // ... add new screen names as needed
 };

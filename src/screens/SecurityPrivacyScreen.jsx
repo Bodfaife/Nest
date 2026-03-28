@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, Shield, Lock, Eye, AlertCircle } from 'lucide-react';
 
-const SecurityPrivacyScreen = ({ onBack, onViewPrivacyPolicy, onResetPin, onCloseAccount }) => {
+const SecurityPrivacyScreen = ({ onBack, onViewPrivacyPolicy, onResetPin, onCloseAccount, onManagePins, darkMode=false }) => {
   const [security, setSecurity] = useState({
     biometric: true,
     twoFactor: false,
@@ -99,11 +99,17 @@ const SecurityPrivacyScreen = ({ onBack, onViewPrivacyPolicy, onResetPin, onClos
           </div>
         </div>
 
+        <div className="mb-8">
+          <button
+            onClick={onManagePins}
+            className="w-full p-4 rounded-2xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all"
+          >
+            Manage App / Transaction PIN
+          </button>
+        </div>
+
         <div className={`p-5 rounded-2xl border-2 space-y-3 ${dangerBg}`}>
-          <div className="flex items-center gap-2">
-            <AlertCircle size={18} className={darkMode ? 'text-red-400' : 'text-red-600'} />
-            <p className={`font-bold ${darkMode ? 'text-red-200' : 'text-red-700'}`}>Danger Zone</p>
-          </div>
+          
           <button 
             onClick={onResetPin}
             className={`w-full p-3 rounded-xl border border-current font-bold text-sm ${

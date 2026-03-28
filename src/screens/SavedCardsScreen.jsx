@@ -45,80 +45,85 @@ export default function SavedCardsScreen({
         {cards && cards.length > 0 ? (
           <div className="max-w-2xl mx-auto space-y-4">
             {cards.map((card, idx) => (
-              <div
-                key={idx}
-                className={`p-6 rounded-2xl border-2 transition-all ${
-                  darkMode ? 'border-gray-700 bg-gray-800 hover:border-emerald-600/50' : 'border-gray-100 bg-gray-50 hover:border-emerald-300'
-                }`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-3 rounded-xl ${darkMode ? 'bg-gray-700' : 'bg-white'}`}>
-                      <CreditCard size={24} className="text-emerald-600" />
+              <div key={idx} className="space-y-4">
+                <div className="mx-auto w-full max-w-sm">
+                  <div className="relative w-full min-h-[240px] aspect-[1.58/1] rounded-[28px] shadow-2xl overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-slate-800 to-slate-900" />
+                    <div className="relative flex h-full flex-col p-5 text-white">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-[12px] uppercase tracking-[0.3em] text-slate-200">Nest Bank</p>
+                          <p className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-200">Debit</p>
+                        </div>
+                        <div className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-white/90">
+                          {card.cardNetwork || 'Nest'}
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <div className="h-12 w-14 rounded-2xl border border-white/20 bg-white/5" />
+                      </div>
+
+                      <div className="mt-4">
+                        <p className="text-[14px] font-semibold tracking-[0.22em] text-white">
+                          {card.cardNumber ? card.cardNumber.replace(/(\d{4})(?!$)/g, "$1 ") : `**** **** **** ${card.cardNumber?.slice(-4) || 'XXXX'}`}
+                        </p>
+                      </div>
+
+                      <div className="mt-auto flex items-end justify-between gap-4 text-sm text-slate-300">
+                        <div className="min-w-0">
+                          <p className="text-[9px] uppercase tracking-[0.3em] text-slate-400">Card holder</p>
+                          <p className="mt-2 text-[15px] font-semibold uppercase tracking-[0.12em] text-white truncate">
+                            {card.cardHolder || card.cardholderName || 'CARD HOLDER'}
+                          </p>
+                        </div>
+                        <div className="w-24 text-right flex-shrink-0">
+                          <p className="text-[9px] uppercase tracking-[0.3em] text-slate-400">Expires</p>
+                          <p className="mt-2 text-sm font-semibold uppercase tracking-[0.12em] text-white">
+                            {card.expiryDate || card.expiry || 'MM/YY'}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className={`font-bold ${textPrimary}`}>{card.cardholderName || 'Card'}</p>
-                      <p className={`text-sm ${textSecondary}`}>{card.cardNetwork || 'Debit Card'}</p>
-                    </div>
-                  </div>
-                  {deletingId !== idx && (
-                    <button
-                      onClick={() => setDeletingId(idx)}
-                      className={`p-2 rounded-lg transition-all ${
-                        darkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'
-                      }`}
-                      title="Delete card"
-                    >
-                      <Trash2 size={18} className="text-red-600" />
-                    </button>
-                  )}
-                </div>
-
-                <div className={`p-3 rounded-xl mb-4 ${cardBg} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <p className={`text-xs font-bold uppercase ${textSecondary}`}>Card Number</p>
-                  <p className="font-mono font-bold text-lg tracking-wider mt-1">
-                    **** **** **** {card.cardNumber?.slice(-4) || 'XXXX'}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className={`p-3 rounded-xl ${cardBg}`}>
-                    <p className={`text-xs font-bold uppercase ${textSecondary}`}>Expires</p>
-                    <p className="font-bold mt-1">{card.expiryDate || 'MM/YY'}</p>
-                  </div>
-                  <div className={`p-3 rounded-xl ${cardBg}`}>
-                    <p className={`text-xs font-bold uppercase ${textSecondary}`}>CVV</p>
-                    <p className="font-bold mt-1">***</p>
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col gap-3 max-w-sm mx-auto">
                   <button
                     onClick={() => onSetDefaultCard && onSetDefaultCard(card)}
-                    className="flex-1 py-3 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all"
+                    className="w-full py-3 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all"
                   >
                     {card.isDefault ? 'Default Card' : 'Set as default'}
                   </button>
-                  {deletingId === idx && (
-                    <>
+                  {deletingId === idx ? (
+                    <div className="grid grid-cols-2 gap-3">
                       <button
                         onClick={() => {
                           onDeleteCard && onDeleteCard(idx);
                           setDeletingId(null);
                         }}
-                        className="flex-1 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-all"
+                        className="py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-all"
                       >
                         Confirm Delete
                       </button>
                       <button
                         onClick={() => setDeletingId(null)}
-                        className={`flex-1 py-3 rounded-xl font-bold transition-all ${
+                        className={`py-3 rounded-xl font-bold transition-all ${
                           darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
                         }`}
                       >
                         Cancel
                       </button>
-                    </>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setDeletingId(idx)}
+                      className={`py-3 rounded-xl font-bold transition-all ${
+                        darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+                      }`}
+                    >
+                      Remove Card
+                    </button>
                   )}
                 </div>
               </div>

@@ -51,9 +51,23 @@ export default function CreateSavingsFormSavingsScreen({ onSubmit, user }) {
     localStorage.setItem(key, JSON.stringify(form));
   }, [form, user]);
 
+  const formatNumberWithCommas = (value) => {
+    const numericValue = value.replace(/[^0-9]/g, '');
+    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const normalizeNumberValue = (value) => {
+    return value ? value.replace(/,/g, '') : '';
+  };
+
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  }
+
+  function handleAmountInputChange(e) {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: formatNumberWithCommas(value) }));
   }
 
   function selectType(type) {
@@ -62,18 +76,27 @@ export default function CreateSavingsFormSavingsScreen({ onSubmit, user }) {
   }
 
   function handleSubmit() {
-    if (form.type === 'goal' && (!form.goal || !form.targetAmount || !form.amount || !form.frequency)) return;
-    if (form.type === 'regular' && (!form.amount || !form.frequency || !form.duration)) return;
-    if (form.type === 'flexible' && (!form.goal || !form.targetAmount)) return;
-    onSubmit(form);
+    const sanitizedForm = {
+      ...form,
+      targetAmount: normalizeNumberValue(form.targetAmount),
+      amount: normalizeNumberValue(form.amount),
+    };
+
+    if (form.type === 'goal' && (!form.goal || !sanitizedForm.targetAmount || !sanitizedForm.amount || !form.frequency)) return;
+    if (form.type === 'regular' && (!sanitizedForm.amount || !form.frequency || !form.duration)) return;
+    if (form.type === 'flexible' && (!form.goal || !sanitizedForm.targetAmount)) return;
+    onSubmit(sanitizedForm);
     const key = getUserStorageKey('savedSavingsForm', user);
     localStorage.removeItem(key);
   }
 
   const isValid = () => {
-    if (form.type === 'goal') return form.goal && form.targetAmount && form.amount && form.frequency;
-    if (form.type === 'regular') return form.amount && form.frequency && form.duration;
-    if (form.type === 'flexible') return form.goal && form.targetAmount;
+    const sanitizedTargetAmount = normalizeNumberValue(form.targetAmount);
+    const sanitizedAmount = normalizeNumberValue(form.amount);
+
+    if (form.type === 'goal') return form.goal && sanitizedTargetAmount && sanitizedAmount && form.frequency;
+    if (form.type === 'regular') return sanitizedAmount && form.frequency && form.duration;
+    if (form.type === 'flexible') return form.goal && sanitizedTargetAmount;
     return false;
   };
 
@@ -138,7 +161,15 @@ export default function CreateSavingsFormSavingsScreen({ onSubmit, user }) {
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
                   Target amount
                 </label>
-                <input type="number" name="targetAmount" value={form.targetAmount} onChange={handleChange} placeholder="0.00" className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300" />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  name="targetAmount"
+                  value={form.targetAmount}
+                  onChange={handleAmountInputChange}
+                  placeholder="0.00"
+                  className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300"
+                />
               </div>
 
               <div className="space-y-1">
@@ -159,7 +190,15 @@ export default function CreateSavingsFormSavingsScreen({ onSubmit, user }) {
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
                   Amount per {form.frequency || 'period'}
                 </label>
-                <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder={`0.00`} className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300" />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  name="amount"
+                  value={form.amount}
+                  onChange={handleAmountInputChange}
+                  placeholder={`0.00`}
+                  className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300"
+                />
               </div>
             </>
           )}
@@ -184,7 +223,15 @@ export default function CreateSavingsFormSavingsScreen({ onSubmit, user }) {
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
                   Amount per {form.frequency || 'period'}
                 </label>
-                <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder={`0.00`} className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300" />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  name="amount"
+                  value={form.amount}
+                  onChange={handleAmountInputChange}
+                  placeholder={`0.00`}
+                  className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300"
+                />
               </div>
 
               <div className="space-y-1">
@@ -211,7 +258,15 @@ export default function CreateSavingsFormSavingsScreen({ onSubmit, user }) {
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
                   Proposed total amount
                 </label>
-                <input type="number" name="targetAmount" value={form.targetAmount} onChange={handleChange} placeholder="Target you&apos;d like to reach" className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300" />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  name="targetAmount"
+                  value={form.targetAmount}
+                  onChange={handleAmountInputChange}
+                  placeholder="Target you&apos;d like to reach"
+                  className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-300"
+                />
               </div>
             </>
           )}
