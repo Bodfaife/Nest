@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nest Account Verified</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #f3faf7;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%);
+      }
+      .card {
+        width: min(100%, 480px);
+        padding: 2rem;
+        border-radius: 2rem;
+        background: white;
+        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.08);
+        text-align: center;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 5rem;
+        height: 5rem;
+        margin: 0 auto 1.5rem;
+        border-radius: 9999px;
+        background: #d1fae5;
+        color: #047857;
+        font-size: 2rem;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 2.5rem);
+        line-height: 1.05;
+        color: #064e3b;
+      }
+      p {
+        margin: 1rem 0 1.5rem;
+        color: #334155;
+        line-height: 1.8;
+      }
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border: none;
+        border-radius: 1rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: white;
+        background: #047857;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .button:hover {
+        background: #065f46;
+      }
+      .subtext {
+        margin-top: 1rem;
+        color: #475569;
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="badge">✓</div>
+      <h1>Nest account creation successfully verified</h1>
+      <p>Your email confirmation is complete. Tap the button below to return back to the Nest app and finish setup.</p>
+      <a class="button" href="./?flow=signup-verify">Return to Nest App</a>
+      <p class="subtext">If your app does not open automatically, switch back to your Nest app and look for the verification prompt.</p>
+    </div>
+  </body>
+</html>

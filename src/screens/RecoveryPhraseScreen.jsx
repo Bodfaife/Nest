@@ -98,19 +98,6 @@ export default function RecoveryPhraseScreen({ onBack, onContinue, phrases = [],
       </div>
 
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 pb-8">
-        <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <div className="flex items-center gap-3 text-slate-900">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-              <AlertTriangle className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="font-semibold">One-time backup phrase</p>
-              <p className="text-sm text-slate-600">
-                Write these words down exactly as shown. You will need them if you lose access to your account.
-              </p>
-            </div>
-          </div>
-        </div>
 
         {loading ? (
           <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-slate-200">

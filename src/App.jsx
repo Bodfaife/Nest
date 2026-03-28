@@ -158,8 +158,7 @@ function App() {
           console.error('Failed to parse saved user:', e);
         }
       }
-      // Direct users immediately to recovery phrase entry after clicking email verification link
-      return flow === 'signup-verify' ? SCREENS.RecoveryPhrase : SCREENS.RecoveryPhraseVerification;
+      return flow === 'signup-verify' ? SCREENS.EmailSent : SCREENS.RecoveryPhraseVerification;
     }
 
     // Attempt to restore a saved onboarding screen only if there's NO logged-in user
@@ -167,6 +166,7 @@ function App() {
     const validSignupScreens = [
       SCREENS.SignUp,
       SCREENS.OTPVerification,
+      SCREENS.EmailSent,
       SCREENS.CreateSavingsDetails,
       SCREENS.SavingsProcessing,
       SCREENS.RecoveryPhrase,
@@ -206,6 +206,16 @@ function App() {
   });
 
   const [activeTab, setActiveTab] = useState("home");
+  const [emailVerificationReturned, setEmailVerificationReturned] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('flow') === 'signup-verify';
+  });
+
+  React.useEffect(() => {
+    if (emailVerificationReturned) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, [emailVerificationReturned]);
 
   // ===== User & Authentication =====
   const [user, setUser] = useState(() => {
@@ -246,6 +256,7 @@ function App() {
   const [pendingAction, setPendingAction] = useState(null);
   const [requirePin, setRequirePin] = useState(false);
   const [transactionResult, setTransactionResult] = useState(null);
+  const [postSignupPinSuccess, setPostSignupPinSuccess] = useState(false);
   const [depositMode, setDepositMode] = useState("start");
   const [bankCards, setBankCards] = useState(() => {
     const initialUser = safeParse(localStorage.getItem("user"), null);
@@ -298,6 +309,63 @@ function App() {
   const [showForgotAppLaunchPin, setShowForgotAppLaunchPin] = useState(false);
   const [showResetAppLaunchPin, setShowResetAppLaunchPin] = useState(false);
   const [pendingScreenAfterPin, setPendingScreenAfterPin] = useState(null);
+
+  const APP_PIN_TIMEOUT_MS = 5 * 60 * 1000;
+  const APP_PIN_LAST_HIDDEN_KEY = 'appLastHiddenAt';
+
+  const getAppLaunchPinKey = (u) => getUserKey('appLaunchPin', u || user);
+  const hasAppLaunchPin = (u) => Boolean(localStorage.getItem(getAppLaunchPinKey(u)));
+
+  useEffect(() => {
+    const recordHiddenTime = () => {
+      if (!user || !hasAppLaunchPin(user)) return;
+      try {
+        localStorage.setItem(APP_PIN_LAST_HIDDEN_KEY, String(Date.now()));
+      } catch (err) {
+        console.warn('Unable to persist hidden timestamp', err);
+      }
+    };
+
+    const clearHiddenTime = () => {
+      try {
+        localStorage.removeItem(APP_PIN_LAST_HIDDEN_KEY);
+      } catch (err) {
+        console.warn('Unable to remove hidden timestamp', err);
+      }
+    };
+
+    const maybeRequirePin = () => {
+      if (!user || !hasAppLaunchPin(user)) return;
+      const raw = localStorage.getItem(APP_PIN_LAST_HIDDEN_KEY);
+      if (!raw) return;
+      const lastHidden = Number(raw);
+      if (!lastHidden || Number.isNaN(lastHidden)) return;
+      const elapsed = Date.now() - lastHidden;
+      if (elapsed >= APP_PIN_TIMEOUT_MS && currentScreen !== SCREENS.AppLaunchPin) {
+        setPendingScreenAfterPin(currentScreen);
+        setCurrentScreen(SCREENS.AppLaunchPin);
+      }
+      clearHiddenTime();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        recordHiddenTime();
+      } else if (document.visibilityState === 'visible') {
+        maybeRequirePin();
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', recordHiddenTime);
+    window.addEventListener('pageshow', maybeRequirePin);
+
+    return () => {
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', recordHiddenTime);
+      window.removeEventListener('pageshow', maybeRequirePin);
+    };
+  }, [user, currentScreen]);
 
   // hydrate data from Supabase when a user signs in
   const hydrateFromServer = async (u) => {
@@ -687,7 +755,7 @@ function App() {
     }
     
     // Persist current screen during signup/onboarding flow so app can resume if closed
-    const isSignupFlow = ['SignUp', 'OTPVerification', 'CreateSavingsDetails', 'SavingsProcessing', 'RecoveryPhrase'].includes(currentScreen);
+    const isSignupFlow = ['SignUp', 'OTPVerification', 'EmailSent', 'CreateSavingsDetails', 'SavingsProcessing', 'RecoveryPhrase'].includes(currentScreen);
     if (isSignupFlow) {
       localStorage.setItem('currentSignupScreen', currentScreen);
       console.log('💾 Saved signup screen:', currentScreen);
@@ -696,6 +764,17 @@ function App() {
       localStorage.removeItem('currentSignupScreen');
     }
   }, [user, transactions, bankCards, bankAccounts, profilePicture, savingsBalance, savingsFlowScreen, savingsPlanData, goals, currentScreen]);
+
+  useEffect(() => {
+    if (currentScreen === 'PinSuccess' && postSignupPinSuccess) {
+      const autoAdvance = setTimeout(() => {
+        setPostSignupPinSuccess(false);
+        setCurrentScreen(SCREENS.CreateSavingsPrompt);
+      }, 2800);
+
+      return () => clearTimeout(autoAdvance);
+    }
+  }, [currentScreen, postSignupPinSuccess]);
 
   // Load user-specific data when user changes
   useEffect(() => {
@@ -1456,7 +1535,15 @@ function App() {
           <AccountCreationProcessingScreen
             userName={user?.fullName || 'User'}
             accountNumber={user?.accountNumber}
-            onComplete={() => setCurrentScreen(SCREENS.CreateSavingsPrompt)}
+            onComplete={() => setCurrentScreen(SCREENS.EmailSent)}
+          />
+        )}
+
+        {currentScreen === SCREENS.EmailSent && (
+          <EmailSentScreen
+            email={user?.email}
+            initialReturn={emailVerificationReturned}
+            onContinue={() => setCurrentScreen(SCREENS.RecoveryPhrase)}
           />
         )}
 
@@ -1642,6 +1729,9 @@ function App() {
                   try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
                   setPinSuccessMessage('Your transaction PIN has been created successfully.');
                   setPinFlow(null);
+                  if (openedFrom === 'SignUp') {
+                    setPostSignupPinSuccess(true);
+                  }
                   setCurrentScreen('PinSuccess');
                 } else if (pinFlow === "changeTransactionPin") {
                   setPendingNewPin(newPin);
@@ -1705,10 +1795,16 @@ function App() {
         {currentScreen === "PinSuccess" && (
           <PinSuccessScreen
             message={pinSuccessMessage}
+            buttonText={postSignupPinSuccess ? 'Continue to Savings' : 'Back to Security'}
             onBack={() => {
-              setCurrentScreen("Main");
-              setActiveTab("profile");
-              setProfileSection("security");
+              if (postSignupPinSuccess) {
+                setPostSignupPinSuccess(false);
+                setCurrentScreen(SCREENS.CreateSavingsPrompt);
+              } else {
+                setCurrentScreen("Main");
+                setActiveTab("profile");
+                setProfileSection("security");
+              }
             }}
           />
         )}

@@ -211,14 +211,6 @@ export default function DepositScreen({
         </p>
       )}
 
-      {/* Show account number if Bank Transfer is selected */}
-      {sourceAccount === "Bank Transfer" && user?.accountNumber && (
-        <div className="my-4 p-4 rounded-xl border-emerald-200 text-emerald-800 text-center">
-          <div className="font-bold text-[#00875A] text-l">Your Account Number</div>
-          <div className="text-2xl font-bold text-[#00875A] tracking-widest">{user.accountNumber}</div>
-        </div>
-      )}
-
       {/* Confirm */}
       <div className="pb-10 flex justify-center">
         <button

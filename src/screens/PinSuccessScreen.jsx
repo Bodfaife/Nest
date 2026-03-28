@@ -1,7 +1,7 @@
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 
-export default function PinSuccessScreen({ message = 'Your PIN has been saved.', onBack }) {
+export default function PinSuccessScreen({ message = 'Your PIN has been saved.', onBack, buttonText = 'Back to Security' }) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
       <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-md text-center">
@@ -14,7 +14,7 @@ export default function PinSuccessScreen({ message = 'Your PIN has been saved.',
           onClick={onBack}
           className="w-full rounded-2xl bg-emerald-600 py-3 text-white font-semibold hover:bg-emerald-700 transition-colors"
         >
-          Back to Security
+          {buttonText}
         </button>
       </div>
     </div>
