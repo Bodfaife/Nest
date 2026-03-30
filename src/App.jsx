@@ -316,6 +316,26 @@ function App() {
   const getAppLaunchPinKey = (u) => getUserKey('appLaunchPin', u || user);
   const hasAppLaunchPin = (u) => Boolean(localStorage.getItem(getAppLaunchPinKey(u)));
 
+  const storeAppPin = (pin, u = user) => {
+    try {
+      localStorage.setItem(getUserKey('appLaunchPin', u), pin);
+      localStorage.setItem(getUserKey('appPin', u), pin);
+      localStorage.setItem('appLaunchPin', pin);
+      localStorage.setItem('appPin', pin);
+    } catch (e) {
+      console.error('Unable to store app PIN', e);
+    }
+  };
+
+  const storeTransactionPin = (pin, u = user) => {
+    try {
+      localStorage.setItem(getUserKey('userPin', u), pin);
+      localStorage.setItem('userPin', pin);
+    } catch (e) {
+      console.error('Unable to store transaction PIN', e);
+    }
+  };
+
   useEffect(() => {
     const recordHiddenTime = () => {
       if (!user || !hasAppLaunchPin(user)) return;
@@ -1723,7 +1743,7 @@ function App() {
             onPinCreated={async (newPin) => {
               try {
                 if (pinFlow === "createTransactionPin") {
-                  try { localStorage.setItem(getUserKey("userPin", user), newPin); } catch (e) {}
+                  storeTransactionPin(newPin, user);
                   const updatedUser = { ...(user || {}), transactionPin: newPin };
                   setUser(updatedUser);
                   try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
@@ -1731,8 +1751,10 @@ function App() {
                   setPinFlow(null);
                   if (openedFrom === 'SignUp') {
                     setPostSignupPinSuccess(true);
+                    setCurrentScreen('PinSuccess');
+                  } else {
+                    setCurrentScreen('PinSuccess');
                   }
-                  setCurrentScreen('PinSuccess');
                 } else if (pinFlow === "changeTransactionPin") {
                   setPendingNewPin(newPin);
                   const otp = generateOTP(6);
@@ -1763,8 +1785,7 @@ function App() {
             onPinCreated={async (newPin) => {
               try {
                 if (pinFlow === "createAppPin" || pinFlow === "createAppPinForRecoveryPhrase") {
-                  try { localStorage.setItem(getUserKey("appPin", user), newPin); } catch (e) {}
-                  try { localStorage.setItem(getUserKey("appLaunchPin", user), newPin); } catch (e) {}
+                  storeAppPin(newPin, user);
                   const updatedUser = { ...(user || {}), appPin: newPin };
                   setUser(updatedUser);
                   try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
@@ -2283,7 +2304,7 @@ function App() {
               } else if (otpContext === 'changeAppPin') {
                 try {
                   if (pendingNewPin) {
-                    try { localStorage.setItem(getUserKey('appPin', user), pendingNewPin); } catch (e) {}
+                    storeAppPin(pendingNewPin, user);
                     const updatedUser = { ...(user || {}), appPin: pendingNewPin };
                     setUser(updatedUser);
                     try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
@@ -2298,7 +2319,7 @@ function App() {
               } else if (otpContext === 'changeTransactionPin') {
                 try {
                   if (pendingNewPin) {
-                    try { localStorage.setItem(getUserKey('userPin', user), pendingNewPin); } catch (e) {}
+                    storeTransactionPin(pendingNewPin, user);
                     const updatedUser = { ...(user || {}), transactionPin: pendingNewPin };
                     setUser(updatedUser);
                     try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
@@ -2542,10 +2563,14 @@ function App() {
                 onDone={() => {
                   setCardBeingLinked(null);
                   setCardLinkingStep("add");
-                  // Always go to SavedCards after successful card link
-                  setShowSavedCards(true);
                   setReturnToProfileSubScreen(null);
-                  setCurrentScreen("Main");
+                  if (openedFrom === "Deposit") {
+                    setCurrentScreen("Deposit");
+                    setOpenedFrom("Deposit");
+                  } else {
+                    setShowSavedCards(true);
+                    setCurrentScreen("Main");
+                  }
                 }}
               />
             )}

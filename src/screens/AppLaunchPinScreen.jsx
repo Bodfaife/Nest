@@ -194,153 +194,143 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
   const currentPin = isSetupMode && confirmPin ? confirmPin : pin;
 
   return (
-    <div className="h-full bg-white flex flex-col p-6">
-      {/* Header */}
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="mb-8 p-4 rounded-full bg-emerald-50">
+    <div className="h-full flex flex-col bg-white animate-in fade-in duration-300">
+      <div className="p-6 flex justify-center">
+        <div className="p-4 rounded-3xl bg-emerald-50">
           <Lock className="w-8 h-8 text-emerald-600" />
         </div>
+      </div>
 
-        <h1 className="text-2xl font-black text-gray-900 mb-2">
+      <div className="flex-1 flex flex-col items-center px-8 pb-6">
+        <h1 className="text-2xl font-black text-gray-900 mb-2 text-center">
           {isSetupMode 
             ? forceResetMode ? 'Reset PIN' : 'Set Launch PIN'
-            : 'Verify PIN'
+            : 'Enter PIN'
           }
         </h1>
-        <p className="text-gray-500 text-center text-sm">
+        <p className="text-gray-500 text-center text-sm max-w-xs mb-10">
           {isSetupMode 
             ? confirmPin 
               ? 'Confirm your new PIN to continue'
               : forceResetMode ? 'Create a new 6-digit PIN' : 'Create a 6-digit PIN for app access'
-            : 'Enter your 6-digit PIN'}
+            : 'Enter your 6-digit PIN to unlock the app.'}
         </p>
 
-        {/* PIN Display */}
-        <div className="mt-12 mb-8 flex gap-2 justify-center">
+        <div className="flex gap-4 mb-6">
           {[...Array(PIN_LENGTH)].map((_, i) => (
             <div
               key={i}
-              className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center font-black text-xl transition-all ${
-                i < currentPin.length
-                  ? 'border-emerald-500 bg-emerald-50 text-emerald-600'
-                  : 'border-gray-200 bg-white text-gray-900'
-              }`}
-            >
-              {i < currentPin.length ? '•' : ''}
-            </div>
+              className={`w-4 h-4 rounded-full transition-all border-2 ${
+                i < currentPin.length ? 'border-emerald-500 bg-emerald-500' : 'border-gray-200 bg-white'
+              } ${error ? 'border-red-500 bg-red-500' : ''}`}
+            />
           ))}
         </div>
 
-        {/* Stage Indicator (Setup Mode) */}
-        {isSetupMode && (
-          <div className="mb-6 text-center">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-              {!confirmPin ? 'Step 1 of 2' : 'Step 2 of 2'}
-            </p>
-          </div>
-        )}
-
-        {/* Error Message */}
         {error && (
-          <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 w-full">
-            <p className="text-xs font-bold text-red-600 text-center">{error}</p>
-          </div>
+          <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mb-4 animate-shake text-center">
+            {error}
+          </p>
         )}
 
-        {/* Locked State */}
         {isLocked && (
-          <div className="mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 w-full">
-            <p className="text-sm font-bold text-amber-600 text-center">
+          <div className="mb-4 p-4 rounded-2xl bg-amber-50 border border-amber-200 w-full max-w-[320px]">
+            <p className="text-sm font-semibold text-amber-700 text-center">
               Too many attempts. Try again in {lockSeconds}s
             </p>
           </div>
         )}
-      </div>
 
-      {/* Numpad */}
-      <div className="grid grid-cols-3 gap-3 mb-8">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+        <div className="w-full max-w-[320px] mt-auto mb-6">
+          <div className="grid grid-cols-3 gap-5 mb-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+              <button
+                key={num}
+                type="button"
+                onClick={() => handleNumberClick(num.toString())}
+                disabled={isLocked || loading || (isSetupMode && confirmPin && confirmPin.length === PIN_LENGTH)}
+                className="h-16 rounded-2xl bg-gray-100 text-gray-900 text-2xl font-black active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {num}
+              </button>
+            ))}
+
+            <div className="h-16 rounded-2xl bg-transparent"></div>
+
+            <button
+              type="button"
+              onClick={() => handleNumberClick('0')}
+              disabled={isLocked || loading || (isSetupMode && confirmPin && confirmPin.length === PIN_LENGTH)}
+              className="h-16 rounded-2xl bg-gray-100 text-gray-900 text-2xl font-black active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              0
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBackspace}
+              disabled={isLocked || loading || currentPin.length === 0}
+              className="h-16 rounded-2xl bg-gray-100 text-gray-900 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
+
           <button
-            key={num}
-            onClick={() => handleNumberClick(num.toString())}
-            disabled={isLocked || loading || (isSetupMode && confirmPin && confirmPin.length === PIN_LENGTH)}
-            className="py-4 rounded-2xl font-bold text-lg bg-gray-100 text-gray-900 hover:bg-gray-200 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            type="button"
+            onClick={handleSubmit}
+            disabled={
+              isLocked ||
+              loading ||
+              currentPin.length !== PIN_LENGTH ||
+              (isSetupMode && confirmPin && pin !== confirmPin)
+            }
+            className="w-full py-4 rounded-2xl text-white bg-emerald-600 shadow-lg shadow-emerald-600/20 font-black active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {num}
+            {loading ? 'Verifying...' : isSetupMode ? (confirmPin ? 'Confirm PIN' : 'Next') : 'Unlock'}
           </button>
-        ))}
 
-        {/* 0 button spans 2 columns */}
-        <button
-          onClick={() => handleNumberClick('0')}
-          disabled={isLocked || loading || (isSetupMode && confirmPin && confirmPin.length === PIN_LENGTH)}
-          className="col-span-2 py-4 rounded-2xl font-bold text-lg bg-gray-100 text-gray-900 hover:bg-gray-200 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          0
-        </button>
+          {!isSetupMode && localStorage.getItem(getUserKey('appLaunchPin')) && (
+            <button
+              type="button"
+              onClick={onForgotPin}
+              className="mt-4 w-full text-sm font-black text-[#00875A] uppercase tracking-[0.18em]"
+            >
+              Forgot PIN?
+            </button>
+          )}
 
-        {/* Backspace button */}
-        <button
-          onClick={handleBackspace}
-          disabled={isLocked || loading || currentPin.length === 0}
-          className="py-4 rounded-2xl font-bold text-lg bg-gray-100 text-gray-900 hover:bg-gray-200 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Trash2 className="w-5 h-5 mx-auto" />
-        </button>
+          {!isSetupMode && !localStorage.getItem(getUserKey('appLaunchPin')) && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsSetupMode(true);
+                setPin('');
+                setConfirmPin('');
+                setError('');
+              }}
+              className="mt-4 w-full text-sm font-black text-gray-500"
+            >
+              Create a PIN Instead
+            </button>
+          )}
+
+          {isSetupMode && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsSetupMode(false);
+                setPin('');
+                setConfirmPin('');
+                setError('');
+              }}
+              className="mt-4 w-full text-sm font-black text-gray-500"
+            >
+              Cancel Setup
+            </button>
+          )}
+        </div>
       </div>
-
-      {/* Submit Button */}
-      <button
-        onClick={handleSubmit}
-        disabled={
-          isLocked ||
-          loading ||
-          currentPin.length !== PIN_LENGTH ||
-          (isSetupMode && confirmPin && pin !== confirmPin)
-        }
-        className="w-full py-4 rounded-2xl font-bold text-white bg-emerald-600 shadow-lg shadow-emerald-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? 'Verifying...' : isSetupMode ? (confirmPin ? 'Confirm PIN' : 'Next') : 'Unlock'}
-      </button>
-
-      {/* Forgot PIN Button */}
-      {!isSetupMode && localStorage.getItem(getUserKey('appLaunchPin')) && (
-        <button
-          onClick={onForgotPin}
-          className="mt-4 text-center text-sm text-gray-500 font-bold hover:text-gray-700 transition-all"
-        >
-          Forgot PIN?
-        </button>
-      )}
-
-      {/* Setup/Verify Toggle */}
-      {!isSetupMode && !localStorage.getItem(getUserKey('appLaunchPin')) && (
-        <button
-          onClick={() => {
-            setIsSetupMode(true);
-            setPin('');
-            setConfirmPin('');
-            setError('');
-          }}
-          className="mt-4 text-center text-sm text-emerald-600 font-bold"
-        >
-          Create a PIN Instead
-        </button>
-      )}
-
-      {isSetupMode && (
-        <button
-          onClick={() => {
-            setIsSetupMode(false);
-            setPin('');
-            setConfirmPin('');
-            setError('');
-          }}
-          className="mt-4 text-center text-sm text-gray-500 font-bold"
-        >
-          Cancel Setup
-        </button>
-      )}
     </div>
   );
 }
