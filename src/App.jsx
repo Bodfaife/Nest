@@ -17,7 +17,8 @@ import {
   fetchGoals,
   insertGoal,
   updateGoal,
-  deleteGoal
+  deleteGoal,
+  deleteUserData
 } from "./lib/supabase";
 import { getUserStorageKey } from "./helpers/helpers";
 import { generateRecoveryPhrase } from "./helpers/generateRecoveryPhrase";
@@ -788,8 +789,7 @@ function App() {
   useEffect(() => {
     if (currentScreen === 'PinSuccess' && postSignupPinSuccess) {
       const autoAdvance = setTimeout(() => {
-        setPostSignupPinSuccess(false);
-        setCurrentScreen(SCREENS.CreateSavingsPrompt);
+        setCurrentScreen(SCREENS.RegistrationSplash);
       }, 2800);
 
       return () => clearTimeout(autoAdvance);
@@ -1816,11 +1816,10 @@ function App() {
         {currentScreen === "PinSuccess" && (
           <PinSuccessScreen
             message={pinSuccessMessage}
-            buttonText={postSignupPinSuccess ? 'Continue to Savings' : 'Back to Security'}
+            buttonText={postSignupPinSuccess ? 'Continue' : 'Back to Security'}
             onBack={() => {
               if (postSignupPinSuccess) {
-                setPostSignupPinSuccess(false);
-                setCurrentScreen(SCREENS.CreateSavingsPrompt);
+                setCurrentScreen(SCREENS.RegistrationSplash);
               } else {
                 setCurrentScreen("Main");
                 setActiveTab("profile");
@@ -2090,8 +2089,24 @@ function App() {
             {activeTab === "profile" && profileSection === "security" && dangerZoneAction === "closeAccount" && (
               <CloseAccountScreen
                 onBack={() => setDangerZoneAction(null)}
-                onCloseAccount={() => {
-                  // Logout - keep all user data in localStorage
+                onCloseAccount={async () => {
+                  const email = user?.email;
+                  const userId = user?.id || null;
+                  if (email || userId) {
+                    try {
+                      await deleteUserData(email, userId);
+                    } catch (e) {
+                      console.warn('Unable to fully delete Supabase account data', e);
+                    }
+                  }
+                  try {
+                    await supabase.auth.signOut();
+                  } catch (e) {
+                    console.warn('Failed to sign out after account closure', e);
+                  }
+                  localStorage.removeItem('user');
+                  localStorage.removeItem('signupPending');
+                  localStorage.removeItem('currentSignupScreen');
                   setUser(null);
                   setCurrentScreen("SignIn");
                   setProfileSection(null);

@@ -156,6 +156,25 @@ export async function deleteBankAccount(accountId, email) {
 	}
 }
 
+export async function deleteUserData(email, userId) {
+	const results = {};
+	try {
+		if (email) {
+			results.bankCards = await supabase.from('bank_cards').delete().eq('user_email', email);
+			results.bankAccounts = await supabase.from('bank_accounts').delete().eq('user_email', email);
+			results.savings = await supabase.from('savings').delete().eq('email', email);
+			results.transactions = await supabase.from('transactions').delete().eq('user_email', email);
+			results.profiles = await supabase.from('profiles').delete().eq('email', email);
+		}
+		if (userId) {
+			results.auth = await supabase.auth.admin.deleteUser(userId);
+		}
+		return { data: results, error: null };
+	} catch (e) {
+		return { data: null, error: e };
+	}
+}
+
 export async function fetchProfileByRecoveryPhrase(phrase) {
 	try {
 		const { data, error } = await supabase

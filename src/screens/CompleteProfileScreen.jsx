@@ -22,6 +22,7 @@ export default function CompleteProfileScreen({ user, onBack, onUserChange }) {
   const profileCompletedKey = `profileCompleted:${userKey}`;
   const profileDataKey = `profileData:${userKey}`;
 
+  const [completeProfileData, setCompleteProfileData] = useState(defaultProfileData);
   const [bvnVerified, setBvnVerified] = useState(false);
   const [nationalIdVerified, setNationalIdVerified] = useState(false);
 
