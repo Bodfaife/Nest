@@ -137,7 +137,7 @@ export default function RecoveryPhraseScreen({ onBack, onContinue, phrases = [],
                     Hide
                   </button>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-3">
                   {recoveryPhrases.map((word, idx) => (
                     <div key={idx} className="flex items-center gap-3 rounded-3xl bg-white/5 px-4 py-3 text-sm text-slate-100 ring-1 ring-slate-700">
                       <span className="inline-flex h-8 w-8 items-center justify-center rounded-2xl bg-slate-600 font-semibold text-slate-200">{idx + 1}</span>

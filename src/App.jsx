@@ -13,6 +13,7 @@ import {
   deleteBankAccount,
   saveSavings,
   fetchSavings,
+  fetchProfileByPhone,
   fetchProfileByRecoveryPhrase,
   fetchGoals,
   insertGoal,
@@ -193,14 +194,10 @@ function App() {
       }
     }
 
-    // Check if user is signed in and has app launch PIN - if so, require PIN verification
-    if (initialUser?.email) {
-      const userKey = `${'appLaunchPin'}_${initialUser.email}`;
-      const hasPin = localStorage.getItem(userKey);
-      if (hasPin) {
-        console.log('🔐 User has app launch PIN, showing PIN screen');
-        return SCREENS.AppLaunchPin;
-      }
+    // Check if a logged-in user exists and has an app launch PIN
+    if (initialUser && hasAppLaunchPin(initialUser)) {
+      console.log('🔐 User has app launch PIN, showing PIN screen');
+      return SCREENS.AppLaunchPin;
     }
 
     return SCREENS.Splash;
@@ -315,12 +312,16 @@ function App() {
   const APP_PIN_LAST_HIDDEN_KEY = 'appLastHiddenAt';
 
   const getAppLaunchPinKey = (u) => getUserKey('appLaunchPin', u || user);
-  const hasAppLaunchPin = (u) => Boolean(localStorage.getItem(getAppLaunchPinKey(u)));
+  const getAppPinKey = (u) => getUserKey('appPin', u || user);
+  const hasStoredAppPin = (u) => Boolean(
+    localStorage.getItem(getAppLaunchPinKey(u)) ||
+    localStorage.getItem(getAppPinKey(u))
+  );
 
   const storeAppPin = (pin, u = user) => {
     try {
-      localStorage.setItem(getUserKey('appLaunchPin', u), pin);
-      localStorage.setItem(getUserKey('appPin', u), pin);
+      localStorage.setItem(getAppLaunchPinKey(u), pin);
+      localStorage.setItem(getAppPinKey(u), pin);
       localStorage.setItem('appLaunchPin', pin);
       localStorage.setItem('appPin', pin);
     } catch (e) {
@@ -789,6 +790,7 @@ function App() {
   useEffect(() => {
     if (currentScreen === 'PinSuccess' && postSignupPinSuccess) {
       const autoAdvance = setTimeout(() => {
+        setPostSignupPinSuccess(false);
         setCurrentScreen(SCREENS.RegistrationSplash);
       }, 2800);
 
@@ -1066,12 +1068,21 @@ function App() {
     } catch (e) {}
     setUser(null);
     setCurrentScreen("SignIn");
+    setPendingScreenAfterPin(null);
     // clear any stored application data for a fresh login
+    localStorage.removeItem("user");
+    localStorage.removeItem("signupPending");
+    localStorage.removeItem("currentSignupScreen");
     localStorage.removeItem("transactions");
     localStorage.removeItem("savingsBalance");
     localStorage.removeItem("bankCards");
     localStorage.removeItem("bankAccounts");
     localStorage.removeItem("profilePicture");
+    localStorage.removeItem('appLaunchPin');
+    localStorage.removeItem('appPin');
+    localStorage.removeItem('userPin');
+    localStorage.removeItem('appLastHiddenAt');
+    sessionStorage.removeItem('appLaunchPinVerified');
     setTransactions([]);
     setSavingsBalance(0);
     setBankCards([]);
@@ -1303,14 +1314,13 @@ function App() {
         {currentScreen === SCREENS.Splash && (
           <SplashScreen
             onFinish={() => {
-              // Check if app launch PIN is set and needs verification
-              const hasPinSet = Boolean(localStorage.getItem('appLaunchPin'));
+              // Check if signed-in user has an app PIN and needs verification
+              const hasPinSet = Boolean(user && hasStoredAppPin(user));
               const alreadyVerified = sessionStorage.getItem('appLaunchPinVerified');
               
               if (hasPinSet && alreadyVerified !== 'true') {
                 setCurrentScreen("AppLaunchPin");
               } else {
-                // If no PIN or already verified, go to normal flow
                 setCurrentScreen(user ? "Main" : "SignIn");
               }
             }}
@@ -1466,6 +1476,26 @@ function App() {
               setSignupEmail(email);
               setOtpContext('signup');
 
+              // ensure this phone isn't already registered to another account
+              if (signupData.phone) {
+                try {
+                  const { data: existingPhone, error: phoneErr } = await fetchProfileByPhone(signupData.phone);
+                  if (phoneErr) throw phoneErr;
+                  if (existingPhone) {
+                    const { showAppAlert } = await import('./lib/appAlert');
+                    showAppAlert({
+                      type: 'error',
+                      message: 'This phone number is already registered. Use a different number or sign in.',
+                    });
+                    setSignupPart(1);
+                    setCurrentScreen('SignUp');
+                    return;
+                  }
+                } catch (e) {
+                  console.warn('Phone uniqueness check failed', e);
+                }
+              }
+
               // ensure recovery phrase is unique across existing profiles
               let recoveryPhrase;
               for (let attempts = 0; attempts < 5; attempts++) {
@@ -1601,12 +1631,6 @@ function App() {
               setPinFlow("createAppPinForRecoveryPhrase");
               setCurrentScreen("CreateAppPin");
             }}
-          />
-        )}
-
-        {currentScreen === SCREENS.EmailSent && (
-          <EmailSentScreen
-            onContinue={() => setCurrentScreen(SCREENS.VerifyAccount)}
           />
         )}
 
@@ -1747,7 +1771,11 @@ function App() {
                   const updatedUser = { ...(user || {}), transactionPin: newPin };
                   setUser(updatedUser);
                   try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
-                  setPinSuccessMessage('Your transaction PIN has been created successfully.');
+                  setPinSuccessMessage(
+                    openedFrom === 'SignUp'
+                      ? 'Your account has been created successfully.'
+                      : 'Your transaction PIN has been created successfully.'
+                  );
                   setPinFlow(null);
                   if (openedFrom === 'SignUp') {
                     setPostSignupPinSuccess(true);
@@ -2090,14 +2118,12 @@ function App() {
               <CloseAccountScreen
                 onBack={() => setDangerZoneAction(null)}
                 onCloseAccount={async () => {
-                  const email = user?.email;
+                  const email = user?.email || null;
                   const userId = user?.id || null;
-                  if (email || userId) {
-                    try {
-                      await deleteUserData(email, userId);
-                    } catch (e) {
-                      console.warn('Unable to fully delete Supabase account data', e);
-                    }
+                  try {
+                    await deleteUserData(email, userId);
+                  } catch (e) {
+                    console.warn('Unable to fully delete Supabase account data', e);
                   }
                   try {
                     await supabase.auth.signOut();
@@ -2107,6 +2133,16 @@ function App() {
                   localStorage.removeItem('user');
                   localStorage.removeItem('signupPending');
                   localStorage.removeItem('currentSignupScreen');
+                  localStorage.removeItem('transactions');
+                  localStorage.removeItem('savingsBalance');
+                  localStorage.removeItem('bankCards');
+                  localStorage.removeItem('bankAccounts');
+                  localStorage.removeItem('profilePicture');
+                  localStorage.removeItem('appLaunchPin');
+                  localStorage.removeItem('appPin');
+                  localStorage.removeItem('userPin');
+                  localStorage.removeItem('appLastHiddenAt');
+                  sessionStorage.removeItem('appLaunchPinVerified');
                   setUser(null);
                   setCurrentScreen("SignIn");
                   setProfileSection(null);

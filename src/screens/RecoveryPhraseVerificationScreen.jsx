@@ -37,15 +37,15 @@ export default function RecoveryPhraseVerificationScreen({
       return;
     }
 
-    // Verify phrases match (case-insensitive comparison)
+    // Verify phrases match exactly (case-sensitive) in order
     const phrasesMatch = enteredPhrases.every((p, index) => {
-      const a = (p || '').toString().trim().toLowerCase();
-      const b = (recoveryPhrases[index] || '').toString().trim().toLowerCase();
+      const a = (p || '').toString().trim();
+      const b = (recoveryPhrases[index] || '').toString().trim();
       return a === b;
     });
 
     if (!phrasesMatch) {
-      setError('Recovery phrases do not match. Ensure spelling is correct (case is ignored).');
+      setError('Recovery phrases do not match exactly. Ensure order and case are correct.');
       return;
     }
 
@@ -54,7 +54,7 @@ export default function RecoveryPhraseVerificationScreen({
   };
 
   const allFilled = enteredPhrases.every(p => p && p.trim().length > 0);
-  const normalize = (s) => (s || '').toString().trim().toLowerCase();
+  const normalize = (s) => (s || '').toString().trim();
   const exactMatch = recoveryPhrases.length > 0 && enteredPhrases.every((p, i) => normalize(p) === normalize(recoveryPhrases[i]));
   // Per-word match booleans for visual feedback
   const enteredMatches = recoveryPhrases.map((_, i) => normalize(enteredPhrases[i]) === normalize(recoveryPhrases[i]));

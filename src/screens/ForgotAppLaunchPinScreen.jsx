@@ -2,20 +2,41 @@ import React, { useState } from 'react';
 import { ChevronLeft, Lock } from 'lucide-react';
 
 export default function ForgotAppLaunchPinScreen({ onBack, onProceedToReset }) {
-  const [recoveryPhrase, setRecoveryPhrase] = useState('');
+  const [phraseWords, setPhraseWords] = useState(Array(12).fill(''));
   const [error, setError] = useState('');
   const [verified, setVerified] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const handleWordChange = (index, value) => {
+    setError('');
+    const nextWords = [...phraseWords];
+    nextWords[index] = value;
+    setPhraseWords(nextWords);
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const paste = e.clipboardData.getData('text');
+    const words = paste.trim().split(/\s+/).slice(0, 12);
+    if (words.length === 12) {
+      const nextWords = Array(12).fill('');
+      words.forEach((word, index) => {
+        nextWords[index] = word;
+      });
+      setPhraseWords(nextWords);
+      setError('');
+    }
+  };
+
   const handleVerifyRecovery = async () => {
-    if (!recoveryPhrase.trim()) {
-      setError('Please enter your recovery phrase');
+    const entered = phraseWords.map((w) => w.trim());
+    if (entered.some((word) => word === '')) {
+      setError('Please fill in all 12 phrase fields.');
       return;
     }
 
     setLoading(true);
 
-    // Get user's stored recovery phrase from localStorage
     const userRaw = localStorage.getItem('user');
     if (!userRaw) {
       setError('User data not found. Please sign in again.');
@@ -25,22 +46,30 @@ export default function ForgotAppLaunchPinScreen({ onBack, onProceedToReset }) {
 
     try {
       const user = JSON.parse(userRaw);
-      const enteredPhrase = recoveryPhrase.trim().toLowerCase();
-      const storedPhrase = user.recoveryPhrase?.toLowerCase();
+      const savedPhrase = user.recoveryPhrase || [];
+      const currentPhrase = Array.isArray(savedPhrase)
+        ? savedPhrase
+        : typeof savedPhrase === 'string'
+          ? savedPhrase.split(/\s+/)
+          : [];
 
-      if (enteredPhrase === storedPhrase) {
-        // Recovery phrase verified
+      if (currentPhrase.length !== 12) {
+        setError('Saved recovery phrase is invalid.');
+        setLoading(false);
+        return;
+      }
+
+      const matches = currentPhrase.every((word, index) => word === entered[index]);
+
+      if (matches) {
         setVerified(true);
         setError('');
         setLoading(false);
-
-        // Proceed to PIN reset after a brief delay
         setTimeout(() => {
           onProceedToReset?.();
         }, 500);
       } else {
-        setError('Recovery phrase does not match. Please try again.');
-        setRecoveryPhrase('');
+        setError('Recovery phrase does not match. Please check the order and spelling.');
         setLoading(false);
       }
     } catch (e) {
@@ -50,15 +79,8 @@ export default function ForgotAppLaunchPinScreen({ onBack, onProceedToReset }) {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleVerifyRecovery();
-    }
-  };
-
   return (
     <div className="h-full bg-white flex flex-col p-6">
-      {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <button
           onClick={onBack}
@@ -69,69 +91,50 @@ export default function ForgotAppLaunchPinScreen({ onBack, onProceedToReset }) {
         <h1 className="text-2xl font-black text-gray-900">Reset PIN</h1>
       </div>
 
-      {/* Content */}
       <div className="flex-1 flex flex-col">
-        {/* Icon */}
-        <div className="mb-8 p-4 rounded-full bg-emerald-50 w-fit">
-          <Lock className="w-8 h-8 text-emerald-600" />
-        </div>
-
-        {/* Text */}
-        <div className="mb-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-2">
-            Verify Your Identity
-          </h2>
-          <p className="text-gray-500 text-sm">
-            Enter your recovery phrase to reset your app launch PIN. This is the same phrase you saved when you created your account.
+        <div className="mb-8 p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+          <h2 className="text-lg font-bold text-emerald-900 mb-2">Verify Your Identity</h2>
+          <p className="text-gray-600 text-sm">
+            Enter your recovery phrase exactly into the numbered fields below. The order and case must match.
           </p>
         </div>
 
-        {/* Recovery Phrase Input */}
-        <div className="mb-6">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 block mb-2">
-            Recovery Phrase
-          </label>
-          <textarea
-            value={recoveryPhrase}
-            onChange={(e) => {
-              setRecoveryPhrase(e.target.value);
-              setError('');
-            }}
-            onKeyPress={handleKeyPress}
-            placeholder="Enter your 12-word recovery phrase (space-separated)"
-            disabled={verified || loading}
-            className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-emerald-500 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
-            rows={4}
-          />
+        <div className="grid gap-3 sm:grid-cols-3 mb-6">
+          {phraseWords.map((word, index) => (
+            <div key={index} className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                {index + 1}
+              </label>
+              <input
+                type="text"
+                value={word}
+                onChange={(e) => handleWordChange(index, e.target.value)}
+                onPaste={index === 0 ? handlePaste : undefined}
+                disabled={verified || loading}
+                placeholder="word"
+                className="w-full p-3 rounded-2xl border border-gray-200 bg-gray-50 focus:border-emerald-500 outline-none"
+              />
+            </div>
+          ))}
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200">
             <p className="text-xs font-bold text-red-600">{error}</p>
           </div>
         )}
 
-        {/* Success Message */}
         {verified && (
           <div className="mb-6 p-3 rounded-lg bg-emerald-50 border border-emerald-200">
             <p className="text-xs font-bold text-emerald-600">✓ Recovery phrase verified! Proceeding to reset your PIN...</p>
           </div>
         )}
-
-        {/* Info Box */}
-        <div className="mb-8 p-4 rounded-xl bg-blue-50 border border-blue-100">
-          <p className="text-xs text-blue-600 font-medium">
-            💡 <strong>Tip:</strong> Your recovery phrase is case-insensitive and can have extra spaces between words.
-          </p>
-        </div>
       </div>
 
-      {/* Footer */}
       <div className="space-y-3">
         <button
           onClick={handleVerifyRecovery}
-          disabled={verified || loading || !recoveryPhrase.trim()}
+          disabled={verified || loading}
           className="w-full py-4 rounded-2xl font-bold text-white bg-emerald-600 shadow-lg shadow-emerald-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Verifying...' : 'Verify & Reset PIN'}

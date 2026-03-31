@@ -159,6 +159,13 @@ export async function deleteBankAccount(accountId, email) {
 export async function deleteUserData(email, userId) {
 	const results = {};
 	try {
+		if (!userId) {
+			const { data: authData, error: authError } = await supabase.auth.getUser();
+			if (!authError && authData?.user?.id) {
+				userId = authData.user.id;
+			}
+		}
+
 		if (email) {
 			results.bankCards = await supabase.from('bank_cards').delete().eq('user_email', email);
 			results.bankAccounts = await supabase.from('bank_accounts').delete().eq('user_email', email);
@@ -167,9 +174,28 @@ export async function deleteUserData(email, userId) {
 			results.profiles = await supabase.from('profiles').delete().eq('email', email);
 		}
 		if (userId) {
-			results.auth = await supabase.auth.admin.deleteUser(userId);
+			if (supabase.auth?.admin?.deleteUser) {
+				results.auth = await supabase.auth.admin.deleteUser(userId);
+			} else if (supabase.auth?.api?.deleteUser) {
+				results.auth = await supabase.auth.api.deleteUser(userId);
+			} else {
+				results.auth = null;
+			}
 		}
 		return { data: results, error: null };
+	} catch (e) {
+		return { data: null, error: e };
+	}
+}
+
+export async function fetchProfileByPhone(phone) {
+	try {
+		const { data, error } = await supabase
+			.from('profiles')
+			.select('*')
+			.eq('phone', phone)
+			.maybeSingle();
+		return { data, error };
 	} catch (e) {
 		return { data: null, error: e };
 	}
