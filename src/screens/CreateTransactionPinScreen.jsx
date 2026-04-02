@@ -87,8 +87,8 @@ export default function CreateTransactionPinScreen({ onBack, onPinCreated, darkM
           </p>
         )}
 
-        <div className="mt-auto w-full max-w-[300px] mb-12">
-          <div className="grid grid-cols-3 gap-y-6 gap-x-12">
+        <div className="mt-auto w-full max-w-[300px] mb-6">
+          <div className="grid grid-cols-3 gap-y-6 gap-x-12 mb-6">
             {[1,2,3,4,5,6,7,8,9].map((num) => (
               <button
                 key={num}
@@ -115,6 +115,27 @@ export default function CreateTransactionPinScreen({ onBack, onPinCreated, darkM
               ⌫
             </button>
           </div>
+
+          <button
+            onClick={() => {
+              if (current.length === pinLength) {
+                if (stage === 'confirm') {
+                  if (current === tempPin) {
+                    onPinCreated(current);
+                  } else {
+                    setError(true);
+                    setCurrent('');
+                    setTempPin('');
+                    setStage('create');
+                  }
+                }
+              }
+            }}
+            disabled={current.length !== pinLength || stage !== 'confirm'}
+            className="w-full py-4 rounded-2xl bg-emerald-600 text-white font-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            Confirm PIN
+          </button>
         </div>
       </div>
 

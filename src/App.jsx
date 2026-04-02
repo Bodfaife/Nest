@@ -306,6 +306,7 @@ function App() {
   const [profilePicture, setProfilePicture] = useState(() => localStorage.getItem("profilePicture") || null);
   const [dangerZoneAction, setDangerZoneAction] = useState(null);
   const [openedFrom, setOpenedFrom] = useState(null);
+  const [recoveryPhraseOpenedFromProfile, setRecoveryPhraseOpenedFromProfile] = useState(false);
   const [returnToProfileSubScreen, setReturnToProfileSubScreen] = useState(null);
   const [bankTransferStep, setBankTransferStep] = useState(null);
   const [signupEmail, setSignupEmail] = useState("");
@@ -950,6 +951,7 @@ function App() {
     }
     if (screen === "RecoveryPhraseSecure") {
       setOpenedFrom(originScreen);
+      setRecoveryPhraseOpenedFromProfile(profileOrigin);
       const hasAppPin = Boolean(
         localStorage.getItem(getUserKey("appLaunchPin", user)) ||
         localStorage.getItem(getUserKey("appPin", user))
@@ -1740,21 +1742,27 @@ function App() {
             phrases={user?.recoveryPhrase || []}
             email={user?.email || ''}
             userName={user?.fullName || ''}
+            fromProfile={recoveryPhraseOpenedFromProfile}
             onBack={() => {
               if (openedFrom === 'Profile') {
+                setRecoveryPhraseOpenedFromProfile(false);
                 setCurrentScreen('Main');
                 setActiveTab('profile');
                 setProfileSection('security');
               } else {
+                setRecoveryPhraseOpenedFromProfile(false);
                 setCurrentScreen('VerifyAccount');
               }
             }}
             onContinue={() => {
-              if (openedFrom === 'Profile') {
+              if (recoveryPhraseOpenedFromProfile) {
+                setRecoveryPhraseOpenedFromProfile(false);
+                setOpenedFrom(null);
                 setCurrentScreen('Main');
-                setActiveTab('profile');
-                setProfileSection('security');
+                setActiveTab('home');
+                setProfileSection(null);
               } else {
+                setOpenedFrom('SignUp');
                 // Ensure user has fullName before proceeding
                 if (!user?.fullName) {
                   console.warn('⚠️ User missing fullName during signup! Saving from recovery data...');
@@ -1797,6 +1805,7 @@ function App() {
                   setPinFlow(null);
                   if (openedFrom === 'SignUp') {
                     setPostSignupPinSuccess(true);
+                    setOpenedFrom('SignUp');
                     setCurrentScreen('PinSuccess');
                   } else {
                     setCurrentScreen('PinSuccess');

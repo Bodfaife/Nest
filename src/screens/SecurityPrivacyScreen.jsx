@@ -109,14 +109,6 @@ const SecurityPrivacyScreen = ({ onBack, onViewPrivacyPolicy, onResetPin, onClos
         </div>
 
         <div className={`p-5 rounded-2xl border-2 space-y-3 ${dangerBg}`}>
-          
-          <button 
-            onClick={onResetPin}
-            className={`w-full p-3 rounded-xl border border-current font-bold text-sm ${
-            darkMode ? 'bg-red-900/20 text-red-300 hover:bg-red-900/30' : 'bg-red-50 text-red-600 hover:bg-red-100'
-          }`}>
-            Reset PIN
-          </button>
           <button 
             onClick={onCloseAccount}
             className={`w-full p-3 rounded-xl border border-current font-bold text-sm ${
