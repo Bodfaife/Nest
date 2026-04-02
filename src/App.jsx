@@ -144,7 +144,33 @@ function App() {
     }
   };
 
+  const hasAppLaunchPin = (u) => {
+    try {
+      return Boolean(
+        localStorage.getItem(getUserKey('appLaunchPin', u)) ||
+        localStorage.getItem(getUserKey('appPin', u))
+      );
+    } catch (e) {
+      return false;
+    }
+  };
+
   // ===== Core Navigation State =====
+  const validSignupScreens = [
+    SCREENS.SignUp,
+    SCREENS.OTPVerification,
+    SCREENS.EmailSent,
+    SCREENS.CreateSavingsDetails,
+    SCREENS.SavingsProcessing,
+    SCREENS.RecoveryPhrase,
+    SCREENS.AccountCreationProcessing
+  ];
+
+  const [pendingSignupScreen, setPendingSignupScreen] = useState(() => {
+    const savedScreen = localStorage.getItem('currentSignupScreen');
+    return validSignupScreens.includes(savedScreen) ? savedScreen : null;
+  });
+
   const [currentScreen, setCurrentScreen] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const flow = params.get('flow');
@@ -165,15 +191,6 @@ function App() {
 
     // Attempt to restore a saved onboarding screen only if there's NO logged-in user
     const savedScreen = localStorage.getItem('currentSignupScreen');
-    const validSignupScreens = [
-      SCREENS.SignUp,
-      SCREENS.OTPVerification,
-      SCREENS.EmailSent,
-      SCREENS.CreateSavingsDetails,
-      SCREENS.SavingsProcessing,
-      SCREENS.RecoveryPhrase,
-      SCREENS.AccountCreationProcessing
-    ];
 
     // check for a saved user object too
     let initialUser = null;
@@ -186,8 +203,7 @@ function App() {
 
     if (savedScreen && validSignupScreens.includes(savedScreen)) {
       if (!initialUser) {
-        console.log('📱 Restoring signup flow screen for new visitor:', savedScreen);
-        return savedScreen;
+        console.log('📱 Will restore signup flow after splash:', savedScreen);
       } else {
         console.log('⚠️ Ignoring saved signup screen because user already exists:', savedScreen);
         localStorage.removeItem('currentSignupScreen');
@@ -1320,6 +1336,8 @@ function App() {
               
               if (hasPinSet && alreadyVerified !== 'true') {
                 setCurrentScreen("AppLaunchPin");
+              } else if (pendingSignupScreen && !user) {
+                setCurrentScreen(pendingSignupScreen);
               } else {
                 setCurrentScreen(user ? "Main" : "SignIn");
               }
