@@ -47,6 +47,7 @@ import VerifyAccountScreen from "./screens/VerifyAccountScreen";
 import OTPVerificationScreen from "./screens/OTPVerificationScreen";
 import RecoveryPhraseScreen from "./screens/RecoveryPhraseScreen";
 import RegistrationSplashScreen from "./screens/RegistrationSplashScreen";
+import WelcomeSplashScreen from "./screens/WelcomeSplashScreen";
 import CreateAppPinScreen from "./screens/CreateAppPinScreen";
 import CreateTransactionPinScreen from "./screens/CreateTransactionPinScreen";
 import CreateSavingsPromptScreen from "./screens/CreateSavingsPromptScreen";
@@ -271,6 +272,7 @@ function App() {
   const [requirePin, setRequirePin] = useState(false);
   const [transactionResult, setTransactionResult] = useState(null);
   const [postSignupPinSuccess, setPostSignupPinSuccess] = useState(false);
+  const [showWelcomeSplash, setShowWelcomeSplash] = useState(false);
   const [depositMode, setDepositMode] = useState("start");
   const [bankCards, setBankCards] = useState(() => {
     const initialUser = safeParse(localStorage.getItem("user"), null);
@@ -1797,16 +1799,11 @@ function App() {
                   const updatedUser = { ...(user || {}), transactionPin: newPin };
                   setUser(updatedUser);
                   try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
-                  setPinSuccessMessage(
-                    openedFrom === 'SignUp'
-                      ? 'Your account has been created successfully.'
-                      : 'Your transaction PIN has been created successfully.'
-                  );
+                  setPinSuccessMessage('Your transaction PIN has been created successfully.');
                   setPinFlow(null);
                   if (openedFrom === 'SignUp') {
-                    setPostSignupPinSuccess(true);
-                    setOpenedFrom('SignUp');
-                    setCurrentScreen('PinSuccess');
+                    setShowWelcomeSplash(true);
+                    setCurrentScreen('WelcomeSplash');
                   } else {
                     setCurrentScreen('PinSuccess');
                   }
@@ -1871,15 +1868,21 @@ function App() {
         {currentScreen === "PinSuccess" && (
           <PinSuccessScreen
             message={pinSuccessMessage}
-            buttonText={postSignupPinSuccess ? 'Continue' : 'Back to Security'}
+            buttonText='Back to Security'
             onBack={() => {
-              if (postSignupPinSuccess) {
-                setCurrentScreen(SCREENS.RegistrationSplash);
-              } else {
-                setCurrentScreen("Main");
-                setActiveTab("profile");
-                setProfileSection("security");
-              }
+              setCurrentScreen("Main");
+              setActiveTab("profile");
+              setProfileSection("security");
+            }}
+          />
+        )}
+
+        {currentScreen === "WelcomeSplash" && showWelcomeSplash && (
+          <WelcomeSplashScreen
+            user={user}
+            onContinue={() => {
+              setShowWelcomeSplash(false);
+              setCurrentScreen(SCREENS.CreateSavingsPrompt);
             }}
           />
         )}
