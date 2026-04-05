@@ -23,26 +23,27 @@ export default function CreateTransactionPinScreen({ onBack, onPinCreated, darkM
   };
 
   useEffect(() => {
-    if (current.length === pinLength) {
+    if (stage === 'create' && current.length === pinLength) {
       const timer = setTimeout(() => {
-        if (stage === 'create') {
-          setTempPin(current);
-          setCurrent('');
-          setStage('confirm');
-        } else if (stage === 'confirm') {
-          if (current === tempPin) {
-            onPinCreated(current);
-          } else {
-            setError(true);
-            setCurrent('');
-            setTempPin('');
-            setStage('create');
-          }
-        }
+        setTempPin(current);
+        setCurrent('');
+        setStage('confirm');
       }, 200);
       return () => clearTimeout(timer);
     }
-  }, [current, stage, tempPin, onPinCreated]);
+  }, [current, stage, pinLength]);
+
+  const handleConfirm = () => {
+    if (current.length !== pinLength) return;
+    if (current === tempPin) {
+      onPinCreated(current);
+    } else {
+      setError(true);
+      setCurrent('');
+      setTempPin('');
+      setStage('create');
+    }
+  };
 
   const bgClass = darkMode ? 'bg-gray-900' : 'bg-white';
   const textPrimary = "text-gray-900";
@@ -117,20 +118,7 @@ export default function CreateTransactionPinScreen({ onBack, onPinCreated, darkM
           </div>
 
           <button
-            onClick={() => {
-              if (current.length === pinLength) {
-                if (stage === 'confirm') {
-                  if (current === tempPin) {
-                    onPinCreated(current);
-                  } else {
-                    setError(true);
-                    setCurrent('');
-                    setTempPin('');
-                    setStage('create');
-                  }
-                }
-              }
-            }}
+            onClick={handleConfirm}
             disabled={current.length !== pinLength || stage !== 'confirm'}
             className="w-full py-4 rounded-2xl bg-emerald-600 text-white font-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
