@@ -1793,6 +1793,7 @@ function App() {
               }
             }}
             onPinCreated={async (newPin) => {
+              console.log('onPinCreated called with pin:', newPin, 'pinFlow:', pinFlow, 'openedFrom:', openedFrom);
               try {
                 if (pinFlow === "createTransactionPin") {
                   storeTransactionPin(newPin, user);
@@ -1846,7 +1847,7 @@ function App() {
                     setPinFlow(null);
                     setCurrentScreen('RecoveryPhrase');
                   } else {
-                    setPinFlow(null);
+                    setPinFlow("createTransactionPin");
                     setCurrentScreen('CreateTransactionPin');
                   }
                 } else if (pinFlow === "changeAppPin") {
