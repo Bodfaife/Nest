@@ -23,9 +23,7 @@ export default function CreateTransactionPinScreen({ onBack, onPinCreated, darkM
   };
 
   useEffect(() => {
-    console.log('useEffect triggered, stage:', stage, 'current.length:', current.length);
     if (stage === 'create' && current.length === pinLength) {
-      console.log('Moving to confirm stage');
       const timer = setTimeout(() => {
         setTempPin(current);
         setCurrent('');
@@ -36,16 +34,10 @@ export default function CreateTransactionPinScreen({ onBack, onPinCreated, darkM
   }, [current, stage, pinLength]);
 
   const handleConfirm = () => {
-    console.log('handleConfirm called, current:', current, 'tempPin:', tempPin, 'stage:', stage);
-    if (current.length !== pinLength) {
-      console.log('PIN length check failed');
-      return;
-    }
+    if (current.length !== pinLength) return;
     if (current === tempPin) {
-      console.log('PINs match, calling onPinCreated');
       onPinCreated(current);
     } else {
-      console.log('PINs do not match');
       setError(true);
       setCurrent('');
       setTempPin('');

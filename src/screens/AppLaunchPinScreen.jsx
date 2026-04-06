@@ -241,15 +241,15 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
           </div>
         )}
 
-        <div className="w-full max-w-[320px] mt-auto mb-6">
-          <div className="grid grid-cols-3 gap-5 mb-6">
+        <div className="w-full max-w-[300px] mt-auto mb-6">
+          <div className="grid grid-cols-3 gap-y-6 gap-x-12 mb-6">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
               <button
                 key={num}
                 type="button"
                 onClick={() => handleNumberClick(num.toString())}
                 disabled={isLocked || loading || (isSetupMode && confirmPin && confirmPin.length === PIN_LENGTH)}
-                className="h-16 rounded-2xl bg-gray-100 text-gray-900 text-2xl font-black active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-16 flex items-center justify-center rounded-2xl bg-gray-100 text-gray-900 text-3xl font-black active:scale-75 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {num}
               </button>
@@ -261,7 +261,7 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
               type="button"
               onClick={() => handleNumberClick('0')}
               disabled={isLocked || loading || (isSetupMode && confirmPin && confirmPin.length === PIN_LENGTH)}
-              className="h-16 rounded-2xl bg-gray-100 text-gray-900 text-2xl font-black active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-16 flex items-center justify-center rounded-2xl bg-gray-100 text-gray-900 text-3xl font-black active:scale-75 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               0
             </button>
@@ -270,7 +270,7 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
               type="button"
               onClick={handleBackspace}
               disabled={isLocked || loading || currentPin.length === 0}
-              className="h-16 rounded-2xl bg-gray-100 text-gray-900 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="h-16 flex items-center justify-center rounded-2xl bg-gray-100 text-gray-900 active:scale-75 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trash2 className="w-5 h-5" />
             </button>
@@ -285,7 +285,7 @@ export default function AppLaunchPinScreen({ onPinVerified, onSetupPin, onForgot
               currentPin.length !== PIN_LENGTH ||
               (isSetupMode && confirmPin && pin !== confirmPin)
             }
-            className="w-full py-4 rounded-2xl text-white bg-emerald-600 shadow-lg shadow-emerald-600/20 font-black active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-4 rounded-2xl bg-emerald-600 text-white font-black active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Verifying...' : isSetupMode ? (confirmPin ? 'Confirm PIN' : 'Next') : 'Unlock'}
           </button>

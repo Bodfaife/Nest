@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Globe, MapPin, Home } from 'lucide-react';
-import { supabase } from "../lib/supabase";
+import { supabase, fetchProfileByPhone } from "../lib/supabase";
 
 // State/province lists per country
 const STATES_BY_COUNTRY = {
@@ -62,6 +62,20 @@ export default function SignUpLocationScreen({ onSubmit, onBack }) {
     const fullName = signupData.fullName;
 
     try {
+      if (signupData.phone) {
+        const { data: existingPhone, error: phoneErr } = await fetchProfileByPhone(signupData.phone);
+        if (phoneErr) throw phoneErr;
+        if (existingPhone) {
+          const { showAppAlert } = await import('../lib/appAlert');
+          showAppAlert({
+            type: 'error',
+            message: 'This phone number is already registered. Use a different number or sign in.',
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
       // call Supabase to create account and send confirmation email
       const { data, error } = await supabase.auth.signUp({
         email,

@@ -5,6 +5,7 @@ export default function CloseAccountScreen({ darkMode = false, onBack, onCloseAc
   const [confirmText, setConfirmText] = useState('');
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const bgClass = darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
   const textSecondary = "text-gray-500";
@@ -12,22 +13,32 @@ export default function CloseAccountScreen({ darkMode = false, onBack, onCloseAc
   const inputClass = darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-200 text-gray-900';
   const warningBg = darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200';
 
-  const handleClose = () => {
+  const handleClose = async () => {
     setError('');
-    
+
     if (step === 0) {
       setStep(1);
-    } else if (step === 1) {
-      if (confirmText.toLowerCase() !== 'close my account') {
-        setError('Please type "close my account" to confirm');
+      return;
+    }
+
+    if (confirmText.toLowerCase() !== 'close my account') {
+      setError('Please type "close my account" to confirm');
+      return;
+    }
+
+    if (onCloseAccount) {
+      setLoading(true);
+      try {
+        await onCloseAccount();
+      } catch (e) {
+        setError('Unable to close account. Please try again.');
+        setLoading(false);
         return;
       }
-      // Call the onCloseAccount callback
-      if (onCloseAccount) {
-        onCloseAccount();
-      }
-      setStep(2);
+      setLoading(false);
     }
+
+    setStep(2);
   };
 
   return (
@@ -117,17 +128,18 @@ export default function CloseAccountScreen({ darkMode = false, onBack, onCloseAc
             <div className="space-y-3">
               <button
                 onClick={handleClose}
-                disabled={confirmText.toLowerCase() !== 'close my account'}
+                disabled={confirmText.toLowerCase() !== 'close my account' || loading}
                 className={`w-full py-3 rounded-xl font-bold transition-all ${
-                  confirmText.toLowerCase() === 'close my account'
+                  confirmText.toLowerCase() === 'close my account' && !loading
                     ? 'bg-red-600 hover:bg-red-700 text-white'
                     : 'bg-gray-400 text-gray-600 cursor-not-allowed'
                 }`}
               >
-                Close Account Permanently
+                {loading ? 'Closing account...' : 'Close Account Permanently'}
               </button>
               <button
                 onClick={onBack}
+                disabled={loading}
                 className={`w-full py-3 rounded-xl font-bold transition-all ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'}`}
               >
                 Cancel

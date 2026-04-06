@@ -56,7 +56,7 @@ export default function EmailSentScreen({ email, initialReturn = false, onContin
         {showContinueButton ? (
           <button
             onClick={onContinue}
-            className="w-full px-8 py-4 bg-emerald-500 text-white font-bold rounded-2xl shadow-lg hover:bg-emerald-600 transition"
+            className="w-full px-8 py-4 bg-[#00875A] text-white font-bold rounded-2xl shadow-lg hover:bg-[#006f48] transition"
           >
             Continue to Nest
           </button>

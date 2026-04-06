@@ -171,13 +171,17 @@ export async function deleteUserData(email, userId) {
 			results.bankAccounts = await supabase.from('bank_accounts').delete().eq('user_email', email);
 			results.savings = await supabase.from('savings').delete().eq('email', email);
 			results.transactions = await supabase.from('transactions').delete().eq('user_email', email);
-			results.profiles = await supabase.from('profiles').delete().eq('email', email);
+			results.profilesByEmail = await supabase.from('profiles').delete().eq('email', email);
 		}
+
 		if (userId) {
+			results.profilesByUserId = await supabase.from('profiles').delete().eq('user_id', userId);
 			if (supabase.auth?.admin?.deleteUser) {
 				results.auth = await supabase.auth.admin.deleteUser(userId);
 			} else if (supabase.auth?.api?.deleteUser) {
 				results.auth = await supabase.auth.api.deleteUser(userId);
+			} else if (supabase.auth?.deleteUser) {
+				results.auth = await supabase.auth.deleteUser(userId);
 			} else {
 				results.auth = null;
 			}
