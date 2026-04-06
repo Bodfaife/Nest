@@ -1554,7 +1554,7 @@ function App() {
 
               // Upsert profile to server with location data
               try {
-                await upsertUserProfile({ 
+                const { error: profileError } = await upsertUserProfile({ 
                   email,
                   fullName,
                   recoveryPhrase,
@@ -1562,7 +1562,14 @@ function App() {
                   state,
                   address
                 });
-                await saveSavings(email, 0);
+                if (profileError) {
+                  console.warn('Profile upsert warning:', profileError);
+                } else {
+                  const { error: savingsError } = await saveSavings(email, 0);
+                  if (savingsError) {
+                    console.warn('Savings creation warning:', savingsError);
+                  }
+                }
               } catch (e) {
                 console.error('Error saving profile:', e);
               }
