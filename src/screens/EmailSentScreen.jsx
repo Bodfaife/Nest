@@ -22,7 +22,21 @@ export default function EmailSentScreen({ email, initialReturn = false, onContin
 
   const openEmailLink = () => {
     setHasOpenedEmail(true);
-    window.location.href = 'mailto:';
+    const userAgent = navigator.userAgent || '';
+    const isAndroid = /Android/i.test(userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+
+    if (isAndroid) {
+      window.location.href = 'intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_EMAIL;end';
+      return;
+    }
+
+    if (isIOS) {
+      window.location.href = 'mailto:';
+      return;
+    }
+
+    window.open('https://mail.google.com/mail/u/0/#inbox', '_blank');
   };
 
   return (

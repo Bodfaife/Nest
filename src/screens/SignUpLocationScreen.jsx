@@ -182,7 +182,6 @@ export default function SignUpLocationScreen({ onSubmit, onBack }) {
                 className="w-full p-4 pl-12 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-[#00875A] resize-none"
               />
             </div>
-            <p className="text-xs text-gray-400 mt-1 ml-1">This helps with delivery and support</p>
           </div>
         </div>
       </div>
