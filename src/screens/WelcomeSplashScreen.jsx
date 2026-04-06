@@ -14,7 +14,7 @@ export default function WelcomeSplashScreen({ user, onContinue }) {
         }
         return prev + 10;
       });
-    }, 300);
+    }, 500);
 
     return () => clearInterval(interval);
   }, [onContinue]);

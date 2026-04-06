@@ -22,7 +22,7 @@ export default function EmailSentScreen({ email, initialReturn = false, onContin
 
   const openEmailLink = () => {
     setHasOpenedEmail(true);
-    window.open('/email-confirmed.html?flow=signup-verify', '_blank');
+    window.location.href = 'mailto:';
   };
 
   return (
@@ -42,12 +42,12 @@ export default function EmailSentScreen({ email, initialReturn = false, onContin
         {showContinueButton ? (
           <button
             onClick={onContinue}
-            className="w-full px-8 py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-lg hover:bg-gray-800 transition"
+            className="w-full px-8 py-4 bg-emerald-500 text-white font-bold rounded-2xl shadow-lg hover:bg-emerald-600 transition"
           >
             Continue to Nest
           </button>
         ) : (
-          <p className="text-sm text-gray-500">
+          <p className="text-s text-gray-500">
             When you return to the app after confirming, a continue button will appear here.
           </p>
         )}
